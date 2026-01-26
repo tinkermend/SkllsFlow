@@ -49,12 +49,6 @@ export function Dashboard() {
             <TabsList>
               <TabsTrigger value='overview'>概览</TabsTrigger>
               <TabsTrigger value='analytics'>分析</TabsTrigger>
-              <TabsTrigger value='reports' disabled>
-                报告
-              </TabsTrigger>
-              <TabsTrigger value='notifications' disabled>
-                通知
-              </TabsTrigger>
             </TabsList>
           </div>
           <TabsContent value='overview' className='space-y-4'>
