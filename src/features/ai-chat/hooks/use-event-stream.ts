@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import { useChatStore } from '@/stores/chat-store'
 import { createEventSource, type EventSourceManager } from '../api/event.api'
 import type { SSEEvent, Message } from '../types'
@@ -10,6 +10,7 @@ export function useEventStream() {
   } = useChatStore()
 
   const eventSourceRef = useRef<EventSourceManager | null>(null)
+  const [isConnected, setIsConnected] = useState(false)
 
   const handleEvent = useCallback(
     (event: SSEEvent) => {
@@ -69,11 +70,11 @@ export function useEventStream() {
           const info = props.info as Message['info'] | undefined
           console.log('[SSE] message.created/updated:', { info })
           
-          if (info) {
+          if (info && currentSessionId) {
             // 检查是否已有此消息
             const existingMessages = messagesBySession[currentSessionId] || []
             const existingMsgIndex = existingMessages.findIndex(
-              (m) => m.info.id === info.id
+              (m: Message) => m.info.id === info.id
             )
 
             console.log('[SSE] existingMsgIndex:', existingMsgIndex, 'total messages:', existingMessages.length)
@@ -106,7 +107,7 @@ export function useEventStream() {
         case 'message.part.updated': {
           const part = props.part
           const delta = props.delta as string | undefined
-          
+
           console.log('[SSE] message.part.updated:', {
             type: part?.type,
             messageID: part?.messageID,
@@ -116,11 +117,11 @@ export function useEventStream() {
             delta: delta?.length,
           })
 
-          if (part?.messageID) {
+          if (part?.messageID && currentSessionId) {
             // 再次获取最新状态
             const latestState = useChatStore.getState()
             const currentMessages = latestState.messagesBySession[currentSessionId] || []
-            const messageExists = currentMessages.some(m => m.info.id === part.messageID)
+            const messageExists = currentMessages.some((m: Message) => m.info.id === part.messageID)
             
             console.log('[SSE] messageExists:', messageExists, 'for messageID:', part.messageID)
             
@@ -242,9 +243,11 @@ export function useEventStream() {
       handleEvent,
       (error) => {
         console.error('[SSE] Connection error:', error)
+        setIsConnected(false)
       },
       () => {
         console.log('[SSE] Connection established')
+        setIsConnected(true)
       }
     )
 
@@ -255,6 +258,7 @@ export function useEventStream() {
     if (eventSourceRef.current) {
       eventSourceRef.current.disconnect()
       eventSourceRef.current = null
+      setIsConnected(false)
     }
   }, [])
 
@@ -271,6 +275,6 @@ export function useEventStream() {
   return {
     reconnect: connect,
     disconnect,
-    isConnected: eventSourceRef.current?.isConnected() ?? false,
+    isConnected,
   }
 }

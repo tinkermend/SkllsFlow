@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { useChatStore } from '@/stores/chat-store'
 import {
   ChatContainerRoot,
