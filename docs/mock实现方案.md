@@ -37,48 +37,14 @@ npx msw init public/ --save
 
 修改你的入口文件，确保在 `VITE_MOCK=true` 时先启动 MSW 再渲染 React。
 
-```typescript
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { RouterProvider, createRouter } from '@tanstack/react-router'
-import { routeTree } from './routeTree.gen'
-import './index.css'
-
-// 创建路由实例
-const router = createRouter({ routeTree })
-
-// 封装启动逻辑
-async function prepareApp() {
-  // 仅在开发环境且开启了 Mock 开关时启动
-  if (process.env.NODE_ENV === 'development' && import.meta.env.VITE_MOCK === 'true') {
-    const { worker } = await import('./mocks/browser')
-    // 启动并忽略未定义的路由（让它们穿透到真实的 Express 3001 端口）
-    return worker.start({
-      onUnhandledRequest: 'bypass', 
-    })
-  }
-}
-
-prepareApp().then(() => {
-  const rootElement = document.getElementById('root')!
-  if (!rootElement.innerHTML) {
-    const root = ReactDOM.createRoot(rootElement)
-    root.render(
-      <React.StrictMode>
-        <RouterProvider router={router} />
-      </React.StrictMode>,
-    )
-  }
-})
-```
 
 #### 6. 环境变量配置
 
-在 `.env.development` 中添加：
+在 `.env` 中添加：
 
 ```ini
 # 你的后端地址 (Vite 代理的目标)
-VITE_API_BASE_URL=http://localhost:3001
+VITE_API_URL=http://localhost:3001
 
 # Mock 开关：true 使用 MSW，false 使用真实后端
 VITE_MOCK=true
