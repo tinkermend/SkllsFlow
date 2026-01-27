@@ -8,20 +8,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 技术栈
 
-| 层级 | 技术 | 说明 |
-|------|------|------|
-| **前端框架** | React 19 + Vite | 现有项目基础 |
-| **UI 组件** | shadcn/ui | 基于 Radix UI + Tailwind CSS |
-| **状态管理** | Zustand | 轻量级状态管理 |
-| **数据请求** | TanStack Query + Axios | 异步数据管理 |
-| **路由** | TanStack Router | 文件系统路由 |
-| **样式** | Tailwind CSS v4 | 支持 RTL |
-| **后端** | Node.js + Express | OpenCode API 代理服务 |
-| **类型检查** | TypeScript 5.9.3 | 严格模式 |
+| 层级         | 技术                   | 说明                         |
+| ------------ | ---------------------- | ---------------------------- |
+| **前端框架** | React 19 + Vite        | 现有项目基础                 |
+| **UI 组件**  | shadcn/ui              | 基于 Radix UI + Tailwind CSS |
+| **状态管理** | Zustand                | 轻量级状态管理               |
+| **数据请求** | TanStack Query + Axios | 异步数据管理                 |
+| **路由**     | TanStack Router        | 文件系统路由                 |
+| **样式**     | Tailwind CSS v4        | 支持 RTL                     |
+| **后端**     | Node.js + Express      | OpenCode API 代理服务        |
+| **类型检查** | TypeScript 5.9.3       | 严格模式                     |
 
 ## 开发命令
 
 ### 前端开发
+
 ```bash
 # 启动前端开发服务器 (端口 5173)
 pnpm dev
@@ -34,6 +35,7 @@ pnpm preview
 ```
 
 ### 后端开发
+
 ```bash
 # 启动后端服务器 (端口 3001)
 pnpm dev:server
@@ -43,6 +45,7 @@ pnpm dev:all
 ```
 
 ### 代码质量
+
 ```bash
 # 运行 ESLint 检查
 pnpm lint
@@ -97,6 +100,7 @@ server/
 ### 路由系统
 
 使用 TanStack Router 的文件系统路由：
+
 - `_authenticated/` - 需要认证的路由（使用 AuthenticatedLayout）
 - `(auth)/` - 认证相关路由（登录、注册等）
 - `(errors)/` - 错误页面
@@ -105,13 +109,16 @@ server/
 ### 状态管理架构
 
 #### Chat Store (`src/stores/chat-store.ts`)
+
 管理 AI 对话的核心状态：
+
 - **OpenCode 连接**: 连接状态、连接对象
 - **会话管理**: 会话列表、当前会话
 - **消息管理**: 按会话 ID 组织的消息列表
 - **流状态**: 流式响应状态、当前流式消息 ID
 
 #### Auth Store (`src/stores/auth-store.ts`)
+
 管理用户认证状态
 
 ### AI 对话功能架构
@@ -130,10 +137,10 @@ AI 对话功能位于 `src/features/ai-chat/`，核心组件：
 
 ### 后端服务架构
 
-Express 服务器 (`server/`) 作为 OpenCode API 的代理：
+Express 服务器 (`server/`) 作为 API 的代理：
+
 - **端口**: 3001（可通过 `PORT` 环境变量配置）
 - **CORS**: 允许前端 (localhost:5173) 跨域请求
-- **路由**: `/api/opencode/*` - OpenCode API 代理
 - **健康检查**: `/health`
 - **优雅关闭**: 处理 SIGINT/SIGTERM 信号
 
@@ -142,10 +149,12 @@ Express 服务器 (`server/`) 作为 OpenCode API 的代理：
 ## 重要约定
 
 ### 1. 路径别名
+
 使用 `@/` 作为 `src/` 的别名：
+
 ```typescript
-import { Button } from '@/components/ui/button'
-import { useChatStore } from '@/stores/chat-store'
+import { Button } from "@/components/ui/button";
+import { useChatStore } from "@/stores/chat-store";
 ```
 
 ### 2. Shadcn UI 组件自定义
@@ -153,9 +162,11 @@ import { useChatStore } from '@/stores/chat-store'
 部分组件已针对 RTL 支持和其他需求进行自定义，更新时需注意：
 
 **已修改的组件**:
+
 - scroll-area, sonner, separator
 
 **RTL 更新的组件**:
+
 - alert-dialog, calendar, command, dialog, dropdown-menu, select, table, sheet, sidebar, switch
 
 使用 shadcn CLI 更新组件时需谨慎，避免覆盖自定义内容。
@@ -163,6 +174,7 @@ import { useChatStore } from '@/stores/chat-store'
 ### 3. 功能模块组织
 
 每个功能模块 (`src/features/*`) 应包含：
+
 - `index.tsx` - 主页面组件
 - `components/` - 功能专用组件
 - `hooks/` - 功能专用 Hooks
@@ -172,12 +184,14 @@ import { useChatStore } from '@/stores/chat-store'
 ### 4. OpenCode API 集成
 
 OpenCode API 文档位于 `docs/openapi.json`，包含：
+
 - 健康检查: `/global/health`
 - 全局事件: `/global/event`
 - 项目管理: `/project/*`
 - 会话管理: `/session/*`
 
 后端服务 (`server/services/opencode.service.ts`) 负责：
+
 - 管理 OpenCode 连接
 - 处理流式响应
 - 会话生命周期管理
@@ -196,3 +210,12 @@ OpenCode API 文档位于 `docs/openapi.json`，包含：
 - [Shadcn UI 文档](https://ui.shadcn.com)
 - [TanStack Router 文档](https://tanstack.com/router/latest)
 - [TanStack Query 文档](https://tanstack.com/query/latest)
+
+## Active Technologies
+
+- TypeScript 5.9.3, Node.js (for Express backend) + MSW (Mock Service Worker), Vite, Axios, React 19 (001-msw-mock)
+- JSON 文件存储 Mock 数据（`src/mocks/data/`） (001-msw-mock)
+
+## Recent Changes
+
+- 001-msw-mock: Added TypeScript 5.9.3, Node.js (for Express backend) + MSW (Mock Service Worker), Vite, Axios, React 19
