@@ -208,3 +208,10 @@ OpenCode API 文档位于 `docs/openapi.json`，包含：
 - [Shadcn UI 文档](https://ui.shadcn.com)
 - [TanStack Router 文档](https://tanstack.com/router/latest)
 - [TanStack Query 文档](https://tanstack.com/query/latest)
+
+## Active Technologies
+- SQL (PostgreSQL 16), DDL 脚本 + PostgreSQL 16, Docker (容器化部署) (001-aiops-database)
+- PostgreSQL 16 数据库 (aiops) (001-aiops-database)
+
+## Recent Changes
+- 001-aiops-database: Added SQL (PostgreSQL 16), DDL 脚本 + PostgreSQL 16, Docker (容器化部署)
