@@ -24,6 +24,7 @@ interface SkillCardProps {
   onUninstall?: (skillId: string) => void
   onDelete?: (skillId: string) => void // 新增：删除技能（平台技能）
   onInstall?: (skillId: string) => void // 新增：装载技能（平台技能）
+  onToggleStatus?: (skillId: string, currentStatus: SkillStatus) => void // 新增：切换状态（平台技能）
 }
 
 export function SkillCard({
@@ -33,10 +34,11 @@ export function SkillCard({
   onUninstall,
   onDelete,
   onInstall,
+  onToggleStatus,
 }: SkillCardProps) {
   const statusConfig = {
-    [SkillStatus.ONLINE]: {
-      label: '在线',
+    [SkillStatus.ACTIVE]: {
+      label: '启用',
       variant: 'default' as const,
       className: 'bg-green-500 hover:bg-green-600',
     },
@@ -63,7 +65,7 @@ export function SkillCard({
           <div className="flex items-center gap-3 flex-1 min-w-0">
             {/* Logo */}
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted text-2xl">
-              {skill.icon}
+              {skill.iconPath}
             </div>
             {/* 名称 */}
             <CardTitle className="text-base font-semibold leading-tight truncate">
@@ -88,15 +90,15 @@ export function SkillCard({
       <CardContent className="pb-3">
         <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
           <div className="flex justify-between">
-            <span className="font-medium">创建者：</span>
-            <span>{skill.creator}</span>
+            <span className="font-medium">分类：</span>
+            <span>{skill.category}</span>
           </div>
           <div className="flex justify-between">
             <span className="font-medium">创建日期：</span>
-            <span>{skill.createdAt}</span>
+            <span>{new Date(skill.createdAt).toLocaleDateString()}</span>
           </div>
           {/* 平台技能不显示关联会话 */}
-          {mode === 'my-skills' && (
+          {mode === 'my-skills' && skill.sessionId && (
             <div className="col-span-2 flex justify-between">
               <span className="font-medium">关联会话：</span>
               <span className="truncate ml-2">{skill.sessionId}</span>
@@ -132,29 +134,33 @@ export function SkillCard({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onViewDetails?.(skill.id)}>
+            <DropdownMenuItem onClick={() => onViewDetails?.(skill.skillId)}>
               查看详情
             </DropdownMenuItem>
             {mode === 'my-skills' ? (
               // 我的技能：显示卸载技能
               <DropdownMenuItem
-                onClick={() => onUninstall?.(skill.id)}
+                onClick={() => onUninstall?.(skill.skillId)}
                 className="text-destructive focus:text-destructive"
               >
                 卸载技能
               </DropdownMenuItem>
             ) : (
-              // 平台技能：显示删除技能和装载技能
+              // 平台技能：显示启用/禁用、删除技能和装载技能
               <>
+                {/* 启用/禁用按钮 */}
+                <DropdownMenuItem onClick={() => onToggleStatus?.(skill.skillId, skill.status)}>
+                  {skill.status === SkillStatus.DISABLED ? '启用' : '禁用'}
+                </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => onDelete?.(skill.id)}
+                  onClick={() => onDelete?.(skill.skillId)}
                   className="text-destructive focus:text-destructive"
                 >
                   删除技能
                 </DropdownMenuItem>
                 {/* 已禁用的技能不显示装载技能按钮 */}
                 {skill.status !== SkillStatus.DISABLED && (
-                  <DropdownMenuItem onClick={() => onInstall?.(skill.id)}>
+                  <DropdownMenuItem onClick={() => onInstall?.(skill.skillId)}>
                     装载技能
                   </DropdownMenuItem>
                 )}

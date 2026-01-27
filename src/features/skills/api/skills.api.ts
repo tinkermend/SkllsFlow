@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { API_CONFIG, API_ENDPOINTS } from '@/config/api'
-import type { Skill } from '../types'
+import type { Skill, SessionSkill } from '../types'
 
 /**
  * 创建 Axios 实例
@@ -67,5 +67,34 @@ export const skillsApi = {
    */
   async deleteSkill(id: string): Promise<void> {
     await apiClient.delete(API_ENDPOINTS.skills.delete(id))
+  },
+
+  /**
+   * 上传技能压缩包
+   */
+  async uploadSkillFile(file: File): Promise<{ filePath: string }> {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const response = await apiClient.post<{ filePath: string }>(
+      API_ENDPOINTS.skills.upload,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    )
+    return response.data
+  },
+
+  /**
+   * 获取技能关联的会话列表
+   */
+  async getSkillRelatedSessions(skillId: string): Promise<SessionSkill[]> {
+    const response = await apiClient.get<SessionSkill[]>(
+      API_ENDPOINTS.skills.relatedSessions(skillId)
+    )
+    return response.data
   },
 }

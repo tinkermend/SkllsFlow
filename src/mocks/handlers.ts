@@ -1,5 +1,5 @@
 import { http, HttpResponse, delay } from 'msw'
-import { mockSkills } from './data/skills'
+import { mockSkills, mockSessionSkills } from './data/skills'
 import { mockUsers } from './data/users'
 import { MOCK_DELAYS } from './utils/delay'
 
@@ -22,7 +22,7 @@ export const handlers = [
   http.get('/api/skills/:id', async ({ params }) => {
     await delay(150)
     const { id } = params
-    const skill = mockSkills.find(s => s.id === id)
+    const skill = mockSkills.find(s => s.skillId === id)
 
     if (!skill) {
       return HttpResponse.json(
@@ -40,7 +40,10 @@ export const handlers = [
     const data = await request.json()
     const newSkill = {
       ...data,
-      id: `skill_${Date.now()}`,
+      id: mockSkills.length + 1,
+      skillId: `skill_${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     }
     mockSkills.push(newSkill)
     return HttpResponse.json(newSkill, { status: 201 })
@@ -51,7 +54,7 @@ export const handlers = [
     await delay(MOCK_DELAYS.normal)
     const { id } = params
     const updates = await request.json()
-    const index = mockSkills.findIndex(s => s.id === id)
+    const index = mockSkills.findIndex(s => s.skillId === id)
 
     if (index === -1) {
       return HttpResponse.json(
@@ -60,7 +63,11 @@ export const handlers = [
       )
     }
 
-    mockSkills[index] = { ...mockSkills[index], ...updates }
+    mockSkills[index] = {
+      ...mockSkills[index],
+      ...updates,
+      updatedAt: new Date().toISOString()
+    }
     return HttpResponse.json(mockSkills[index])
   }),
 
@@ -68,7 +75,7 @@ export const handlers = [
   http.delete('/api/skills/:id', async ({ params }) => {
     await delay(MOCK_DELAYS.normal)
     const { id } = params
-    const index = mockSkills.findIndex(s => s.id === id)
+    const index = mockSkills.findIndex(s => s.skillId === id)
 
     if (index === -1) {
       return HttpResponse.json(
@@ -79,6 +86,35 @@ export const handlers = [
 
     mockSkills.splice(index, 1)
     return new HttpResponse(null, { status: 204 })
+  }),
+
+  // POST /api/skills/upload - 上传技能压缩包
+  http.post('/api/skills/upload', async ({ request }) => {
+    await delay(MOCK_DELAYS.slow)
+    const formData = await request.formData()
+    const file = formData.get('file') as File
+
+    if (!file) {
+      return HttpResponse.json(
+        { error: 'No file uploaded' },
+        { status: 400 }
+      )
+    }
+
+    // 模拟文件上传,返回文件路径
+    const filePath = `/uploads/skills/${Date.now()}-${file.name}`
+    return HttpResponse.json({ filePath })
+  }),
+
+  // GET /api/skills/:id/sessions - 获取技能关联会话列表
+  http.get('/api/skills/:id/sessions', async ({ params }) => {
+    await delay(150)
+    const { id } = params
+
+    // 从 mock 数据中查找关联会话
+    const sessions = mockSessionSkills[id] || []
+
+    return HttpResponse.json(sessions)
   }),
 
   // ==================== Users API ====================

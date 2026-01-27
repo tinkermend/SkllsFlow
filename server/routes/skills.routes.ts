@@ -5,7 +5,7 @@ import { SkillStatus } from '../types/skill.types'
 const router = express.Router()
 
 // 模拟数据库存储
-let skills: Skill[] = [
+const skills: Skill[] = [
   {
     id: 'skill_001',
     name: 'PostgreSQL 故障诊断',

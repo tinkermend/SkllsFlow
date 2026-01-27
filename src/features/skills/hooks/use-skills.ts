@@ -81,3 +81,12 @@ export function useDeleteSkill() {
     },
   })
 }
+
+/**
+ * 上传技能文件
+ */
+export function useUploadSkillFile() {
+  return useMutation({
+    mutationFn: (file: File) => skillsApi.uploadSkillFile(file),
+  })
+}

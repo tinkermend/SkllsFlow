@@ -7,7 +7,7 @@ CREATE TABLE skills (
     skill_id VARCHAR(64) NOT NULL UNIQUE,
     name VARCHAR(120) NOT NULL,
     description TEXT,
-    icon_path VARCHAR(200),
+    icon VARCHAR(100),
     category VARCHAR(100) NOT NULL,
     tags VARCHAR(180) [],
     status skill_status NOT NULL DEFAULT 'active',
@@ -19,7 +19,6 @@ CREATE TABLE skills (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-BEGIN;
 -- 表注释
 COMMENT ON TABLE skills IS '技能表：存储平台可用的AI技能信息';
 
@@ -32,7 +31,7 @@ COMMENT ON COLUMN skills.name IS '技能名称';
 
 COMMENT ON COLUMN skills.description IS '技能描述';
 
-COMMENT ON COLUMN skills.icon_path IS '图标文件路径';
+COMMENT ON COLUMN skills.icon IS '图标样式';
 
 COMMENT ON COLUMN skills.category IS '技能分类：如code-analysis, data-processing';
 
