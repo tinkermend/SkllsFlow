@@ -1,26 +1,32 @@
+drop table if exists skills;
+
 CREATE TYPE skill_status AS ENUM ('active', 'disabled');
 
 CREATE TABLE skills (
     id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    skill_id VARCHAR(64) NOT NULL UNIQUE,
+    name VARCHAR(120) NOT NULL,
     description TEXT,
-    icon_path VARCHAR(512),
+    icon_path VARCHAR(200),
     category VARCHAR(100) NOT NULL,
-    tags VARCHAR(255) [],
+    tags VARCHAR(180) [],
     status skill_status NOT NULL DEFAULT 'active',
     sort_order INTEGER NOT NULL DEFAULT 0,
-    file_path VARCHAR(512) NOT NULL,
+    file_path VARCHAR(255) NOT NULL,
     created_by BIGINT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_by BIGINT,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    deleted_by BIGINT,
-    deleted_at TIMESTAMPTZ
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+BEGIN;
+-- 表注释
 COMMENT ON TABLE skills IS '技能表：存储平台可用的AI技能信息';
 
+-- 字段注释
 COMMENT ON COLUMN skills.id IS '主键：数据库内部使用';
+
+COMMENT ON COLUMN skills.skill_id IS '技能ID：唯一标识一个技能';
 
 COMMENT ON COLUMN skills.name IS '技能名称';
 
@@ -40,6 +46,12 @@ COMMENT ON COLUMN skills.file_path IS '技能压缩包文件路径';
 
 COMMENT ON COLUMN skills.created_by IS '创建人ID：应用层保证引用完整性（无外键约束）';
 
+COMMENT ON COLUMN skills.created_at IS '创建时间';
+
+COMMENT ON COLUMN skills.updated_by IS '更新人ID';
+
+COMMENT ON COLUMN skills.updated_at IS '更新时间';
+
 -- Indexes for skills
 CREATE INDEX idx_skills_name ON skills (name);
 
@@ -52,3 +64,8 @@ CREATE INDEX idx_skills_sort_order ON skills (sort_order);
 CREATE INDEX idx_skills_tags ON skills USING GIN (tags);
 
 CREATE INDEX idx_skills_category_status_order ON skills (category, status, sort_order);
+
+CREATE TRIGGER update_skills_updated_at
+    BEFORE UPDATE ON skills
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
