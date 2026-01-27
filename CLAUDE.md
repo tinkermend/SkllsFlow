@@ -213,8 +213,8 @@ OpenCode API 文档位于 `docs/openapi.json`，包含：
 
 ## Active Technologies
 
-- TypeScript 5.9.3, Node.js (for Express backend) + MSW (Mock Service Worker), Vite, Axios, React 19 (001-msw-mock)
-- JSON 文件存储 Mock 数据（`src/mocks/data/`） (001-msw-mock)
+- TypeScript 5.9.3, Node.js (for Express backend) + MSW (Mock Service Worker), Vite, Axios, React 19 
+- JSON 文件存储 Mock 数据（`src/mocks/data/`）
 
 ## Recent Changes
 

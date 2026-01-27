@@ -1,6 +1,18 @@
 import axios, { type AxiosInstance } from 'axios'
 import type { OpenCodeConnection } from '../types'
 
+/**
+ * OpenCode 客户端配置常量
+ */
+const OPENCODE_CONFIG = {
+  /** 默认协议 */
+  protocol: 'http',
+  /** 请求超时时间（毫秒） */
+  timeout: 30000,
+  /** 默认用户名 */
+  defaultUsername: 'opencode',
+} as const
+
 let openCodeClient: AxiosInstance | null = null
 
 export function initOpenCodeClient(
@@ -9,11 +21,11 @@ export function initOpenCodeClient(
   const { host, port, username, password } = connection
 
   openCodeClient = axios.create({
-    baseURL: `http://${host}:${port}`,
-    timeout: 30000,
+    baseURL: `${OPENCODE_CONFIG.protocol}://${host}:${port}`,
+    timeout: OPENCODE_CONFIG.timeout,
     ...(password && {
       auth: {
-        username: username || 'opencode',
+        username: username || OPENCODE_CONFIG.defaultUsername,
         password: password,
       },
     }),
@@ -38,5 +50,5 @@ export function isClientInitialized(): boolean {
 }
 
 export function getBaseUrl(connection: OpenCodeConnection): string {
-  return `http://${connection.host}:${connection.port}`
+  return `${OPENCODE_CONFIG.protocol}://${connection.host}:${connection.port}`
 }

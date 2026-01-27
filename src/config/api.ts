@@ -32,14 +32,6 @@ export const API_ENDPOINTS = {
     delete: (id: string) => `/skills/${id}`,
   },
 
-  // OpenCode
-  opencode: {
-    health: "/opencode/health",
-    connection: "/opencode/connection",
-    start: "/opencode/start",
-    stop: "/opencode/stop",
-  },
-
   // 用户管理
   users: {
     list: "/users",
@@ -62,10 +54,10 @@ export function getApiUrl(endpoint: string): string {
  */
 export function logApiMode(): void {
   if (import.meta.env.DEV) {
-    const isMockEnabled = import.meta.env.VITE_MOCK === 'true'
+    const isMockEnabled = import.meta.env.VITE_MOCK === "true";
     console.log(
       `[API Config] Mode: ${isMockEnabled ? "MSW Mock" : "Real API"}`,
       `\n[API Config] Base URL: ${API_CONFIG.baseUrl}`
-    )
+    );
   }
 }
