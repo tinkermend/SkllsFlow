@@ -152,6 +152,8 @@ CREATE INDEX idx_role_permissions_permission_id ON role_permissions (permission_
 -- 2.1 sessions - 会话表
 -- ----------------------------------------------------------------------------
 
+drop table if exists sessions;
+
 CREATE TYPE session_status AS ENUM ('active', 'delete');
 
 CREATE TABLE sessions (
@@ -161,6 +163,7 @@ CREATE TABLE sessions (
     user_id BIGINT NOT NULL,
     project_id VARCHAR(255) DEFAULT 'global',
     status session_status NOT NULL DEFAULT 'active',
+    opencode_server VARCHAR(120) NOT NULL DEFAULT 'http://127.0.0.1:4096',
     directory VARCHAR(1000),
     agent_ids JSONB DEFAULT '[]'::jsonb,
     mcp_ids JSONB DEFAULT '[]'::jsonb,
@@ -172,6 +175,8 @@ CREATE TABLE sessions (
 COMMENT ON COLUMN sessions.agent_ids IS '关联的 Agent ID 数组（JSONB）：如 [1, 2]';
 
 COMMENT ON COLUMN sessions.mcp_ids IS '关联的 MCP 服务 ID 数组（JSONB）：如 [5]';
+
+COMMENT ON COLUMN sessions.opencode_server IS 'OpenCode 服务器地址：默认为 http://127.0.0.1:4096';
 
 COMMENT ON COLUMN sessions.skill_ids IS '关联的技能 ID 数组（JSONB）：如 [10, 11, 12]';
 
@@ -473,4 +478,3 @@ CREATE TRIGGER update_agents_updated_at
     BEFORE UPDATE ON agents
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
-
