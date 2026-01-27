@@ -2,14 +2,28 @@ import { spawn, type ChildProcess } from 'child_process'
 import net from 'net'
 import type { OpenCodeInstance, OpenCodeConnectionResponse } from '../types'
 
-// Mock 模式：设置 MOCK_OPENCODE=true 时不启动真实进程
-const MOCK_MODE = process.env.MOCK_OPENCODE === 'true'
-
 // 外部 opencode 实例配置（用户已手动启动的实例）
-const EXTERNAL_OPENCODE_HOST = process.env.OPENCODE_HOST || 'localhost'
-const EXTERNAL_OPENCODE_PORT = process.env.OPENCODE_PORT
-  ? parseInt(process.env.OPENCODE_PORT)
-  : null
+// 从 OPENCODE_API_URL 解析 host 和 port
+function parseOpenCodeUrl(): { host: string; port: number } | null {
+  const apiUrl = process.env.OPENCODE_API_URL
+  if (!apiUrl) {
+    return null
+  }
+
+  try {
+    const url = new URL(apiUrl)
+    const port = url.port ? parseInt(url.port) : (url.protocol === 'https:' ? 443 : 80)
+    return {
+      host: url.hostname,
+      port,
+    }
+  } catch {
+    console.error('Invalid OPENCODE_API_URL format:', apiUrl)
+    return null
+  }
+}
+
+const externalOpenCode = parseOpenCodeUrl()
 
 // 存储用户的 OpenCode 实例
 const instances = new Map<string, OpenCodeInstance>()
@@ -125,35 +139,18 @@ export const openCodeService = {
    */
   async startInstance(userId: string): Promise<OpenCodeConnectionResponse> {
     // 如果配置了外部 opencode 实例，直接使用
-    if (EXTERNAL_OPENCODE_PORT) {
+    if (externalOpenCode) {
       const instance: OpenCodeInstance = {
         userId,
-        host: EXTERNAL_OPENCODE_HOST,
-        port: EXTERNAL_OPENCODE_PORT,
+        host: externalOpenCode.host,
+        port: externalOpenCode.port,
         pid: 0,
         status: 'running',
         startedAt: new Date(),
       }
       instances.set(userId, instance)
       return {
-        opencode: { host: EXTERNAL_OPENCODE_HOST, port: EXTERNAL_OPENCODE_PORT },
-        status: 'ready',
-      }
-    }
-
-    // Mock 模式：返回模拟连接
-    if (MOCK_MODE) {
-      const mockInstance: OpenCodeInstance = {
-        userId,
-        host: 'localhost',
-        port: 4096,
-        pid: 0,
-        status: 'running',
-        startedAt: new Date(),
-      }
-      instances.set(userId, mockInstance)
-      return {
-        opencode: { host: 'localhost', port: 4096 },
+        opencode: { host: externalOpenCode.host, port: externalOpenCode.port },
         status: 'ready',
       }
     }
