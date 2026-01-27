@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import openCodeRoutes from './routes/opencode.routes'
+import skillsRoutes from './routes/skills.routes'
 import { openCodeService } from './services/opencode.service'
 
 const app = express()
@@ -15,6 +16,7 @@ app.use(express.json())
 
 // 路由
 app.use('/api/opencode', openCodeRoutes)
+app.use('/api/skills', skillsRoutes)
 
 // 健康检查
 app.get('/health', (req, res) => {

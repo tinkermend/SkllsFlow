@@ -2,7 +2,7 @@ import axios from 'axios'
 import type { OpenCodeConnectionResponse } from '../types'
 
 // 后端 API 基础 URL - 在实际项目中应该从环境变量获取
-const BACKEND_API_URL = import.meta.env.VITE_BACKEND_API_URL || '/api'
+const BACKEND_API_URL = import.meta.env.VITE_API_URL || '/api'
 
 const backendClient = axios.create({
   baseURL: BACKEND_API_URL,
