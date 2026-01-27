@@ -50,26 +50,4 @@ VITE_API_URL=http://localhost:3001
 VITE_MOCK=true
 ```
 
----
-
-### 如何利用 AI Code 能力自动生成 Mock？
-
-这是你最想解决的痛点：**不想维护 Mock 配置**。你可以使用以下 Prompt 模板，将你的 `docs/openapi.json` 或 `server/routes/*.ts` 代码投喂给 AI。
-
-**复制给 AI 的 Prompt (提示词):**
-
-> 我正在开发一个基于 React 19 和 MSW 的前端项目。
-> 请根据我提供的 API 接口定义，帮我生成 `src/mocks/handlers.ts` 的代码。
->
-> **要求：**
-> 1. 使用 `msw` 的 `http` 和 `HttpResponse` 对象。
-> 2. 接口前缀统一为 `/api`。
-> 3. 使用 `@faker-js/faker` 生成逼真的中文测试数据。
-> 4. 为每个接口添加 `delay(500)` 来模拟真实网络延迟。
-> 5. 严格遵循以下 TypeScript 类型定义。
->
-> **接口定义/Swagger 文档内容：**
-> (在此处粘贴你的 docs/openapi.json 内容 或 server/routes 代码)
-
----
 

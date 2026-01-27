@@ -216,6 +216,9 @@ importers:
       knip:
         specifier: ^5.73.4
         version: 5.73.4(@types/node@25.0.2)(typescript@5.9.3)
+      msw:
+        specifier: ^2.12.7
+        version: 2.12.7(@types/node@25.0.2)(typescript@5.9.3)
       prettier:
         specifier: ^3.7.4
         version: 3.7.4
