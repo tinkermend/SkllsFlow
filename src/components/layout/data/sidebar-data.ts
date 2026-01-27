@@ -1,27 +1,19 @@
 import {
   Blocks,
-  Construction,
   LayoutDashboard,
   Monitor,
-  Bug,
-  FileX,
-  HelpCircle,
-  Lock,
   Bell,
   Network,
   Package,
   Palette,
-  ServerOff,
   Settings,
   Wrench,
   UserCog,
-  UserX,
   Users,
   MessagesSquare,
-  ShieldCheck,
   AudioWaveform,
   Bot,
-} from "lucide-react";
+} from 'lucide-react'
 import { type SidebarData } from "../types";
 
 export const sidebarData: SidebarData = {
@@ -61,8 +53,8 @@ export const sidebarData: SidebarData = {
           icon: Network,
         },
         {
-          title: "技能管理",
-          url: "/apps",
+          title: "技能箱",
+          url: "/skills",
           icon: Package,
         },
         {
