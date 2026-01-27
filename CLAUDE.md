@@ -119,26 +119,14 @@ server/
 AI 对话功能位于 `src/features/ai-chat/`，核心组件：
 
 1. **连接管理** (`connection-guard.tsx`)
-   - 管理与 OpenCode 服务的连接
-   - 处理连接状态和错误
 
 2. **会话管理** (`session-sidebar.tsx`, `session-item.tsx`)
-   - 会话列表展示
-   - 会话切换和删除
 
 3. **消息展示** (`message-list.tsx`, `message-item.tsx`)
-   - 消息列表渲染
-   - 支持流式响应
-   - Markdown 渲染（使用 react-markdown）
 
 4. **输入面板** (`chat-input.tsx`, `chat-panel.tsx`)
-   - 用户输入
-   - 命令建议
-   - 发送消息
 
 5. **推理展示** (`reasoning-part.tsx`, `tool-reasoning.tsx`)
-   - 显示 AI 思考过程
-   - 工具调用可视化
 
 ### 后端服务架构
 
@@ -208,10 +196,3 @@ OpenCode API 文档位于 `docs/openapi.json`，包含：
 - [Shadcn UI 文档](https://ui.shadcn.com)
 - [TanStack Router 文档](https://tanstack.com/router/latest)
 - [TanStack Query 文档](https://tanstack.com/query/latest)
-
-## Active Technologies
-- SQL (PostgreSQL 16), DDL 脚本 + PostgreSQL 16, Docker (容器化部署) (001-aiops-database)
-- PostgreSQL 16 数据库 (aiops) (001-aiops-database)
-
-## Recent Changes
-- 001-aiops-database: Added SQL (PostgreSQL 16), DDL 脚本 + PostgreSQL 16, Docker (容器化部署)
