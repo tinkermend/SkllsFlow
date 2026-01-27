@@ -33,6 +33,32 @@ export function Skills() {
     }
   }
 
+  const handleDelete = async (skillId: string) => {
+    if (!confirm('确定要删除这个技能吗？删除后将无法恢复。')) {
+      return
+    }
+
+    try {
+      await deleteSkillMutation.mutateAsync(skillId)
+      alert('删除成功')
+    } catch (error) {
+      alert(`删除失败: ${error instanceof Error ? error.message : '未知错误'}`)
+    }
+  }
+
+  const handleInstall = async (_skillId: string) => {
+    if (!confirm('确定要装载这个技能吗？')) {
+      return
+    }
+
+    try {
+      // TODO: 实现装载技能功能
+      alert('功能开发中：装载技能功能即将推出')
+    } catch (error) {
+      alert(`装载失败: ${error instanceof Error ? error.message : '未知错误'}`)
+    }
+  }
+
   const handleCreateSkill = () => {
     // TODO: 实现创建技能功能
     alert('功能开发中：创建技能功能即将推出')
@@ -115,9 +141,24 @@ export function Skills() {
               </TabsContent>
 
               <TabsContent value="platform-skills" className="mt-0">
-                <div className="flex h-64 items-center justify-center text-muted-foreground">
-                  平台技能功能即将推出...
-                </div>
+                {skills.length === 0 ? (
+                  <div className="flex h-64 flex-col items-center justify-center gap-2">
+                    <p className="text-muted-foreground">暂无平台技能</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {skills.map((skill) => (
+                      <SkillCard
+                        key={skill.id}
+                        skill={skill}
+                        mode="platform-skills"
+                        onViewDetails={handleViewDetails}
+                        onDelete={handleDelete}
+                        onInstall={handleInstall}
+                      />
+                    ))}
+                  </div>
+                )}
               </TabsContent>
             </Tabs>
           )}
