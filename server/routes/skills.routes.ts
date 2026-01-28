@@ -1,8 +1,8 @@
-import express from 'express'
+import express, { type Router as RouterType } from 'express'
 import type { CreateSkillRequest, UpdateSkillRequest, Skill } from '../types/skill.types'
 import { SkillStatus } from '../types/skill.types'
 
-const router = express.Router()
+const router: RouterType = express.Router()
 
 // 模拟数据库存储
 const skills: Skill[] = [

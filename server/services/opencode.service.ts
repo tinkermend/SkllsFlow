@@ -70,7 +70,7 @@ async function checkHealth(host: string, port: number): Promise<boolean> {
     const response = await fetch(`http://${host}:${port}/global/health`, {
       signal: AbortSignal.timeout(5000),
     })
-    const data = await response.json()
+    const data = await response.json() as { healthy?: boolean }
     return data.healthy === true
   } catch {
     return false
@@ -260,7 +260,7 @@ export const openCodeService = {
         `http://${instance.host}:${instance.port}/global/health`,
         { signal: AbortSignal.timeout(5000) }
       )
-      const data = await response.json()
+      const data = await response.json() as { healthy?: boolean; version?: string }
       return {
         healthy: data.healthy === true,
         version: data.version,

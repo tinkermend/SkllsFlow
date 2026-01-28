@@ -7,26 +7,35 @@ export function authMiddleware(
   res: Response,
   next: NextFunction
 ) {
-  // 从请求中获取用户 ID
-  // 这里简化处理，实际应该从 JWT token 或 session 中获取
-  const userId = req.headers['x-user-id'] as string
+  // 1. 尝试从 Authorization header 获取用户 ID
+  const authHeader = req.headers.authorization as string
 
-  if (!userId) {
-    // 开发环境下使用默认用户
-    // 生产环境应设置 REQUIRE_AUTH=true
-    if (!process.env.REQUIRE_AUTH) {
-      req.userId = 'dev-user-1'
-      return next()
-    }
-
-    return res.status(401).json({
-      error: 'Unauthorized',
-      message: 'Missing user authentication',
-    })
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    // 提取 Bearer token
+    const token = authHeader.substring(7)
+    req.userId = token
+    return next()
   }
 
-  req.userId = userId
-  next()
+  // 2. 尝试从 x-user-id header 获取用户 ID
+  const userId = req.headers['x-user-id'] as string
+
+  if (userId) {
+    req.userId = userId
+    return next()
+  }
+
+  // 3. 开发环境下使用默认用户
+  if (process.env.REQUIRE_AUTH !== 'true') {
+    req.userId = 'dev-user-1'
+    return next()
+  }
+
+  // 4. 认证失败
+  return res.status(401).json({
+    error: 'Unauthorized',
+    message: 'Missing user authentication',
+  })
 }
 
 // 扩展 Express Request 类型

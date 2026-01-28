@@ -248,14 +248,14 @@ SELECT
     column_default
 FROM information_schema.columns
 WHERE
-    table_schema = 'public'
+    table_schema = 'aiops'
 ORDER BY table_name, ordinal_position;
 
 -- 验证索引是否创建成功
 SELECT tablename, indexname, indexdef
 FROM pg_indexes
 WHERE
-    schemaname = 'public'
+    schemaname = 'aiops'
 ORDER BY tablename, indexname;
 
 -- 验证外键约束是否创建成功

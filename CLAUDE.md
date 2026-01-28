@@ -17,6 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | **路由**     | TanStack Router        | 文件系统路由                 |
 | **样式**     | Tailwind CSS v4        | 支持 RTL                     |
 | **后端**     | Node.js + Express      | OpenCode API 代理服务        |
+| **数据库**   | PostgreSQL 16 + Prisma | ORM + 会话存储               |
 | **类型检查** | TypeScript 5.9.3       | 严格模式                     |
 
 ## 开发命令
@@ -90,11 +91,32 @@ src/
 
 server/
 ├── index.ts            # Express 服务器入口
+├── config/             # 配置文件
+│   └── env.ts          # 环境变量验证
 ├── routes/             # API 路由
-│   └── opencode.routes.ts
+│   ├── opencode.routes.ts
+│   ├── skills.routes.ts
+│   └── sessions.routes.ts
 ├── services/           # 业务逻辑
-│   └── opencode.service.ts
+│   ├── database.service.ts  # 数据库连接管理
+│   ├── opencode.service.ts
+│   └── sessions.service.ts
+├── repositories/       # 数据访问层
+│   ├── base.repository.ts   # 通用仓储基类
+│   └── sessions.repository.ts
+├── controllers/        # 控制器层
+│   └── sessions.controller.ts
+├── middleware/         # 中间件
+│   ├── auth.middleware.ts
+│   ├── error-handler.ts
+│   ├── prisma-metrics.ts
+│   └── retry-middleware.ts
+├── utils/              # 工具函数
+│   ├── metrics.ts      # Prometheus 指标
+│   └── logger.ts       # 结构化日志
 └── types/              # 类型定义
+    ├── session.types.ts
+    └── index.ts
 ```
 
 ### 路由系统
@@ -143,6 +165,26 @@ Express 服务器 (`server/`) 作为 API 的代理：
 - **CORS**: 允许前端 (localhost:5173) 跨域请求
 - **健康检查**: `/health`
 - **优雅关闭**: 处理 SIGINT/SIGTERM 信号
+
+#### 数据库层 (Prisma + PostgreSQL)
+
+项目使用 **Prisma ORM** 管理数据库操作：
+
+- **ORM**: Prisma 7.3.0
+- **Schema**: 定义在 `prisma/schema.prisma`
+
+**Prisma 核心组件**:
+
+- `server/services/database.service.ts` - 数据库连接管理（单例模式）
+- `server/repositories/base.repository.ts` - 通用仓储基类（CRUD 操作）
+- `server/repositories/sessions.repository.ts` - 会话仓储
+- `server/middleware/prisma-metrics.ts` - 查询指标中间件
+- `server/middleware/retry-middleware.ts` - 事务重试中间件（150ms 延迟）
+
+**重要原则**:
+
+- 所有数据库操作通过 Repository 模式（不直接使用 Prisma Client）
+- 使用 DatabaseService 单例管理连接生命周期
 
 前端通过 Vite 代理 `/api` 请求到后端服务器（见 `vite.config.ts`）
 
@@ -196,6 +238,27 @@ OpenCode API 文档位于 `docs/openapi.json`，包含：
 - 处理流式响应
 - 会话生命周期管理
 
+### 5. 数据库操作规范 (Prisma)
+
+所有数据库操作遵循以下原则：
+
+- **Repository 模式**: 通过 Repository 类访问数据库，不在 Controller/Service 中直接使用 Prisma Client
+- **单例连接**: 使用 `DatabaseService.getInstance()` 获取 Prisma Client 实例
+- **事务支持**: 使用 `repository.transaction()` 处理多表操作
+- **错误处理**: Prisma 错误通过 `error-handler.ts` 中间件转换为合适的 HTTP 状态码
+- **指标收集**: 所有查询自动记录延迟、错误率和连接池指标
+- **重试机制**: 瞬态错误自动重试 1 次（150ms 延迟）
+
+**示例**:
+
+```typescript
+// ✅ 正确：使用 Repository
+const session = await sessionRepository.findBySessionId(sessionId);
+
+// ❌ 错误：直接使用 Prisma Client
+const session = await prisma.session.findUnique({ where: { sessionId } });
+```
+
 ## 强制规范
 
 - **文档语言**: 所有输出的文档内容使用简体中文
@@ -207,15 +270,23 @@ OpenCode API 文档位于 `docs/openapi.json`，包含：
 ## 参考文档
 
 - [OpenCode API 文档](docs/openapi.json)
+- [Prisma 文档](https://www.prisma.io/docs)
+- [PostgreSQL 文档](https://www.postgresql.org/docs/16/)
 - [Shadcn UI 文档](https://ui.shadcn.com)
 - [TanStack Router 文档](https://tanstack.com/router/latest)
 - [TanStack Query 文档](https://tanstack.com/query/latest)
+- [Prometheus 指标最佳实践](https://prometheus.io/docs/practices/naming/)
 
 ## Active Technologies
 
-- TypeScript 5.9.3, Node.js (for Express backend) + MSW (Mock Service Worker), Vite, Axios, React 19 
+- Node.js + TypeScript 5.9.3 (001-session-db-storage)
+- PostgreSQL 16 (aiops database, sessions table) (001-session-db-storage)
+- Prisma ORM 7.3.0 (001-session-db-storage)
+
+- TypeScript 5.9.3, Node.js (for Express backend) + MSW (Mock Service Worker), Vite, Axios, React 19
 - JSON 文件存储 Mock 数据（`src/mocks/data/`）
 
 ## Recent Changes
 
+- 001-session-db-storage: Added Prisma ORM 7.3.0 for database management, PostgreSQL 16 integration with connection pooling, metrics collection (prom-client), and retry logic. Implemented session persistence with Repository pattern.
 - 001-msw-mock: Added TypeScript 5.9.3, Node.js (for Express backend) + MSW (Mock Service Worker), Vite, Axios, React 19

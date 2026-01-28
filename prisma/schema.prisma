@@ -1,0 +1,40 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["aiops"]
+}
+
+model Session {
+  id             BigInt        @id @default(autoincrement())
+  sessionId      String        @unique @map("session_id")
+  title          String
+  userId         String        @map("user_id")
+  projectId      String        @default("global") @map("project_id")
+  status         session_status @default(active)
+  opencodeServer String        @default("http://127.0.0.1:4096") @map("opencode_server")
+  directory      String?
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([status])
+  @@index([updatedAt(sort: Desc)])
+  @@schema("aiops")
+  @@map("sessions")
+}
+
+enum session_status {
+  active
+  delete
+
+  @@schema("aiops")
+}

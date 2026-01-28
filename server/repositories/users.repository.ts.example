@@ -1,0 +1,253 @@
+import { PrismaClient, User, Prisma } from '@prisma/client';
+import { BaseRepository } from './base.repository.js';
+
+/**
+ * User Repository
+ * Example repository demonstrating BaseRepository reusability (T050)
+ *
+ * This repository shows how easy it is to create new repositories
+ * by extending BaseRepository. All CRUD operations are inherited
+ * without writing any additional code.
+ *
+ * @example
+ * ```typescript
+ * const repo = new UserRepository(prisma);
+ *
+ * // Inherited CRUD operations (no code needed):
+ * const user = await repo.create({
+ *   email: 'user@example.com',
+ *   name: 'John Doe',
+ * });
+ *
+ * const found = await repo.findById(1);
+ * const all = await repo.findAll();
+ * const updated = await repo.update(1, { name: 'Jane Doe' });
+ * await repo.delete(1);
+ *
+ * // Custom operations specific to User:
+ * const byEmail = await repo.findByEmail('user@example.com');
+ * const paginated = await repo.findPaginated({ limit: 10, offset: 0 });
+ * ```
+ */
+export class UserRepository extends BaseRepository<
+  User,
+  Prisma.UserCreateInput,
+  Prisma.UserUpdateInput,
+  Prisma.UserWhereInput,
+  Prisma.UserOrderByWithRelationInput
+> {
+  constructor(prisma: PrismaClient) {
+    super(prisma);
+  }
+
+  protected get modelName(): string {
+    return 'user';
+  }
+
+  /**
+   * Find user by email address
+   * Custom operation specific to User entity
+   *
+   * @param email - User email address
+   * @returns The user or null if not found
+   *
+   * @example
+   * ```typescript
+   * const user = await repository.findByEmail('user@example.com');
+   * if (user) {
+   *   console.log('User found:', user.name);
+   * }
+   * ```
+   */
+  async findByEmail(email: string): Promise<User | null> {
+    return this.prisma.user.findUnique({
+      where: { email },
+    });
+  }
+
+  /**
+   * Find user by email or throw error
+   *
+   * @param email - User email address
+   * @returns The user
+   * @throws Error if user not found
+   *
+   * @example
+   * ```typescript
+   * try {
+   *   const user = await repository.findByEmailOrThrow('user@example.com');
+   *   console.log('User found:', user.name);
+   * } catch (error) {
+   *   console.error('User not found');
+   * }
+   * ```
+   */
+  async findByEmailOrThrow(email: string): Promise<User> {
+    const user = await this.findByEmail(email);
+    if (!user) {
+      throw new Error(`User with email ${email} not found`);
+    }
+    return user;
+  }
+
+  /**
+   * Check if email exists
+   * Uses BaseRepository.exists for code reuse
+   *
+   * @param email - Email address to check
+   * @returns True if email exists
+   *
+   * @example
+   * ```typescript
+   * const exists = await repository.emailExists('user@example.com');
+   * if (exists) {
+   *   console.log('Email already registered');
+   * }
+   * ```
+   */
+  async emailExists(email: string): Promise<boolean> {
+    return this.exists({ email });
+  }
+
+  /**
+   * Find active users with pagination
+   * Uses BaseRepository.findPaginated (no custom code needed!)
+   *
+   * @param options - Pagination options
+   * @returns Paginated result with active users
+   *
+   * @example
+   * ```typescript
+   * const result = await repository.findActiveUsersPaginated({
+   *   limit: 10,
+   *   offset: 0,
+   * });
+   *
+   * console.log(`Found ${result.data.length} of ${result.total} active users`);
+   * console.log('Has more pages:', result.hasMore);
+   * ```
+   */
+  async findActiveUsersPaginated(options?: {
+    limit?: number;
+    offset?: number;
+  }) {
+    return this.findPaginated({
+      where: {
+        status: 'ACTIVE',
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      ...options,
+    });
+  }
+
+  /**
+   * Count active users
+   * Uses BaseRepository.count (no custom code needed!)
+   *
+   * @returns Number of active users
+   *
+   * @example
+   * ```typescript
+   * const count = await repository.countActiveUsers();
+   * console.log(`Total active users: ${count}`);
+   * ```
+   */
+  async countActiveUsers(): Promise<number> {
+    return this.count({
+      status: 'ACTIVE',
+    });
+  }
+
+  /**
+   * Soft delete user by email (mark as DELETE)
+   *
+   * @param email - User email
+   * @returns The updated user
+   *
+   * @example
+   * ```typescript
+   * const deleted = await repository.softDeleteByEmail('user@example.com');
+   * console.log('User soft deleted:', deleted.status === 'DELETE');
+   * ```
+   */
+  async softDeleteByEmail(email: string): Promise<User> {
+    return this.prisma.user.update({
+      where: { email },
+      data: { status: 'DELETE' },
+    });
+  }
+
+  /**
+   * Example: Transaction with multiple operations
+   * Demonstrates using BaseRepository.transaction (FR-017 compliance)
+   *
+   * @param userData - User data to create
+   * @param profileData - Profile data to create
+   * @returns Created user
+   *
+   * @example
+   * ```typescript
+   * const user = await repository.createUserWithProfile(
+   *   { email: 'user@example.com', name: 'John' },
+   *   { bio: 'Software developer' }
+   * );
+   * ```
+   */
+  async createUserWithProfile(
+    userData: Prisma.UserCreateInput,
+    profileData: Prisma.ProfileCreateInput
+  ): Promise<User> {
+    return this.transaction(async (tx) => {
+      // Create user
+      const user = await tx.user.create({
+        data: userData,
+      });
+
+      // Create profile linked to user
+      await tx.profile.create({
+        data: {
+          ...profileData,
+          userId: user.id,
+        },
+      });
+
+      return user;
+    });
+  }
+}
+
+/**
+ * NOTE: This is a placeholder repository for demonstration purposes (T050)
+ * It shows how to extend BaseRepository for new entities.
+ *
+ * To use this repository in production:
+ * 1. Create the User table in Prisma schema (if not exists)
+ * 2. Run migration: npx prisma migrate dev --name add_users_table
+ * 3. Import and use in services
+ *
+ * Example Prisma schema for User:
+ *
+ * model User {
+ *   id        BigInt   @id @default(autoincrement())
+ *   email     String   @unique
+ *   name      String?
+ *   status    Status   @default(ACTIVE)
+ *   createdAt DateTime @default(now())
+ *   updatedAt DateTime @updatedAt
+ *   profile   Profile?
+ * }
+ *
+ * model Profile {
+ *   id     BigInt @id @default(autoincrement())
+ *   userId BigInt @unique
+ *   bio    String?
+ *   user   User   @relation(fields: [userId], references: [id])
+ * }
+ *
+ * enum Status {
+ *   ACTIVE
+ *   DELETE
+ * }
+ */

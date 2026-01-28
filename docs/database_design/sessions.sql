@@ -1,9 +1,11 @@
+-- Active: 1769452445328@@127.0.0.1@5432@aiops@aiops
 -- ----------------------------------------------------------------------------
 -- 2.1 sessions - 会话表
 -- ----------------------------------------------------------------------------
 
 drop table if exists sessions;
 
+drop type if exists session_status;
 CREATE TYPE session_status AS ENUM ('active', 'delete');
 
 CREATE TABLE sessions (
