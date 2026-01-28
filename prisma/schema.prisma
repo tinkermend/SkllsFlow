@@ -13,23 +13,206 @@ datasource db {
   schemas  = ["aiops"]
 }
 
+// ============================================
+// 用户表
+// ============================================
+model User {
+  id           BigInt      @id @default(autoincrement())
+  accountNo    String      @unique @map("account_no")      // 账号
+  email        String      @unique                          // 邮箱
+  passwordHash String      @map("password_hash")            // 密码哈希
+  username     String?                                      // 用户名
+  avatar       String?                                      // 头像 URL
+  status       user_status @default(active)                 // 状态
+  lastLoginAt  DateTime?   @map("last_login_at")            // 最后登录时间
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  // 关联关系
+  userRoles     UserRole[]
+  refreshTokens RefreshToken[]
+  sessions      Session[]
+
+  @@index([status])
+  @@index([accountNo])
+  @@index([email])
+  @@schema("aiops")
+  @@map("users")
+}
+
+// ============================================
+// 角色表
+// ============================================
+model Role {
+  id          BigInt       @id @default(autoincrement())
+  name        String                                          // 角色名称
+  code        String       @unique                            // 角色代码 (admin, user)
+  description String?                                         // 角色描述
+  isSystem    Boolean      @default(false) @map("is_system")  // 是否系统内置
+  sort        Int          @default(0)                        // 排序
+  status      role_status  @default(active)                   // 状态
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  // 关联关系
+  userRoles       UserRole[]
+  rolePermissions RolePermission[]
+
+  @@index([code])
+  @@index([status])
+  @@schema("aiops")
+  @@map("roles")
+}
+
+// ============================================
+// 权限表
+// ============================================
+model Permission {
+  id          BigInt   @id @default(autoincrement())
+  name        String                                          // 权限名称
+  code        String   @unique                                // 权限代码 (user:create)
+  resource    String                                          // 资源 (user, session)
+  action      String                                          // 操作 (create, read, update, delete)
+  description String?                                         // 权限描述
+  module      String                                          // 所属模块 (users, sessions, skills)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // 关联关系
+  rolePermissions RolePermission[]
+
+  @@index([module])
+  @@index([code])
+  @@schema("aiops")
+  @@map("permissions")
+}
+
+// ============================================
+// 用户-角色关联表 (多对多)
+// ============================================
+model UserRole {
+  id        BigInt   @id @default(autoincrement())
+  userId    BigInt   @map("user_id")
+  roleId    BigInt   @map("role_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // 关联关系
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+  @@index([userId])
+  @@index([roleId])
+  @@schema("aiops")
+  @@map("user_roles")
+}
+
+// ============================================
+// 角色-权限关联表 (多对多)
+// ============================================
+model RolePermission {
+  id           BigInt   @id @default(autoincrement())
+  roleId       BigInt   @map("role_id")
+  permissionId BigInt   @map("permission_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // 关联关系
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+  @@schema("aiops")
+  @@map("role_permissions")
+}
+
+// ============================================
+// 刷新令牌表
+// ============================================
+model RefreshToken {
+  id           BigInt    @id @default(autoincrement())
+  tokenHash    String    @unique @map("token_hash")          // 经过哈希的刷新令牌
+  deviceId     String?   @map("device_id")                   // 设备指纹
+  ipAddress    String?   @map("ip_address")                  // 登录 IP
+  userAgent    String?   @map("user_agent")                  // UA
+  userId       BigInt    @map("user_id")
+  expiresAt    DateTime  @map("expires_at")                  // 过期时间
+  createdAt    DateTime  @default(now()) @map("created_at")
+  rotatedAt    DateTime? @map("rotated_at")                  // 轮换时间
+  revokedAt    DateTime? @map("revoked_at")                  // 撤销时间
+
+  // 关联关系
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([deviceId])
+  @@schema("aiops")
+  @@map("refresh_tokens")
+}
+
+// ============================================
+// 审计日志表
+// ============================================
+model AuditLog {
+  id         BigInt   @id @default(autoincrement())
+  userId     BigInt?  @map("user_id")
+  action     String                                          // 操作类型 (login, create_user, etc.)
+  resource   String                                          // 资源类型
+  resourceId String?  @map("resource_id")                    // 资源 ID
+  details    Json?                                           // 操作详情 (JSON)
+  ipAddress  String?  @map("ip_address")                     // IP 地址
+  userAgent  String?  @map("user_agent")                     // User Agent
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([action])
+  @@index([resource])
+  @@index([createdAt])
+  @@schema("aiops")
+  @@map("audit_logs")
+}
+
+// ============================================
+// 会话表
+// ============================================
 model Session {
-  id             BigInt        @id @default(autoincrement())
-  sessionId      String        @unique @map("session_id")
+  id             BigInt         @id @default(autoincrement())
+  sessionId      String         @unique @map("session_id")
   title          String
-  userId         String        @map("user_id")
-  projectId      String        @default("global") @map("project_id")
+  userId         BigInt         @map("user_id")
+  projectId      String         @default("global") @map("project_id")
   status         session_status @default(active)
-  opencodeServer String        @default("http://127.0.0.1:4096") @map("opencode_server")
+  opencodeServer String         @default("http://127.0.0.1:4096") @map("opencode_server")
   directory      String?
-  createdAt      DateTime      @default(now()) @map("created_at")
-  updatedAt      DateTime      @updatedAt @map("updated_at")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  // 关联关系
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([status])
   @@index([updatedAt(sort: Desc)])
   @@schema("aiops")
   @@map("sessions")
+}
+
+// ============================================
+// 枚举类型
+// ============================================
+enum user_status {
+  active      // 激活
+  disabled    // 禁用
+
+  @@schema("aiops")
+}
+
+enum role_status {
+  active      // 激活
+  disabled    // 禁用
+
+  @@schema("aiops")
 }
 
 enum session_status {

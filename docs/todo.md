@@ -29,11 +29,16 @@
 
 ## 智能对话
 
-- [ ] 新增会话 通过 2. 请求头方式
-      POST /session/
-      Headers:
-      x-opencode-directory: /path/to/project 方式指定目录
+- [ ] 新增会话 请求头方式构建新的会话路径
+      curl -X POST http://localhost:4096/session \
+      -H "x-opencode-directory: /tmp/"
+
+- [ ] 完成智能对话中会话删除后端逻辑, 当前会话删除只是调用 opencode 接口进行删除, 但还需要调用 后端 3001 api 将库表中的会话相关数据进行清除,清除逻辑如下: - 删除 session_skills 表关联此会话的 skills, 表定义见 @docs/database_design/session_skills.md - 删除 session_agents 表关联此会话的 agents信息, 表定义见 @docs/database_design/session_agents.md - 删除 session_mcps 表关联此会话的 mcps信息, 表定义见 @docs/database_design/session_mcps.md - 最后 删除 sessions 表关联此会话的会话信息, 表定义见 @docs/database_design/sessions.md - 这几个删除操作为一个事务任务,要不全部成功要不全部失败
 
 ## other
 
 - [ ] 基于 .env USER_SESSION_BASE_PATH 目录路径作为 opencode 根目录启动路径, 后端服务启动时候 做初始化检查, 先检查 是否有 opencode 对应端口的进程服务, 如果存在则停止, 否则启动,启动这个opencode 服务必须先 cd 到 USER_SESSION_BASE_PATH 目录下 再进行启动
+
+## new feature
+
+- [ ] 智能对话页面新增
