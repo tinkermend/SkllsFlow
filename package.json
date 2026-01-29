@@ -16,7 +16,11 @@
     "test": "vitest run",
     "test:watch": "vitest watch",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:comments": "tsx scripts/generate-db-comments.ts && prisma migrate deploy",
+    "db:migrate:full": "prisma migrate dev && tsx scripts/generate-db-comments.ts && prisma migrate deploy"
   },
   "dependencies": {
     "@casl/ability": "^6.8.0",
