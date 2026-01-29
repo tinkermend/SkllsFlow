@@ -32,4 +32,6 @@ dist-ssr
 user_session/
 specs/
 
+server/__tests__/
+
 /generated/prisma

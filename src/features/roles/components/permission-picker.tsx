@@ -1,170 +1,169 @@
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { Check } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { apiClient } from '@/lib/api-client'
-import { type Permission } from '../data/schema'
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Check } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { apiClient } from "@/lib/api-client";
+import { type Permission } from "../data/schema";
 
 type PermissionPickerProps = {
-  value: string[]
-  onChange: (value: string[]) => void
-}
+  value: string[];
+  onChange: (value: string[]) => void;
+};
 
 export function PermissionPicker({ value, onChange }: PermissionPickerProps) {
-  const [selectedModule, setSelectedModule] = useState<string | null>(null)
+  const [selectedModule, setSelectedModule] = useState<string | null>(null);
 
   const { data: permissions = [], isLoading } = useQuery({
-    queryKey: ['permissions'],
+    queryKey: ["permissions"],
     queryFn: async () => {
-      const response = await apiClient.get('/api/permissions')
-      return response.data as Permission[]
+      const response = await apiClient.get("/api/permissions");
+      return response.data as Permission[];
     },
-  })
+  });
 
   // 按模块分组权限
   const groupedPermissions = permissions.reduce(
     (acc, permission) => {
-      const module = permission.module || '其他'
+      const module = permission.module || "其他";
       if (!acc[module]) {
-        acc[module] = []
+        acc[module] = [];
       }
-      acc[module].push(permission)
-      return acc
+      acc[module].push(permission);
+      return acc;
     },
-    {} as Record<string, Permission[]>
-  )
+    {} as Record<string, Permission[]>,
+  );
 
-  const modules = Object.keys(groupedPermissions).sort()
+  const modules = Object.keys(groupedPermissions).sort();
 
   const handleTogglePermission = (permissionId: string) => {
     if (value.includes(permissionId)) {
-      onChange(value.filter((id) => id !== permissionId))
+      onChange(value.filter((id) => id !== permissionId));
     } else {
-      onChange([...value, permissionId])
+      onChange([...value, permissionId]);
     }
-  }
+  };
 
   const handleToggleModule = (module: string) => {
-    const modulePermissions = groupedPermissions[module]
-    const modulePermissionIds = modulePermissions.map((p) => p.id)
-    const allSelected = modulePermissionIds.every((id) => value.includes(id))
+    const modulePermissions = groupedPermissions[module];
+    const modulePermissionIds = modulePermissions.map((p) => p.id);
+    const allSelected = modulePermissionIds.every((id) => value.includes(id));
 
     if (allSelected) {
-      onChange(value.filter((id) => !modulePermissionIds.includes(id)))
+      onChange(value.filter((id) => !modulePermissionIds.includes(id)));
     } else {
-      const newValue = [...value]
+      const newValue = [...value];
       modulePermissionIds.forEach((id) => {
         if (!newValue.includes(id)) {
-          newValue.push(id)
+          newValue.push(id);
         }
-      })
-      onChange(newValue)
+      });
+      onChange(newValue);
     }
-  }
+  };
 
   if (isLoading) {
-    return <div className='text-sm text-muted-foreground'>加载权限列表...</div>
+    return <div className="text-sm text-muted-foreground">加载权限列表...</div>;
   }
 
   return (
-    <div className='border rounded-lg'>
-      <div className='flex items-center justify-between p-3 border-b bg-muted/50'>
-        <div className='text-sm font-medium'>
-          已选择 {value.length} 个权限
-        </div>
+    <div className="border rounded-lg">
+      <div className="flex items-center justify-between p-3 border-b bg-muted/50">
+        <div className="text-sm font-medium">已选择 {value.length} 个权限</div>
         {value.length > 0 && (
           <button
-            type='button'
+            type="button"
             onClick={() => onChange([])}
-            className='text-xs text-muted-foreground hover:text-foreground'
+            className="text-xs text-muted-foreground hover:text-foreground"
           >
             清空
           </button>
         )}
       </div>
 
-      <ScrollArea className='h-[400px]'>
-        <div className='p-4 space-y-4'>
+      <ScrollArea className="h-[400px]">
+        <div className="p-4 space-y-4">
           {modules.map((module) => {
-            const modulePermissions = groupedPermissions[module]
-            const modulePermissionIds = modulePermissions.map((p) => p.id)
+            const modulePermissions = groupedPermissions[module];
+            const modulePermissionIds = modulePermissions.map((p) => p.id);
             const selectedCount = modulePermissionIds.filter((id) =>
-              value.includes(id)
-            ).length
-            const allSelected = selectedCount === modulePermissionIds.length
-            const someSelected = selectedCount > 0 && !allSelected
+              value.includes(id),
+            ).length;
+            const allSelected = selectedCount === modulePermissionIds.length;
+            const someSelected = selectedCount > 0 && !allSelected;
 
             return (
-              <div key={module} className='space-y-2'>
-                <div className='flex items-center gap-2'>
+              <div key={module} className="space-y-2">
+                <div className="flex items-center gap-2">
                   <Checkbox
                     checked={allSelected}
                     ref={(el) => {
                       if (el) {
-                        el.indeterminate = someSelected
+                        // @ts-expect-error - Radix UI Checkbox supports indeterminate
+                        el.indeterminate = someSelected;
                       }
                     }}
                     onCheckedChange={() => handleToggleModule(module)}
                   />
                   <button
-                    type='button'
+                    type="button"
                     onClick={() =>
                       setSelectedModule(
-                        selectedModule === module ? null : module
+                        selectedModule === module ? null : module,
                       )
                     }
-                    className='flex items-center gap-2 text-sm font-medium hover:text-primary'
+                    className="flex items-center gap-2 text-sm font-medium hover:text-primary"
                   >
                     {module}
-                    <Badge variant='secondary' className='text-xs'>
+                    <Badge variant="secondary" className="text-xs">
                       {selectedCount}/{modulePermissionIds.length}
                     </Badge>
                   </button>
                 </div>
 
-                <div className='ml-6 space-y-2'>
+                <div className="ml-6 space-y-2">
                   {modulePermissions.map((permission) => {
-                    const isSelected = value.includes(permission.id)
+                    const isSelected = value.includes(permission.id);
                     return (
                       <div
                         key={permission.id}
                         className={cn(
-                          'flex items-start gap-2 p-2 rounded-md hover:bg-muted/50 cursor-pointer',
-                          isSelected && 'bg-muted'
+                          "flex items-start gap-2 p-2 rounded-md hover:bg-muted/50 cursor-pointer",
+                          isSelected && "bg-muted",
                         )}
                         onClick={() => handleTogglePermission(permission.id)}
                       >
-                        <Checkbox checked={isSelected} className='mt-0.5' />
-                        <div className='flex-1 min-w-0'>
-                          <div className='flex items-center gap-2'>
-                            <span className='text-sm font-medium'>
+                        <Checkbox checked={isSelected} className="mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium">
                               {permission.name}
                             </span>
-                            <code className='text-xs bg-muted px-1.5 py-0.5 rounded'>
+                            <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
                               {permission.code}
                             </code>
                           </div>
                           {permission.description && (
-                            <p className='text-xs text-muted-foreground mt-1'>
+                            <p className="text-xs text-muted-foreground mt-1">
                               {permission.description}
                             </p>
                           )}
                         </div>
                         {isSelected && (
-                          <Check className='h-4 w-4 text-primary flex-shrink-0' />
+                          <Check className="h-4 w-4 text-primary flex-shrink-0" />
                         )}
                       </div>
-                    )
+                    );
                   })}
                 </div>
               </div>
-            )
+            );
           })}
         </div>
       </ScrollArea>
     </div>
-  )
+  );
 }

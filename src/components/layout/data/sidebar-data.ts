@@ -31,6 +31,7 @@ export const sidebarData: SidebarData = {
   ],
   navGroups: [
     {
+      title: "主导航",
       items: [
         {
           title: "仪表盘",

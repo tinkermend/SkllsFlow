@@ -31,6 +31,44 @@ export interface User {
   createdAt: string
 }
 
+/**
+ * 用于登录验证的用户凭证
+ * 注意：这些密码仅用于 Mock 环境，不应在生产环境使用
+ */
+export interface UserCredentials {
+  accountNo: string
+  email: string
+  password: string
+  userId: string
+}
+
+export const mockUserCredentials: UserCredentials[] = [
+  {
+    accountNo: 'admin',
+    email: 'admin@aiops.com',
+    password: 'admin123',
+    userId: 'user_001',
+  },
+  {
+    accountNo: 'user',
+    email: 'user@aiops.com',
+    password: 'user123',
+    userId: 'user_002',
+  },
+  {
+    accountNo: 'zhangsan',
+    email: 'zhangsan@example.com',
+    password: 'zhangsan123',
+    userId: 'user_001',
+  },
+  {
+    accountNo: 'lisi',
+    email: 'lisi@example.com',
+    password: 'lisi123',
+    userId: 'user_002',
+  },
+]
+
 export const mockUsers: User[] = [
   {
     id: 'user_001',

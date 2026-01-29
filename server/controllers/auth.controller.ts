@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { authService } from '../services/auth/auth.service.js';
+import { getAuthService } from '../services/auth/auth.service.js';
 
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
@@ -12,7 +12,7 @@ export async function register(req: Request, res: Response) {
   try {
     const { accountNo, email, password, username } = req.body;
 
-    const result = await authService.register({
+    const result = await getAuthService().register({
       accountNo,
       email,
       password,
@@ -39,7 +39,7 @@ export async function login(req: Request, res: Response) {
   try {
     const { accountNo, password } = req.body;
 
-    const result = await authService.login({
+    const result = await getAuthService().login({
       accountNo,
       password,
     });
@@ -64,7 +64,7 @@ export async function logout(req: Request, res: Response) {
     const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
 
     if (refreshToken) {
-      await authService.logout(refreshToken);
+      await getAuthService().logout(refreshToken);
     }
 
     res
@@ -79,7 +79,7 @@ export async function refresh(req: Request, res: Response) {
   try {
     const refreshToken = req.cookies.refreshToken;
 
-    const result = await authService.refresh(refreshToken);
+    const result = await getAuthService().refresh(refreshToken);
 
     res
       .cookie('refreshToken', result.refreshToken, {
@@ -102,7 +102,7 @@ export async function me(req: Request, res: Response) {
     }
 
     // req.user.userId 是 UUID (从 JWT Token 中提取)
-    const result = await authService.me(req.user.userId);
+    const result = await getAuthService().me(req.user.userId);
 
     res.json(result);
   } catch (error: any) {

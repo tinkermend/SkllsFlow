@@ -31,6 +31,8 @@ import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_auth
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
 import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_authenticated/settings/account'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
+import { Route as AuthenticatedSettingsRolesIndexRouteImport } from './routes/_authenticated/settings/roles/index'
+import { Route as AuthenticatedSettingsPermissionsIndexRouteImport } from './routes/_authenticated/settings/permissions/index'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -153,6 +155,18 @@ const AuthenticatedErrorsErrorRoute =
     path: '/errors/$error',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSettingsRolesIndexRoute =
+  AuthenticatedSettingsRolesIndexRouteImport.update({
+    id: '/roles/',
+    path: '/roles/',
+    getParentRoute: () => AuthenticatedSettingsRouteRoute,
+  } as any)
+const AuthenticatedSettingsPermissionsIndexRoute =
+  AuthenticatedSettingsPermissionsIndexRouteImport.update({
+    id: '/permissions/',
+    path: '/permissions/',
+    getParentRoute: () => AuthenticatedSettingsRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRouteRouteWithChildren
@@ -176,6 +190,8 @@ export interface FileRoutesByFullPath {
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/skills': typeof AuthenticatedSkillsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/settings/permissions': typeof AuthenticatedSettingsPermissionsIndexRoute
+  '/settings/roles': typeof AuthenticatedSettingsRolesIndexRoute
 }
 export interface FileRoutesByTo {
   '/sign-in': typeof authSignInRoute
@@ -198,6 +214,8 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/skills': typeof AuthenticatedSkillsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/settings/permissions': typeof AuthenticatedSettingsPermissionsIndexRoute
+  '/settings/roles': typeof AuthenticatedSettingsRolesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -223,6 +241,8 @@ export interface FileRoutesById {
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/skills/': typeof AuthenticatedSkillsIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/_authenticated/settings/permissions/': typeof AuthenticatedSettingsPermissionsIndexRoute
+  '/_authenticated/settings/roles/': typeof AuthenticatedSettingsRolesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -248,6 +268,8 @@ export interface FileRouteTypes {
     | '/settings/'
     | '/skills'
     | '/users'
+    | '/settings/permissions'
+    | '/settings/roles'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/sign-in'
@@ -270,6 +292,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/skills'
     | '/users'
+    | '/settings/permissions'
+    | '/settings/roles'
   id:
     | '__root__'
     | '/_authenticated'
@@ -294,6 +318,8 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/'
     | '/_authenticated/skills/'
     | '/_authenticated/users/'
+    | '/_authenticated/settings/permissions/'
+    | '/_authenticated/settings/roles/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -462,6 +488,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedErrorsErrorRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/settings/roles/': {
+      id: '/_authenticated/settings/roles/'
+      path: '/roles'
+      fullPath: '/settings/roles'
+      preLoaderRoute: typeof AuthenticatedSettingsRolesIndexRouteImport
+      parentRoute: typeof AuthenticatedSettingsRouteRoute
+    }
+    '/_authenticated/settings/permissions/': {
+      id: '/_authenticated/settings/permissions/'
+      path: '/permissions'
+      fullPath: '/settings/permissions'
+      preLoaderRoute: typeof AuthenticatedSettingsPermissionsIndexRouteImport
+      parentRoute: typeof AuthenticatedSettingsRouteRoute
+    }
   }
 }
 
@@ -471,6 +511,8 @@ interface AuthenticatedSettingsRouteRouteChildren {
   AuthenticatedSettingsDisplayRoute: typeof AuthenticatedSettingsDisplayRoute
   AuthenticatedSettingsNotificationsRoute: typeof AuthenticatedSettingsNotificationsRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
+  AuthenticatedSettingsPermissionsIndexRoute: typeof AuthenticatedSettingsPermissionsIndexRoute
+  AuthenticatedSettingsRolesIndexRoute: typeof AuthenticatedSettingsRolesIndexRoute
 }
 
 const AuthenticatedSettingsRouteRouteChildren: AuthenticatedSettingsRouteRouteChildren =
@@ -481,6 +523,9 @@ const AuthenticatedSettingsRouteRouteChildren: AuthenticatedSettingsRouteRouteCh
     AuthenticatedSettingsNotificationsRoute:
       AuthenticatedSettingsNotificationsRoute,
     AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
+    AuthenticatedSettingsPermissionsIndexRoute:
+      AuthenticatedSettingsPermissionsIndexRoute,
+    AuthenticatedSettingsRolesIndexRoute: AuthenticatedSettingsRolesIndexRoute,
   }
 
 const AuthenticatedSettingsRouteRouteWithChildren =

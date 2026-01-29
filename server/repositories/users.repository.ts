@@ -67,4 +67,11 @@ export class UserRepository extends BaseRepository<
   }
 }
 
-export const userRepository = new UserRepository(DatabaseService.getInstance());
+let _userRepository: UserRepository | null = null;
+
+export function getUserRepository(): UserRepository {
+  if (!_userRepository) {
+    _userRepository = new UserRepository(DatabaseService.getInstance());
+  }
+  return _userRepository;
+}

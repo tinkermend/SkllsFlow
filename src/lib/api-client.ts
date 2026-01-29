@@ -1,63 +1,64 @@
-import axios from 'axios'
-import { useAuthStore } from '@/stores/auth-store'
+import axios from "axios";
+import { useAuthStore } from "@/stores/auth-store";
 
 const apiClient = axios.create({
-  baseURL: '/api',
+  baseURL: "/api",
   timeout: 10000,
   withCredentials: true, // 携带 httpOnly Refresh Token
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
-})
+});
 
 // 请求拦截器: 添加 Authorization Header
 apiClient.interceptors.request.use(
   (config) => {
-    const { auth } = useAuthStore.getState()
+    const { auth } = useAuthStore.getState();
     if (auth.accessToken) {
-      config.headers.Authorization = `Bearer ${auth.accessToken}`
+      config.headers.Authorization = `Bearer ${auth.accessToken}`;
     }
 
-    return config
+    return config;
   },
   (error) => {
-    return Promise.reject(error)
-  }
-)
+    return Promise.reject(error);
+  },
+);
 
 // 响应拦截器: 处理 401 和 Token 刷新
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config
+    const originalRequest = error.config;
 
     // 如果是 401 错误且未重试过
     if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true
+      originalRequest._retry = true;
 
       try {
         // 尝试刷新 Token (Refresh Token 存在 httpOnly Cookie 中)
         const response = await axios.post(
-          '/api/auth/refresh',
+          "/api/auth/refresh",
           {},
-          { withCredentials: true }
-        )
+          { withCredentials: true },
+        );
 
-        const { accessToken, expiresIn } = response.data
+        const { accessToken, expiresIn } = response.data;
 
-        useAuthStore.getState().auth.setAccessToken(accessToken, expiresIn)
+        useAuthStore.getState().auth.setAccessToken(accessToken, expiresIn);
 
-        originalRequest.headers.Authorization = `Bearer ${accessToken}`
-        return apiClient(originalRequest)
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        return apiClient(originalRequest);
       } catch (refreshError) {
-        useAuthStore.getState().auth.reset()
-        window.location.href = '/sign-in'
-        return Promise.reject(refreshError)
+        useAuthStore.getState().auth.reset();
+        window.location.href = "/sign-in";
+        return Promise.reject(refreshError);
       }
     }
 
-    return Promise.reject(error)
-  }
-)
+    return Promise.reject(error);
+  },
+);
 
-export default apiClient
+export { apiClient };
+export default apiClient;

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { rbacService } from '../services/auth/rbac.service.js';
+import { getRBACService } from '../services/auth/rbac.service.js';
 
 /**
  * 要求指定权限 (AND)
@@ -11,7 +11,7 @@ export function requirePermissions(...permissions: string[]) {
     }
 
     try {
-      const hasPermission = await rbacService.hasAllPermissions(
+      const hasPermission = await getRBACService().hasAllPermissions(
         req.user.id,
         permissions
       );
@@ -42,7 +42,7 @@ export function requireAnyPermission(...permissions: string[]) {
     }
 
     try {
-      const hasPermission = await rbacService.hasAnyPermission(
+      const hasPermission = await getRBACService().hasAnyPermission(
         req.user.id,
         permissions
       );
@@ -74,7 +74,7 @@ export function requireRoles(...roles: string[]) {
 
     try {
       const hasAllRoles = await Promise.all(
-        roles.map((role) => rbacService.hasRole(req.user!.id, role))
+        roles.map((role) => getRBACService().hasRole(req.user!.id, role))
       );
 
       if (!hasAllRoles.every(Boolean)) {
@@ -103,7 +103,7 @@ export function requireAnyRole(...roles: string[]) {
     }
 
     try {
-      const hasAnyRole = await rbacService.hasAnyRole(req.user!.id, roles);
+      const hasAnyRole = await getRBACService().hasAnyRole(req.user!.id, roles);
 
       if (!hasAnyRole) {
         return res.status(403).json({

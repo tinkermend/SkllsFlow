@@ -47,6 +47,8 @@ export function UserAuthForm({
 
     try {
       await login(data)
+    } catch (error) {
+      console.error('登录失败', error)
     } finally {
       setIsLoading(false)
     }
@@ -85,7 +87,7 @@ export function UserAuthForm({
             </FormItem>
           )}
         />
-        <Button className='mt-2' disabled={isLoading}>
+        <Button type='submit' className='mt-2' disabled={isLoading}>
           {isLoading ? <Loader2 className='animate-spin' /> : <LogIn />}
           登录
         </Button>
