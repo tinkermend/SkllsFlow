@@ -9,13 +9,20 @@ import { UsersDialogs } from './components/users-dialogs'
 import { UsersPrimaryButtons } from './components/users-primary-buttons'
 import { UsersProvider } from './components/users-provider'
 import { UsersTable } from './components/users-table'
-import { users } from './data/users'
+import { useUsers } from './hooks/use-users'
 
 const route = getRouteApi('/_authenticated/users/')
 
 export function Users() {
   const search = route.useSearch()
   const navigate = route.useNavigate()
+
+  // 使用真实 API 获取用户数据
+  const { data, isLoading, error } = useUsers({
+    page: (search as any).page || 1,
+    limit: (search as any).pageSize || 10,
+    search: (search as any).username || undefined,
+  })
 
   return (
     <UsersProvider>
@@ -36,7 +43,17 @@ export function Users() {
           </div>
           <UsersPrimaryButtons />
         </div>
-        <UsersTable data={users} search={search} navigate={navigate} />
+        {isLoading ? (
+          <div className='flex items-center justify-center p-8'>
+            <p className='text-muted-foreground'>加载中...</p>
+          </div>
+        ) : error ? (
+          <div className='flex items-center justify-center p-8'>
+            <p className='text-destructive'>加载失败: {(error as Error).message}</p>
+          </div>
+        ) : (
+          <UsersTable data={data?.data || []} search={search} navigate={navigate} />
+        )}
       </Main>
 
       <UsersDialogs />

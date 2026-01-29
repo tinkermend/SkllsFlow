@@ -30,6 +30,7 @@ export interface AuthResponse {
     email: string;
     username?: string | null;
     avatar?: string | null;
+    permissions?: string[];  // 添加权限列表
   };
   accessToken: string;
   refreshToken: string;
@@ -48,8 +49,25 @@ export class AuthService {
    * 用户登录
    */
   async login(input: LoginInput): Promise<AuthResponse> {
-    // 1. 查找用户
-    const user = await getUserRepository().findByAccountNo(input.accountNo);
+    // 1. 查找用户（包含角色和权限信息）
+    const user = await this.prisma.user.findUnique({
+      where: { accountNo: input.accountNo },
+      include: {
+        userRoles: {
+          include: {
+            role: {
+              include: {
+                rolePermissions: {
+                  include: {
+                    permission: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
     if (!user) {
       throw new Error('用户不存在');
     }
@@ -99,6 +117,11 @@ export class AuthService {
     // 7. 更新最后登录时间
     await getUserRepository().updateLastLogin(user.userUUId);  // 使用 userUUId 字段 (UUID)
 
+    // 8. 提取用户权限列表
+    const permissions = user.userRoles.flatMap(userRole =>
+      userRole.role.rolePermissions.map(rp => rp.permission.code)
+    );
+
     return {
       user: {
         userId: user.userUUId,  // 使用 userUUId 字段 (UUID，对外 API)
@@ -106,6 +129,7 @@ export class AuthService {
         email: user.email,
         username: user.username,
         avatar: user.avatar,
+        permissions,  // 添加权限列表
       },
       accessToken,
       refreshToken,
