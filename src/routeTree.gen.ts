@@ -33,6 +33,7 @@ import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_auth
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
 import { Route as AuthenticatedSettingsRolesIndexRouteImport } from './routes/_authenticated/settings/roles/index'
 import { Route as AuthenticatedSettingsPermissionsIndexRouteImport } from './routes/_authenticated/settings/permissions/index'
+import { Route as AuthenticatedSettingsMenusIndexRouteImport } from './routes/_authenticated/settings/menus/index'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -167,6 +168,12 @@ const AuthenticatedSettingsPermissionsIndexRoute =
     path: '/permissions/',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
+const AuthenticatedSettingsMenusIndexRoute =
+  AuthenticatedSettingsMenusIndexRouteImport.update({
+    id: '/menus/',
+    path: '/menus/',
+    getParentRoute: () => AuthenticatedSettingsRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRouteRouteWithChildren
@@ -190,6 +197,7 @@ export interface FileRoutesByFullPath {
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/skills': typeof AuthenticatedSkillsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/settings/menus': typeof AuthenticatedSettingsMenusIndexRoute
   '/settings/permissions': typeof AuthenticatedSettingsPermissionsIndexRoute
   '/settings/roles': typeof AuthenticatedSettingsRolesIndexRoute
 }
@@ -214,6 +222,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/skills': typeof AuthenticatedSkillsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/settings/menus': typeof AuthenticatedSettingsMenusIndexRoute
   '/settings/permissions': typeof AuthenticatedSettingsPermissionsIndexRoute
   '/settings/roles': typeof AuthenticatedSettingsRolesIndexRoute
 }
@@ -241,6 +250,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/skills/': typeof AuthenticatedSkillsIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/_authenticated/settings/menus/': typeof AuthenticatedSettingsMenusIndexRoute
   '/_authenticated/settings/permissions/': typeof AuthenticatedSettingsPermissionsIndexRoute
   '/_authenticated/settings/roles/': typeof AuthenticatedSettingsRolesIndexRoute
 }
@@ -268,6 +278,7 @@ export interface FileRouteTypes {
     | '/settings/'
     | '/skills'
     | '/users'
+    | '/settings/menus'
     | '/settings/permissions'
     | '/settings/roles'
   fileRoutesByTo: FileRoutesByTo
@@ -292,6 +303,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/skills'
     | '/users'
+    | '/settings/menus'
     | '/settings/permissions'
     | '/settings/roles'
   id:
@@ -318,6 +330,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/'
     | '/_authenticated/skills/'
     | '/_authenticated/users/'
+    | '/_authenticated/settings/menus/'
     | '/_authenticated/settings/permissions/'
     | '/_authenticated/settings/roles/'
   fileRoutesById: FileRoutesById
@@ -502,6 +515,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsPermissionsIndexRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
+    '/_authenticated/settings/menus/': {
+      id: '/_authenticated/settings/menus/'
+      path: '/menus'
+      fullPath: '/settings/menus'
+      preLoaderRoute: typeof AuthenticatedSettingsMenusIndexRouteImport
+      parentRoute: typeof AuthenticatedSettingsRouteRoute
+    }
   }
 }
 
@@ -511,6 +531,7 @@ interface AuthenticatedSettingsRouteRouteChildren {
   AuthenticatedSettingsDisplayRoute: typeof AuthenticatedSettingsDisplayRoute
   AuthenticatedSettingsNotificationsRoute: typeof AuthenticatedSettingsNotificationsRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
+  AuthenticatedSettingsMenusIndexRoute: typeof AuthenticatedSettingsMenusIndexRoute
   AuthenticatedSettingsPermissionsIndexRoute: typeof AuthenticatedSettingsPermissionsIndexRoute
   AuthenticatedSettingsRolesIndexRoute: typeof AuthenticatedSettingsRolesIndexRoute
 }
@@ -523,6 +544,7 @@ const AuthenticatedSettingsRouteRouteChildren: AuthenticatedSettingsRouteRouteCh
     AuthenticatedSettingsNotificationsRoute:
       AuthenticatedSettingsNotificationsRoute,
     AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
+    AuthenticatedSettingsMenusIndexRoute: AuthenticatedSettingsMenusIndexRoute,
     AuthenticatedSettingsPermissionsIndexRoute:
       AuthenticatedSettingsPermissionsIndexRoute,
     AuthenticatedSettingsRolesIndexRoute: AuthenticatedSettingsRolesIndexRoute,

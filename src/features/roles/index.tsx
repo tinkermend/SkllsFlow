@@ -3,23 +3,27 @@ import { RolesPrimaryButtons } from './components/roles-primary-buttons'
 import { RolesTable } from './components/roles-table'
 import { RoleFormDialog } from './components/role-form-dialog'
 import { RoleDeleteDialog } from './components/role-delete-dialog'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export function RolesPage() {
   return (
     <RolesProvider>
-      <div className='p-6 space-y-6'>
-        <div className='flex justify-between items-center'>
-          <div>
-            <h1 className='text-2xl font-bold'>角色管理</h1>
-            <p className='text-muted-foreground text-sm mt-1'>
-              管理系统角色和权限分配
-            </p>
+      <Card>
+        <CardHeader>
+          <div className='flex justify-between items-center'>
+            <div>
+              <CardTitle>角色列表</CardTitle>
+              <CardDescription className='mt-1.5'>
+                管理系统角色和权限分配
+              </CardDescription>
+            </div>
+            <RolesPrimaryButtons />
           </div>
-          <RolesPrimaryButtons />
-        </div>
-
-        <RolesTable />
-      </div>
+        </CardHeader>
+        <CardContent>
+          <RolesTable />
+        </CardContent>
+      </Card>
 
       <RoleFormDialog />
       <RoleDeleteDialog />
