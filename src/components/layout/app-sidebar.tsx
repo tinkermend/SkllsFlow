@@ -38,8 +38,8 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {sidebarData.navGroups.map((props) => (
-          <NavGroup key={props.title} {...props} />
+        {sidebarData.navGroups.map((props, index) => (
+          <NavGroup key={props.title || `nav-group-${index}`} {...props} />
         ))}
       </SidebarContent>
       <SidebarRail />
