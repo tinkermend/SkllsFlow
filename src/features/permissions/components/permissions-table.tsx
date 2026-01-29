@@ -13,7 +13,7 @@ export function PermissionsTable() {
     queryKey: ["permissions", moduleFilter],
     queryFn: async () => {
       const params = moduleFilter.length > 0 ? { module: moduleFilter[0] } : {};
-      const response = await apiClient.get("/api/permissions", { params });
+      const response = await apiClient.get("/permissions", { params });
       return permissionListSchema.parse(response.data);
     },
   });

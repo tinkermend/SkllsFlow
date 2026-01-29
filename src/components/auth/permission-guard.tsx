@@ -32,7 +32,7 @@ export function PermissionGuard({
 }: PermissionGuardProps) {
   const { auth } = useAuthStore()
 
-  const hasPermission = auth.user?.permissions.includes(permission)
+  const hasPermission = auth.user?.permissions?.includes(permission) ?? false
 
   if (hasPermission) {
     return <>{children}</>

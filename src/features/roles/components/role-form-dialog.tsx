@@ -85,9 +85,9 @@ export function RoleFormDialog() {
   const mutation = useMutation({
     mutationFn: async (values: RoleFormValues) => {
       if (isEdit && currentRole) {
-        return apiClient.put(`/api/roles/${currentRole.id}`, values)
+        return apiClient.put(`/roles/${currentRole.id}`, values)
       }
-      return apiClient.post('/api/roles', values)
+      return apiClient.post('/roles', values)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roles'] })

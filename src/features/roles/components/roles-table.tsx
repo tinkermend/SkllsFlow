@@ -8,7 +8,7 @@ export function RolesTable() {
   const { data: roles = [], isLoading } = useQuery({
     queryKey: ["roles"],
     queryFn: async () => {
-      const response = await apiClient.get("/api/roles");
+      const response = await apiClient.get("/roles");
       return roleListSchema.parse(response.data);
     },
   });

@@ -19,7 +19,7 @@ export function PermissionPicker({ value, onChange }: PermissionPickerProps) {
   const { data: permissions = [], isLoading } = useQuery({
     queryKey: ["permissions"],
     queryFn: async () => {
-      const response = await apiClient.get("/api/permissions");
+      const response = await apiClient.get("/permissions");
       return response.data as Permission[];
     },
   });

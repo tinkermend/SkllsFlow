@@ -23,7 +23,7 @@ export function SyncPermissionsButton() {
 
   const mutation = useMutation({
     mutationFn: async () => {
-      return apiClient.post("/api/permissions/sync", {
+      return apiClient.post("/permissions/sync", {
         permissions: PERMISSIONS,
       });
     },

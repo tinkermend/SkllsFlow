@@ -20,7 +20,7 @@ export function RoleDeleteDialog() {
   const mutation = useMutation({
     mutationFn: async () => {
       if (!currentRole) return
-      return apiClient.delete(`/api/roles/${currentRole.id}`)
+      return apiClient.delete(`/roles/${currentRole.id}`)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roles'] })
