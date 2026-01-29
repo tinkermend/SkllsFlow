@@ -32,6 +32,9 @@ export const env = cleanEnv(process.env, {
 
   // Authentication
   REQUIRE_AUTH: bool({ default: false, desc: 'Require authentication for API requests' }),
+  JWT_SECRET: str({ desc: 'JWT signing secret key' }),
+  JWT_EXPIRES_IN: str({ default: '15m', desc: 'JWT access token expiration time' }),
+  REFRESH_TOKEN_EXPIRES_IN: str({ default: '7d', desc: 'Refresh token expiration time' }),
 });
 
 /**

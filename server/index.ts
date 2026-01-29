@@ -1,9 +1,15 @@
 import 'dotenv/config'
 import express, { type Express } from 'express'
 import cors from 'cors'
+import cookieParser from 'cookie-parser'
 import openCodeRoutes from './routes/opencode.routes.js'
 import skillsRoutes from './routes/skills.routes.js'
 import sessionsRoutes from './routes/sessions.routes.js'
+import authRoutes from './routes/auth.routes.js'
+import usersRoutes from './routes/users.routes.js'
+import rolesRoutes from './routes/roles.routes.js'
+import permissionsRoutes from './routes/permissions.routes.js'
+import devicesRoutes from './routes/devices.routes.js'
 import { openCodeService } from './services/opencode.service.js'
 import { DatabaseService } from './services/database.service.js'
 import { metricsEndpoint } from './utils/metrics.js'
@@ -18,11 +24,17 @@ app.use(cors({
   credentials: true,
 }))
 app.use(express.json())
+app.use(cookieParser())
 
 // 路由
 app.use('/api/opencode', openCodeRoutes)
 app.use('/api/skills', skillsRoutes)
 app.use('/api/sessions', sessionsRoutes)
+app.use('/api/auth', authRoutes)
+app.use('/api/users', usersRoutes)
+app.use('/api/roles', rolesRoutes)
+app.use('/api/permissions', permissionsRoutes)
+app.use('/api/devices', devicesRoutes)
 
 // 健康检查
 app.get('/health', async (req, res) => {

@@ -4,6 +4,7 @@ import { useChatStore } from '@/stores/chat-store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { PermissionGuard } from '@/components/auth/permission-guard'
 import {
   useSessions,
   useCreateSession,
@@ -48,14 +49,16 @@ export function SessionSidebar() {
           <MessageSquare className='size-5 text-primary' />
           <h2 className='font-semibold'>对话列表</h2>
         </div>
-        <Button
-          size='icon'
-          variant='ghost'
-          onClick={handleCreateSession}
-          disabled={createSession.isPending}
-        >
-          <Plus className='size-4' />
-        </Button>
+        <PermissionGuard permission='session:create'>
+          <Button
+            size='icon'
+            variant='ghost'
+            onClick={handleCreateSession}
+            disabled={createSession.isPending}
+          >
+            <Plus className='size-4' />
+          </Button>
+        </PermissionGuard>
       </div>
 
       {/* Search */}
@@ -84,14 +87,16 @@ export function SessionSidebar() {
               {search ? '没有找到匹配的会话' : '暂无对话'}
             </p>
             {!search && (
-              <Button
-                variant='link'
-                size='sm'
-                onClick={handleCreateSession}
-                className='mt-2'
-              >
-                创建新对话
-              </Button>
+              <PermissionGuard permission='session:create'>
+                <Button
+                  variant='link'
+                  size='sm'
+                  onClick={handleCreateSession}
+                  className='mt-2'
+                >
+                  创建新对话
+                </Button>
+              </PermissionGuard>
             )}
           </div>
         ) : (
@@ -111,16 +116,18 @@ export function SessionSidebar() {
       </ScrollArea>
 
       {/* New Chat Button - 固定在底部 */}
-      <div className='shrink-0 border-t p-3'>
-        <Button
-          className='w-full'
-          onClick={handleCreateSession}
-          disabled={createSession.isPending}
-        >
-          <Plus className='mr-2 size-4' />
-          新建对话
-        </Button>
-      </div>
+      <PermissionGuard permission='session:create'>
+        <div className='shrink-0 border-t p-3'>
+          <Button
+            className='w-full'
+            onClick={handleCreateSession}
+            disabled={createSession.isPending}
+          >
+            <Plus className='mr-2 size-4' />
+            新建对话
+          </Button>
+        </div>
+      </PermissionGuard>
     </div>
   )
 }

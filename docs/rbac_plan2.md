@@ -25,209 +25,10 @@
 
 **文件**: [`prisma/schema.prisma`](../prisma/schema.prisma)
 
-```prisma
-// ============================================
-// 用户表
-// ============================================
-model User {
-  id           BigInt      @id @default(autoincrement())
-  accountNo    String      @unique @map("account_no")      // 账号
-  email        String      @unique                          // 邮箱
-  passwordHash String      @map("password_hash")            // 密码哈希
-  username     String?                                      // 用户名
-  avatar       String?                                      // 头像 URL
-  status       user_status @default(active)                 // 状态
-  lastLoginAt  DateTime?   @map("last_login_at")            // 最后登录时间
-  createdAt    DateTime    @default(now()) @map("created_at")
-  updatedAt    DateTime    @updatedAt @map("updated_at")
-
-  // 关联关系
-  userRoles     UserRole[]
-  refreshTokens RefreshToken[]
-  sessions      Session[]
-
-  @@index([status])
-  @@index([accountNo])
-  @@index([email])
-  @@schema("aiops")
-  @@map("users")
-}
-
-enum user_status {
-  active      // 激活
-  disabled    // 禁用
-
-  @@schema("aiops")
-}
-
-// ============================================
-// 角色表
-// ============================================
-model Role {
-  id          BigInt       @id @default(autoincrement())
-  name        String                                          // 角色名称
-  code        String       @unique                            // 角色代码 (admin, user)
-  description String?                                         // 角色描述
-  isSystem    Boolean      @default(false) @map("is_system")  // 是否系统内置
-  sort        Int          @default(0)                        // 排序
-  status      role_status  @default(active)                   // 状态
-  createdAt   DateTime     @default(now()) @map("created_at")
-  updatedAt   DateTime     @updatedAt @map("updated_at")
-
-  // 关联关系
-  userRoles     UserRole[]
-  rolePermissions RolePermission[]
-
-  @@index([code])
-  @@index([status])
-  @@schema("aiops")
-  @@map("roles")
-}
-
-enum role_status {
-  active      // 激活
-  disabled    // 禁用
-
-  @@schema("aiops")
-}
-
-// ============================================
-// 权限表
-// ============================================
-model Permission {
-  id          BigInt   @id @default(autoincrement())
-  name        String                                          // 权限名称
-  code        String   @unique                                // 权限代码 (user:create)
-  resource    String                                          // 资源 (user, session)
-  action      String                                          // 操作 (create, read, update, delete)
-  description String?                                         // 权限描述
-  module      String                                          // 所属模块 (users, sessions, skills)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  // 关联关系
-  rolePermissions RolePermission[]
-
-  @@index([module])
-  @@index([code])
-  @@schema("aiops")
-  @@map("permissions")
-}
-
-// ============================================
-// 用户-角色关联表 (多对多)
-// ============================================
-model UserRole {
-  id        BigInt   @id @default(autoincrement())
-  userId    BigInt   @map("user_id")
-  roleId    BigInt   @map("role_id")
-  createdAt DateTime @default(now()) @map("created_at")
-
-  // 关联关系
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, roleId])
-  @@index([userId])
-  @@index([roleId])
-  @@schema("aiops")
-  @@map("user_roles")
-}
-
-// ============================================
-// 角色-权限关联表 (多对多)
-// ============================================
-model RolePermission {
-  id           BigInt   @id @default(autoincrement())
-  roleId       BigInt   @map("role_id")
-  permissionId BigInt   @map("permission_id")
-  createdAt    DateTime @default(now()) @map("created_at")
-
-  // 关联关系
-  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-
-  @@unique([roleId, permissionId])
-  @@index([roleId])
-  @@index([permissionId])
-  @@schema("aiops")
-  @@map("role_permissions")
-}
-
-// ============================================
-// 刷新令牌表
-// ============================================
-model RefreshToken {
-  id           BigInt    @id @default(autoincrement())
-  tokenHash    String    @unique @map("token_hash")          // 经过哈希的刷新令牌
-  deviceId     String?   @map("device_id")                   // 设备指纹
-  ipAddress    String?   @map("ip_address")                  // 登录 IP
-  userAgent    String?   @map("user_agent")                  // UA
-  userId       BigInt    @map("user_id")
-  expiresAt    DateTime  @map("expires_at")                  // 过期时间
-  createdAt    DateTime  @default(now()) @map("created_at")
-  rotatedAt    DateTime? @map("rotated_at")                  // 轮换时间
-  revokedAt    DateTime? @map("revoked_at")                  // 撤销时间
-
-  // 关联关系
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([deviceId])
-  @@schema("aiops")
-  @@map("refresh_tokens")
-}
-
-// ============================================
-// 审计日志表 (可选)
-// ============================================
-model AuditLog {
-  id        BigInt   @id @default(autoincrement())
-  userId    BigInt?  @map("user_id")
-  action    String                                          // 操作类型 (login, create_user, etc.)
-  resource  String                                          // 资源类型
-  resourceId String? @map("resource_id")                     // 资源 ID
-  details   Json?                                           // 操作详情 (JSON)
-  ipAddress String?  @map("ip_address")                      // IP 地址
-  userAgent String?  @map("user_agent")                     // User Agent
-  createdAt DateTime @default(now()) @map("created_at")
-
-  @@index([userId])
-  @@index([action])
-  @@index([resource])
-  @@index([createdAt])
-  @@schema("aiops")
-  @@map("audit_logs")
-}
-```
-
-### 1.2 数据库迁移
-
-**任务清单**:
-
-- [ ] 生成 Prisma 迁移文件
-
-  ```bash
-  pnpm prisma migrate dev --name add_rbac_tables
-  ```
-
-- [ ] 生成 Prisma Client
-
-  ```bash
-  pnpm prisma generate
-  ```
-
-- [ ] 验证表结构
-  ```bash
-  pnpm prisma studio
-  ```
 
 ### 1.3 初始化种子数据
 
 **文件**: `docs/database_design/seed_data.sql`
-
-```
-
 
 ## 🔧 第二阶段: 后端 API 开发
 
@@ -264,7 +65,7 @@ server/
 └── types/
 └── auth.types.ts # 认证相关类型定义
 
-````
+```
 
 ### 2.2 核心服务层
 
@@ -273,56 +74,56 @@ server/
 **文件**: `server/services/auth/password.service.ts`
 
 ```typescript
-import bcrypt from 'bcrypt'
+import bcrypt from "bcrypt";
 
 export class PasswordService {
-  private readonly SALT_ROUNDS = 10
+  private readonly SALT_ROUNDS = 10;
 
   /**
    * 哈希密码
    */
   async hash(password: string): Promise<string> {
-    return bcrypt.hash(password, this.SALT_ROUNDS)
+    return bcrypt.hash(password, this.SALT_ROUNDS);
   }
 
   /**
    * 验证密码
    */
   async verify(password: string, hash: string): Promise<boolean> {
-    return bcrypt.compare(password, hash)
+    return bcrypt.compare(password, hash);
   }
 
   /**
    * 密码强度验证
    */
   validateStrength(password: string): { valid: boolean; errors: string[] } {
-    const errors: string[] = []
+    const errors: string[] = [];
 
     if (password.length < 8) {
-      errors.push('密码长度至少为 8 个字符')
+      errors.push("密码长度至少为 8 个字符");
     }
 
     if (!/[A-Z]/.test(password)) {
-      errors.push('密码必须包含至少一个大写字母')
+      errors.push("密码必须包含至少一个大写字母");
     }
 
     if (!/[a-z]/.test(password)) {
-      errors.push('密码必须包含至少一个小写字母')
+      errors.push("密码必须包含至少一个小写字母");
     }
 
     if (!/[0-9]/.test(password)) {
-      errors.push('密码必须包含至少一个数字')
+      errors.push("密码必须包含至少一个数字");
     }
 
     return {
       valid: errors.length === 0,
       errors,
-    }
+    };
   }
 }
 
-export const passwordService = new PasswordService()
-````
+export const passwordService = new PasswordService();
+```
 
 #### 2.2.2 JWT 服务
 
@@ -2992,33 +2793,11 @@ const MAX_LOGIN_ATTEMPTS = 5;
 const LOCKOUT_DURATION = 30 * 60 * 1000; // 30 分钟
 ```
 
-### 6.4 密码找回流程
-
-1. `forgot-password` 接口接收邮箱/账号 -> 生成一次性 `reset_token`（存储 SHA256 哈希、10 分钟过期）。
-2. 发送邮件 (Resend/Aws SES) 带有重置链接 `https://app/reset?token=...`。
-3. 前端重置页面调用 `reset-password` 接口，提交新密码 + token。
-4. 服务端验证 token、校验密码强度后落库，同时记录 `auditLogService.record({ action: 'user.update', resourceId: userId })`。
-
-相应的 `PasswordResetToken` 表字段: `tokenHash`, `userId`, `expiresAt`, `consumedAt`, `ipAddress`.
-
-### 6.5 多因素认证 (MFA)
-
-- 采用 TOTP (Google Authenticator) + Recovery Codes。
-- `user_mfa` 表存储 `secret`, `enabledAt`, `recoveryCodes (Json)`。
-- 登录流程: 第一步校验密码 -> 若开启 MFA，返回 `mfa_required` 状态，前端展示验证码输入框并调用 `/api/auth/mfa/verify`。
-- 在 `AuditLog` 中分别记录 `login` 和 `login.mfa` 事件，便于溯源。
-
-### 6.6 会话/设备管理
+### 6.4 会话/设备管理
 
 - `RefreshToken` 表新增 `deviceId` / `userAgent` / `ipAddress` 后，可实现“设备列表”页面：`GET /api/sessions/devices` 返回所有活跃刷新令牌。
 - 用户可在前端“安全设置”中“踢出”设备 -> 调用 `DELETE /api/sessions/devices/:tokenId`，服务端将 `revokedAt` 置位。
 - 周期任务 (每天) 运行 `refreshTokenRepository.deleteExpiredTokens()` 并写入审计日志。
-
-### 6.7 SSO / 企业身份整合（可选）
-
-- 通过 `passport` 集成企业 IdP (OIDC / SAML)。
-- 成功回调后，根据 IdP 返回的 email 自动创建用户并绑定默认角色，仍走本方案的 RBAC。
-- 建议为外部身份的 Access Token 添加 `source` 字段，写入 `AuditLog` 以区别本地登录与企业登录。
 
 ---
 
@@ -3098,48 +2877,6 @@ it("should rotate refresh token on refresh", async () => {
 
 ---
 
-## 📅 推荐实现顺序
-
-### 第 1 周: 数据库 + 后端基础
-
-- ✅ Prisma Schema 设计
-- ✅ 数据库迁移
-- ✅ 种子数据初始化
-- ✅ Repository 层实现
-- ✅ 密码加密服务
-- ✅ JWT 服务
-
-### 第 2 周: 后端 API
-
-- ✅ 认证服务
-- ✅ RBAC 服务
-- ✅ 认证中间件
-- ✅ 权限中间件
-- ✅ 认证控制器和路由
-- ✅ 用户管理 API
-
-### 第 3 周: 前端集成
-
-- ✅ API 客户端配置
-- ✅ CASL 集成
-- ✅ Auth Store 更新
-- ✅ 权限组件
-- ✅ 登录页面更新
-- ✅ 路由守卫
-
-### 第 4 周: 管理功能
-
-- ✅ 用户管理页面
-- ✅ 角色管理页面
-- ✅ 现有功能集成 RBAC
-
-### 第 5 周: 安全 + 验证
-
-- [ ] 安全增强 (MFA、密码找回、锁定、设备管理、审计日志)
-- [ ] 单元 / 集成 / E2E / 安全扫描
-- [ ] API 文档 + Runbook (OpenAPI、使用文档、操作手册)
-
----
 
 ## ✅ 开发 TODO 看板
 
@@ -3150,11 +2887,9 @@ it("should rotate refresh token on refresh", async () => {
 | 3    | 落地 RBAC 服务 + roles/permissions controller + routes + 中间件接入         | Backend            | P0     | Week2 | 包括权限同步接口                            |
 | 4    | 前端 Auth Store / API Client / Ability Provider / Hooks                     | Frontend           | P0     | Week3 | Token 仅驻内存，Refresh Token 走 Cookie     |
 | 5    | 用户/角色/权限管理 UI + 设备列表 + 权限选择器组件                           | Frontend           | P1     | Week4 | 依赖后端接口 ready                          |
-| 6    | 安全能力: 密码找回、MFA、设备踢出、审计日志写入与查看                       | Backend + Frontend | P1     | Week5 | 包含邮件模板与 TOTP enrollment              |
+| 6    | 安全能力: 审计日志写入与查看                                                | Backend + Frontend | P1     | Week5 | 包含邮件模板与 TOTP enrollment              |
 | 7    | 测试与质量: 单元/集成/E2E、性能 & 安全扫描、监控告警配置                    | QA/DevOps          | P0     | Week5 | 产出测试报告与覆盖率                        |
 | 8    | 文档: OpenAPI、RBAC 实施指南、Runbook、FAQ                                  | Tech Writer        | P1     | Week5 | 与产品/运营共审                             |
-
-> 可以将该表同步到 `docs/todo.md` 或项目管理工具 (Linear/Jira) 做实时追踪。
 
 ## 🎯 总结
 
@@ -3165,11 +2900,3 @@ it("should rotate refresh token on refresh", async () => {
 3. **易维护**: 代码清晰，易于理解和扩展
 4. **类型安全**: TypeScript 全链路支持
 5. **灵活**: 可根据需求快速调整
-
-预计总开发时间: **4-5 周** (单人开发)
-
----
-
-**文档生成时间**: 2026-01-28
-**项目**: SkllsFlow AIOps 智能平台
-**版本**: 2.0.0

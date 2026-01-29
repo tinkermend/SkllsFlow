@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { usePermission } from '@/hooks/use-permission'
 import type { Session } from '../types'
 
 interface SessionItemProps {
@@ -29,6 +30,7 @@ export function SessionItem({
 }: SessionItemProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editTitle, setEditTitle] = useState(session.title || '新对话')
+  const { can } = usePermission()
 
   const handleRename = () => {
     if (editTitle.trim() && editTitle !== session.title) {
@@ -116,25 +118,29 @@ export function SessionItem({
               </Button>
             </DropdownMenuTrigger>
           <DropdownMenuContent align='end'>
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation()
-                setIsEditing(true)
-              }}
-            >
-              <Pencil className='mr-2 size-4' />
-              重命名
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className='text-destructive focus:text-destructive'
-              onClick={(e) => {
-                e.stopPropagation()
-                onDelete()
-              }}
-            >
-              <Trash2 className='mr-2 size-4' />
-              删除会话
-            </DropdownMenuItem>
+            {can('update', 'Session') && (
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setIsEditing(true)
+                }}
+              >
+                <Pencil className='mr-2 size-4' />
+                重命名
+              </DropdownMenuItem>
+            )}
+            {can('delete', 'Session') && (
+              <DropdownMenuItem
+                className='text-destructive focus:text-destructive'
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onDelete()
+                }}
+              >
+                <Trash2 className='mr-2 size-4' />
+                删除会话
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
         </div>

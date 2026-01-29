@@ -92,16 +92,16 @@ export class SessionRepository extends BaseRepository<
    * Find all sessions for a specific user
    * Refactored to use BaseRepository.findAll for code reuse (T048)
    *
-   * @param userId - The user ID
+   * @param userId - The user database ID (BigInt)
    * @returns Array of user sessions ordered by updatedAt desc
    *
    * @example
    * ```typescript
-   * const userSessions = await repository.findByUserId('user-1');
+   * const userSessions = await repository.findByUserId(BigInt(1));
    * console.log(`User has ${userSessions.length} active sessions`);
    * ```
    */
-  async findByUserId(userId: string): Promise<Session[]> {
+  async findByUserId(userId: bigint): Promise<Session[]> {
     return this.findAll({
       where: {
         userId,
@@ -117,13 +117,13 @@ export class SessionRepository extends BaseRepository<
    * Find paginated user sessions with metadata
    * Uses BaseRepository.findPaginated for pagination support
    *
-   * @param userId - The user ID
+   * @param userId - The user database ID (BigInt)
    * @param options - Pagination options (limit, offset)
    * @returns Paginated result with data and metadata
    *
    * @example
    * ```typescript
-   * const result = await repository.findUserSessionsPaginated('user-1', {
+   * const result = await repository.findUserSessionsPaginated(BigInt(1), {
    *   limit: 10,
    *   offset: 0,
    * });
@@ -133,7 +133,7 @@ export class SessionRepository extends BaseRepository<
    * ```
    */
   async findUserSessionsPaginated(
-    userId: string,
+    userId: bigint,
     options?: { limit?: number; offset?: number }
   ) {
     return this.findPaginated({
@@ -171,16 +171,16 @@ export class SessionRepository extends BaseRepository<
    * Count active sessions for a user
    * Uses BaseRepository.count for code reuse
    *
-   * @param userId - The user ID
+   * @param userId - The user database ID (BigInt)
    * @returns Number of active sessions
    *
    * @example
    * ```typescript
-   * const count = await repository.countActiveByUser('user-1');
+   * const count = await repository.countActiveByUser(BigInt(1));
    * console.log(`User has ${count} active sessions`);
    * ```
    */
-  async countActiveByUser(userId: string): Promise<number> {
+  async countActiveByUser(userId: bigint): Promise<number> {
     return this.count({
       userId,
       status: "active",

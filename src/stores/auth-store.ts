@@ -4,9 +4,12 @@ import { getCookie, setCookie, removeCookie } from '@/lib/cookies'
 const ACCESS_TOKEN = 'thisisjustarandomstring'
 
 interface AuthUser {
+  userId: string  // 改为 UUID (对外 API)
   accountNo: string
   email: string
-  role: string[]
+  username: string
+  roles: string[]
+  permissions: string[]
   exp: number
 }
 
@@ -15,7 +18,8 @@ interface AuthState {
     user: AuthUser | null
     setUser: (user: AuthUser | null) => void
     accessToken: string
-    setAccessToken: (accessToken: string) => void
+    accessTokenExpiresAt: number
+    setAccessToken: (accessToken: string, expiresIn: number) => void
     resetAccessToken: () => void
     reset: () => void
   }
@@ -30,10 +34,18 @@ export const useAuthStore = create<AuthState>()((set) => {
       setUser: (user) =>
         set((state) => ({ ...state, auth: { ...state.auth, user } })),
       accessToken: initToken,
-      setAccessToken: (accessToken) =>
+      accessTokenExpiresAt: 0,
+      setAccessToken: (accessToken, expiresIn) =>
         set((state) => {
           setCookie(ACCESS_TOKEN, JSON.stringify(accessToken))
-          return { ...state, auth: { ...state.auth, accessToken } }
+          return {
+            ...state,
+            auth: {
+              ...state.auth,
+              accessToken,
+              accessTokenExpiresAt: Date.now() + expiresIn * 1000,
+            },
+          }
         }),
       resetAccessToken: () =>
         set((state) => {
@@ -45,7 +57,12 @@ export const useAuthStore = create<AuthState>()((set) => {
           removeCookie(ACCESS_TOKEN)
           return {
             ...state,
-            auth: { ...state.auth, user: null, accessToken: '' },
+            auth: {
+              ...state.auth,
+              user: null,
+              accessToken: '',
+              accessTokenExpiresAt: 0,
+            },
           }
         }),
     },

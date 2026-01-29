@@ -1,5 +1,6 @@
 import { session_status } from '@prisma/client';
 import { SessionRepository } from '../repositories/sessions.repository.js';
+import { UserRepository } from '../repositories/users.repository.js';
 import { DatabaseService } from './database.service.js';
 import {
   toSessionResponseDto,
@@ -16,30 +17,38 @@ import { env } from '../config/env.js';
  */
 export class SessionsService {
   private repository: SessionRepository;
+  private userRepository: UserRepository;
 
   constructor() {
     const prisma = DatabaseService.getInstance();
     this.repository = new SessionRepository(prisma);
+    this.userRepository = new UserRepository(prisma);
   }
 
   /**
    * Create a new session
    * Flow: Client calls OpenCode API first, then calls our API to save session to database
    *
-   * @param userId - User ID from authentication context
+   * @param userUuid - User UUID from authentication context (对外使用的 UUID)
    * @param dto - OpenCode session data (sessionId required)
    */
   async createSession(
-    userId: string,
+    userUuid: string,
     dto: CreateSessionDto
   ): Promise<SessionResponseDto> {
     // Validate required fields
-    if (!userId) {
+    if (!userUuid) {
       throw new Error('user_id is required');
     }
 
     if (!dto.sessionId) {
       throw new Error('sessionId is required (obtained from OpenCode API)');
+    }
+
+    // 通过 UUID 查找用户，获取数据库 ID
+    const user = await this.userRepository.findByUserId(userUuid);
+    if (!user) {
+      throw new Error('User not found');
     }
 
     // Prepare session data for database
@@ -48,7 +57,7 @@ export class SessionsService {
     const sessionData = {
       sessionId: dto.sessionId,
       title: title,
-      userId: userId,
+      userId: user.id, // 使用数据库 ID (BigInt)
       projectId: dto.projectId || 'global',
       status: session_status.active,
       opencodeServer: env.OPENCODE_API_URL,
@@ -61,7 +70,7 @@ export class SessionsService {
       // Track metrics
       sessionsCreated.inc();
 
-      return toSessionResponseDto(session);
+      return toSessionResponseDto(session, userUuid);
     } catch (error: unknown) {
 
       // Handle duplicate session_id (P2002 = unique constraint violation)
@@ -77,27 +86,39 @@ export class SessionsService {
   /**
    * Get session by session_id
    */
-  async getSessionById(sessionId: string, userId: string): Promise<SessionResponseDto | null> {
+  async getSessionById(sessionId: string, userUuid: string): Promise<SessionResponseDto | null> {
     const session = await this.repository.findBySessionId(sessionId);
 
     if (!session) {
       return null;
     }
 
-    // Verify user owns this session
-    if (session.userId !== userId) {
+    // 通过 UUID 查找用户，获取数据库 ID
+    const user = await this.userRepository.findByUserId(userUuid);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    // Verify user owns this session (比较数据库 ID)
+    if (session.userId !== user.id) {
       throw new Error('Access denied: Session belongs to different user');
     }
 
-    return toSessionResponseDto(session);
+    return toSessionResponseDto(session, userUuid);
   }
 
   /**
    * Get all sessions for a user
    */
-  async getUserSessions(userId: string): Promise<SessionResponseDto[]> {
-    const sessions = await this.repository.findByUserId(userId);
-    return sessions.map(toSessionResponseDto);
+  async getUserSessions(userUuid: string): Promise<SessionResponseDto[]> {
+    // 通过 UUID 查找用户，获取数据库 ID
+    const user = await this.userRepository.findByUserId(userUuid);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const sessions = await this.repository.findByUserId(user.id);
+    return sessions.map(session => toSessionResponseDto(session, userUuid));
   }
 
 

@@ -17,16 +17,19 @@ datasource db {
 // 用户表
 // ============================================
 model User {
-  id           BigInt      @id @default(autoincrement())
-  accountNo    String      @unique @map("account_no")      // 账号
-  email        String      @unique                          // 邮箱
-  passwordHash String      @map("password_hash")            // 密码哈希
-  username     String?                                      // 用户名
-  avatar       String?                                      // 头像 URL
-  status       user_status @default(active)                 // 状态
-  lastLoginAt  DateTime?   @map("last_login_at")            // 最后登录时间
-  createdAt    DateTime    @default(now()) @map("created_at")
-  updatedAt    DateTime    @updatedAt @map("updated_at")
+  id                 BigInt      @id @default(autoincrement())
+  userUUId             String      @unique @default(uuid()) @map("user_uuid") @db.Uuid  // 业务 ID
+  accountNo          String      @unique @map("account_no")      // 账号
+  email              String      @unique                          // 邮箱
+  passwordHash       String      @map("password_hash")            // 密码哈希
+  username           String?                                      // 用户名
+  avatar             String?                                      // 头像 URL
+  status             user_status @default(active)                 // 状态
+  lastLoginAt        DateTime?   @map("last_login_at")            // 最后登录时间
+  loginFailedCount   Int         @default(0) @map("login_failed_count")   // 登录失败次数
+  lockedUntil        DateTime?   @map("locked_until")             // 锁定截止时间
+  createdAt          DateTime    @default(now()) @map("created_at")
+  updatedAt          DateTime    @updatedAt @map("updated_at")
 
   // 关联关系
   userRoles     UserRole[]
@@ -34,6 +37,7 @@ model User {
   sessions      Session[]
 
   @@index([status])
+  @@index([userUUId])
   @@index([accountNo])
   @@index([email])
   @@schema("aiops")
