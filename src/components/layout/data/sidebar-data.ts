@@ -13,6 +13,9 @@ import {
   MessagesSquare,
   AudioWaveform,
   Bot,
+  Shield,
+  Menu,
+  Lock,
 } from "lucide-react";
 import { type SidebarData } from "../types";
 
@@ -65,38 +68,28 @@ export const sidebarData: SidebarData = {
           icon: MessagesSquare,
         },
         {
-          title: "用户管理",
-          url: "/users",
-          icon: Users,
-        },
-        {
-          title: "系统设置",
+          title: "系统管理",
           icon: Settings,
           items: [
             {
-              title: "个人资料",
-              url: "/settings",
-              icon: UserCog,
+              title: "用户管理",
+              url: "/users",
+              icon: Users,
             },
             {
-              title: "账户",
-              url: "/settings/account",
-              icon: Wrench,
+              title: "角色管理",
+              url: "/settings/roles",
+              icon: Shield,
             },
             {
-              title: "外观",
-              url: "/settings/appearance",
-              icon: Palette,
+              title: "权限管理",
+              url: "/settings/permissions",
+              icon: Lock,
             },
             {
-              title: "通知",
-              url: "/settings/notifications",
-              icon: Bell,
-            },
-            {
-              title: "显示",
-              url: "/settings/display",
-              icon: Monitor,
+              title: "菜单管理",
+              url: "/settings/menus",
+              icon: Menu,
             },
           ],
         },
