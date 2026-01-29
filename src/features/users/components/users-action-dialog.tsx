@@ -22,9 +22,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/password-input";
-import { useCreateUser, useUpdateUser } from "../hooks/use-users";
+import { useCreateUser, useUpdateUser, useAssignRoles } from "../hooks/use-users";
 import { toast } from "sonner";
 import { type User } from "../data/schema";
+import { useRolesQuery } from "@/features/roles/hooks/use-roles-query";
+import { MultiSelect } from "@/components/multi-select";
 
 const formSchema = z
   .object({
@@ -36,6 +38,7 @@ const formSchema = z
     password: z.string().transform((pwd) => pwd.trim()),
     username: z.string().optional(),
     avatar: z.string().url("头像必须是有效的 URL").optional().or(z.literal("")),
+    roleIds: z.array(z.string()).optional(),
     isEdit: z.boolean(),
   })
   .refine(
@@ -95,6 +98,11 @@ export function UsersActionDialog({
   const isEdit = !!currentRow;
   const createUser = useCreateUser();
   const updateUser = useUpdateUser();
+  const assignRoles = useAssignRoles();
+  const { data: roles = [], isLoading: isLoadingRoles } = useRolesQuery();
+
+  // 获取当前用户的角色 ID 列表
+  const currentRoleIds = currentRow?.userRoles?.map((ur) => ur.role.code) || [];
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -104,6 +112,7 @@ export function UsersActionDialog({
       password: "",
       username: currentRow?.username || "",
       avatar: currentRow?.avatar || "",
+      roleIds: currentRoleIds,
       isEdit,
     },
   });
@@ -111,22 +120,44 @@ export function UsersActionDialog({
   const onSubmit = async (data: FormValues) => {
     try {
       if (isEdit && currentRow) {
+        // 更新用户基本信息
         await updateUser.mutateAsync({
-          id: currentRow.id,
+          id: currentRow.userId,
           data: {
             username: data.username,
             avatar: data.avatar || undefined,
             ...(data.password && { password: data.password }),
           },
         });
+
+        // 如果角色有变化，更新角色
+        if (data.roleIds && data.roleIds.length > 0) {
+          const roleIdsAsNumbers = roles
+            .filter((role) => data.roleIds?.includes(role.code))
+            .map((role) => Number(role.id));
+
+          await assignRoles.mutateAsync({
+            id: currentRow.userId,
+            roleIds: roleIdsAsNumbers,
+          });
+        }
+
         toast.success("用户信息已更新");
       } else {
+        // 创建新用户时，将角色 code 转换为 ID
+        const roleIdsAsNumbers = data.roleIds
+          ? roles
+              .filter((role) => data.roleIds?.includes(role.code))
+              .map((role) => Number(role.id))
+          : [];
+
         await createUser.mutateAsync({
           accountNo: data.accountNo,
           email: data.email,
           password: data.password,
           username: data.username,
           avatar: data.avatar || undefined,
+          roleIds: roleIdsAsNumbers.length > 0 ? roleIdsAsNumbers : undefined,
         });
         toast.success("新用户已创建");
       }
@@ -212,6 +243,28 @@ export function UsersActionDialog({
                     <PasswordInput
                       placeholder={isEdit ? "留空表示不修改" : "请输入密码"}
                       {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="roleIds"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>角色</FormLabel>
+                  <FormControl>
+                    <MultiSelect
+                      options={roles.map((role) => ({
+                        label: role.name,
+                        value: role.code,
+                      }))}
+                      selected={field.value || []}
+                      onChange={field.onChange}
+                      placeholder="选择角色"
+                      disabled={isLoadingRoles}
                     />
                   </FormControl>
                   <FormMessage />

@@ -270,12 +270,14 @@ export async function assignRoles(req: Request, res: Response) {
     });
 
     // 分配新角色
-    await getPrisma().userRole.createMany({
-      data: roleIds.map((roleId: bigint) => ({
-        userId: BigInt(id),
-        roleId,
-      })),
-    });
+    if (roleIds && roleIds.length > 0) {
+      await getPrisma().userRole.createMany({
+        data: roleIds.map((roleId: number) => ({
+          userId: BigInt(id),
+          roleId: BigInt(roleId),
+        })),
+      });
+    }
 
     res.json({ message: '角色分配成功' });
   } catch (error: any) {
