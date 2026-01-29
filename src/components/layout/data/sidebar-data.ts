@@ -13,7 +13,7 @@ import {
   MessagesSquare,
   AudioWaveform,
   Bot,
-} from 'lucide-react'
+} from "lucide-react";
 import { type SidebarData } from "../types";
 
 export const sidebarData: SidebarData = {
@@ -26,7 +26,7 @@ export const sidebarData: SidebarData = {
     {
       name: "新炬网络",
       logo: AudioWaveform,
-      plan: "AIOps智能平台",
+      plan: "OS-Native 智能平台",
     },
   ],
   navGroups: [

@@ -1,8 +1,8 @@
-import { Router } from 'express'
+import { Router, type Request, type Response, type Router as RouterType } from 'express'
 import { openCodeService } from '../services/opencode.service'
 import { authMiddleware } from '../middleware/auth.middleware'
 
-const router = Router()
+const router: RouterType = Router()
 
 // 所有路由都需要认证
 router.use(authMiddleware)

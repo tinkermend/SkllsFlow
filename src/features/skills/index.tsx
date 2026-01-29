@@ -3,6 +3,7 @@ import { Plus, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { PermissionGuard } from '@/components/auth/permission-guard'
 import { SkillCard } from './components/skill-card'
 import { SkillDetailDialog } from './components/skill-detail-dialog'
 import { InstallSkillDialog } from './components/install-skill-dialog'
@@ -270,10 +271,12 @@ export function Skills() {
                 管理和配置你的 AI 技能
               </p>
             </div>
-            <Button onClick={handleCreateSkill} className="gap-2">
-              <Plus className="h-4 w-4" />
-              创建技能
-            </Button>
+            <PermissionGuard permission="skill:create">
+              <Button onClick={handleCreateSkill} className="gap-2">
+                <Plus className="h-4 w-4" />
+                创建技能
+              </Button>
+            </PermissionGuard>
           </div>
 
           {/* Tabs 切换 */}
@@ -316,10 +319,12 @@ export function Skills() {
                 {skills.length === 0 ? (
                   <div className="flex h-64 flex-col items-center justify-center gap-2">
                     <p className="text-muted-foreground">暂无技能</p>
-                    <Button onClick={handleCreateSkill} variant="outline" className="gap-2">
-                      <Plus className="h-4 w-4" />
-                      创建第一个技能
-                    </Button>
+                    <PermissionGuard permission="skill:create">
+                      <Button onClick={handleCreateSkill} variant="outline" className="gap-2">
+                        <Plus className="h-4 w-4" />
+                        创建第一个技能
+                      </Button>
+                    </PermissionGuard>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

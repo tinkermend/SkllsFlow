@@ -31,3 +31,5 @@ dist-ssr
 .tanstack/
 user_session/
 specs/
+
+/generated/prisma

@@ -15,6 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { usePermission } from '@/hooks/use-permission'
 import { SkillStatus, type Skill } from '../types'
 
 interface SkillCardProps {
@@ -36,6 +37,8 @@ export function SkillCard({
   onInstall,
   onToggleStatus,
 }: SkillCardProps) {
+  const { can } = usePermission()
+
   const statusConfig = {
     [SkillStatus.ACTIVE]: {
       label: '启用',
@@ -139,27 +142,33 @@ export function SkillCard({
             </DropdownMenuItem>
             {mode === 'my-skills' ? (
               // 我的技能：显示卸载技能
-              <DropdownMenuItem
-                onClick={() => onUninstall?.(skill.skillId)}
-                className="text-destructive focus:text-destructive"
-              >
-                卸载技能
-              </DropdownMenuItem>
+              can('uninstall', 'Skill') && (
+                <DropdownMenuItem
+                  onClick={() => onUninstall?.(skill.skillId)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  卸载技能
+                </DropdownMenuItem>
+              )
             ) : (
               // 平台技能：显示启用/禁用、删除技能和装载技能
               <>
                 {/* 启用/禁用按钮 */}
-                <DropdownMenuItem onClick={() => onToggleStatus?.(skill.skillId, skill.status)}>
-                  {skill.status === SkillStatus.DISABLED ? '启用' : '禁用'}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => onDelete?.(skill.skillId)}
-                  className="text-destructive focus:text-destructive"
-                >
-                  删除技能
-                </DropdownMenuItem>
+                {can('update', 'Skill') && (
+                  <DropdownMenuItem onClick={() => onToggleStatus?.(skill.skillId, skill.status)}>
+                    {skill.status === SkillStatus.DISABLED ? '启用' : '禁用'}
+                  </DropdownMenuItem>
+                )}
+                {can('delete', 'Skill') && (
+                  <DropdownMenuItem
+                    onClick={() => onDelete?.(skill.skillId)}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    删除技能
+                  </DropdownMenuItem>
+                )}
                 {/* 已禁用的技能不显示装载技能按钮 */}
-                {skill.status !== SkillStatus.DISABLED && (
+                {can('install', 'Skill') && skill.status !== SkillStatus.DISABLED && (
                   <DropdownMenuItem onClick={() => onInstall?.(skill.skillId)}>
                     装载技能
                   </DropdownMenuItem>
