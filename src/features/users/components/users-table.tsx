@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   type SortingState,
   type VisibilityState,
@@ -22,18 +22,27 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
-import { roles } from '../data/data'
 import { type User } from '../data/schema'
 import { DataTableBulkActions } from './data-table-bulk-actions'
 import { usersColumns as columns } from './users-columns'
 
-type DataTableProps = {
+type UsersTableProps = {
   data: User[]
   search: Record<string, unknown>
   navigate: NavigateFn
+  pageCount: number
+  totalItems: number
+  isFetching?: boolean
 }
 
-export function UsersTable({ data, search, navigate }: DataTableProps) {
+export function UsersTable({
+  data,
+  search,
+  navigate,
+  pageCount,
+  totalItems,
+  isFetching = false,
+}: UsersTableProps) {
   // Local UI-only states
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
@@ -62,7 +71,8 @@ export function UsersTable({ data, search, navigate }: DataTableProps) {
     ],
   })
 
-  // eslint-disable-next-line react-hooks/incompatible-library
+  const resolvedPageCount = useMemo(() => Math.max(pageCount, 1), [pageCount])
+
   const table = useReactTable({
     data,
     columns,
@@ -78,6 +88,8 @@ export function UsersTable({ data, search, navigate }: DataTableProps) {
     onColumnFiltersChange,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
+    manualPagination: true,
+    pageCount: resolvedPageCount,
     onColumnVisibilityChange: setColumnVisibility,
     getPaginationRowModel: getPaginationRowModel(),
     getCoreRowModel: getCoreRowModel(),
@@ -100,22 +112,30 @@ export function UsersTable({ data, search, navigate }: DataTableProps) {
     >
       <DataTableToolbar
         table={table}
-        searchPlaceholder='Filter users...'
+        searchPlaceholder='搜索用户名或账号...'
         searchKey='username'
         filters={[
           {
             columnId: 'status',
-            title: 'Status',
+            title: '状态',
             options: [
-              { label: 'Active', value: 'active' },
-              { label: 'Inactive', value: 'inactive' },
-              { label: 'Invited', value: 'invited' },
-              { label: 'Suspended', value: 'suspended' },
+              { label: '启用', value: 'active' },
+              { label: '停用', value: 'inactive' },
+              { label: '邀请中', value: 'invited' },
+              { label: '已停权', value: 'suspended' },
             ],
           },
         ]}
       />
-      <div className='overflow-hidden rounded-md border'>
+      <div className='flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground'>
+        <span>共 {totalItems} 位用户</span>
+        {isFetching && <span className='text-primary'>数据同步中...</span>}
+      </div>
+      <div
+        className='overflow-hidden rounded-md border'
+        aria-busy={isFetching}
+        aria-live='polite'
+      >
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

@@ -153,7 +153,7 @@ export function MenuFormDialog() {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
-            <div className='grid grid-cols-2 gap-4'>
+            <div className='grid gap-4 md:grid-cols-2'>
               <FormField
                 control={form.control}
                 name='name'
@@ -183,7 +183,7 @@ export function MenuFormDialog() {
               />
             </div>
 
-            <div className='grid grid-cols-2 gap-4'>
+            <div className='grid gap-4 md:grid-cols-2'>
               <FormField
                 control={form.control}
                 name='icon'
@@ -204,17 +204,24 @@ export function MenuFormDialog() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>父菜单</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      onValueChange={(value) => field.onChange(value === 'none' ? '' : value)}
+                      value={field.value || 'none'}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder='选择父菜单（可选）' />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value=''>无（顶级菜单）</SelectItem>
+                        <SelectItem value='none'>无（顶级菜单）</SelectItem>
                         {flatMenus.map((menu) => (
-                          <SelectItem key={menu.id} value={menu.id}>
-                            {'　'.repeat(menu.level)}{menu.name}
+                          <SelectItem
+                            key={menu.id}
+                            value={menu.id}
+                            style={{ paddingInlineStart: `${(menu.level ?? 0) * 12 + 8}px` }}
+                          >
+                            {menu.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -280,7 +287,7 @@ export function MenuFormDialog() {
               )}
             />
 
-            <div className='grid grid-cols-3 gap-4'>
+            <div className='grid gap-4 md:grid-cols-3'>
               <FormField
                 control={form.control}
                 name='isVisible'

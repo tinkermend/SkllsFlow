@@ -207,12 +207,10 @@ export function RoleFormDialog() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>权限配置</FormLabel>
-                  <FormControl>
-                    <PermissionPicker
-                      value={field.value}
-                      onChange={field.onChange}
-                    />
-                  </FormControl>
+                  <PermissionPicker
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
                   <FormDescription>
                     选择该角色拥有的权限
                   </FormDescription>

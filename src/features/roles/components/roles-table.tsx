@@ -12,6 +12,24 @@ export function RolesTable() {
       return roleListSchema.parse(response.data);
     },
   });
+  const filters = [
+    {
+      columnId: "status",
+      title: "状态",
+      options: [
+        { label: "启用", value: "active" },
+        { label: "禁用", value: "inactive" },
+      ],
+    },
+    {
+      columnId: "isSystem",
+      title: "角色类型",
+      options: [
+        { label: "系统内置", value: "system" },
+        { label: "自定义", value: "custom" },
+      ],
+    },
+  ];
 
   return (
     <DataTable<Role, Role>
@@ -20,6 +38,7 @@ export function RolesTable() {
       isLoading={isLoading}
       searchKey="name"
       searchPlaceholder="搜索角色名称..."
+      filters={filters}
     />
   );
 }

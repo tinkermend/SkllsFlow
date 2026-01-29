@@ -78,6 +78,25 @@ export const rolesColumns: ColumnDef<Role>[] = [
     },
   },
   {
+    accessorKey: 'isSystem',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='角色类型' />
+    ),
+    cell: ({ row }) => {
+      const isSystem = row.getValue('isSystem') as boolean
+      return (
+        <Badge variant={isSystem ? 'secondary' : 'outline'}>
+          {isSystem ? '系统内置' : '自定义'}
+        </Badge>
+      )
+    },
+    enableSorting: false,
+    filterFn: (row, id, value) => {
+      const type = (row.getValue(id) as boolean) ? 'system' : 'custom'
+      return value.includes(type)
+    },
+  },
+  {
     id: 'permissions',
     header: '权限数量',
     cell: ({ row }) => {

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   type ColumnDef,
   type ColumnFiltersState,
+  type OnChangeFn,
   type SortingState,
   type VisibilityState,
   flexRender,
@@ -34,6 +35,7 @@ type DataTableProps<TData, TValue> = {
     options: Array<{ label: string; value: string }>;
   }>;
   pageSize?: number;
+  onColumnFiltersChange?: (filters: ColumnFiltersState) => void;
 };
 
 export function DataTable<TData, TValue>({
@@ -44,6 +46,7 @@ export function DataTable<TData, TValue>({
   searchPlaceholder,
   filters = [],
   pageSize = 10,
+  onColumnFiltersChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -53,6 +56,12 @@ export function DataTable<TData, TValue>({
     pageSize,
   });
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const handleColumnFiltersChange: OnChangeFn<ColumnFiltersState> = (updater) => {
+    const next =
+      typeof updater === "function" ? updater(columnFilters) : updater;
+    setColumnFilters(next);
+    onColumnFiltersChange?.(next);
+  };
 
   const table = useReactTable({
     data,
@@ -69,7 +78,7 @@ export function DataTable<TData, TValue>({
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onPaginationChange: setPagination,
-    onColumnFiltersChange: setColumnFilters,
+    onColumnFiltersChange: handleColumnFiltersChange,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),

@@ -61,60 +61,133 @@ pnpm format:check
 pnpm knip
 ```
 
+### 测试
+
+```bash
+# 运行所有测试
+pnpm test
+
+# 监听模式运行测试
+pnpm test:watch
+
+# 使用 UI 界面运行测试
+pnpm test:ui
+
+# 生成测试覆盖率报告
+pnpm test:coverage
+```
+
+### 数据库管理
+
+```bash
+# 开发环境数据库迁移
+pnpm db:migrate
+
+# 生产环境数据库迁移
+pnpm db:migrate:deploy
+
+# 生成数据库注释并部署
+pnpm db:comments
+
+# 完整迁移流程（迁移 + 注释 + 部署）
+pnpm db:migrate:full
+```
+
 ## 项目架构
 
 ### 目录结构
 
 ```
 src/
-├── components/          # 共享组件
-│   ├── ui/             # shadcn/ui 组件（部分已自定义）
-│   ├── layout/         # 布局组件（侧边栏、头部等）
-│   └── data-table/     # 数据表格组件
-├── features/           # 功能模块（按业务划分）
-│   ├── ai-chat/        # AI 对话功能
-│   ├── auth/           # 认证相关
-│   ├── dashboard/      # 仪表盘
-│   ├── tasks/          # 任务管理
-│   ├── users/          # 用户管理
-│   └── settings/       # 设置页面
-├── routes/             # TanStack Router 路由
-│   ├── __root.tsx      # 根路由
-│   ├── _authenticated/ # 需要认证的路由
-│   └── (auth)/         # 认证相关路由
-├── stores/             # Zustand 状态管理
-│   ├── auth-store.ts   # 认证状态
-│   └── chat-store.ts   # 聊天状态
-├── hooks/              # 自定义 Hooks
-├── lib/                # 工具函数
-└── config/             # 配置文件
+├── assets/             # 静态资源
+│   ├── brand-icons/    # 品牌图标
+│   └── custom/         # 自定义资源
+├── components/         # 共享组件
+│   ├── ui/            # shadcn/ui 组件（部分已自定义）
+│   ├── layout/        # 布局组件（侧边栏、头部等）
+│   ├── auth/          # 认证相关组件
+│   └── data-table/    # 数据表格组件
+├── features/          # 功能模块（按业务划分）
+│   ├── ai-chat/       # AI 对话功能
+│   │   ├── api/       # API 调用
+│   │   ├── components/# 功能组件
+│   │   ├── config/    # 配置
+│   │   ├── hooks/     # 自定义 Hooks
+│   │   └── types/     # 类型定义
+│   ├── skills/        # 技能管理
+│   ├── auth/          # 认证相关
+│   ├── dashboard/     # 仪表盘
+│   ├── users/         # 用户管理
+│   ├── roles/         # 角色管理
+│   ├── permissions/   # 权限管理
+│   ├── menus/         # 菜单管理
+│   ├── settings/      # 设置页面
+│   │   ├── profile/   # 个人资料
+│   │   ├── account/   # 账户设置
+│   │   ├── appearance/# 外观设置
+│   │   ├── notifications/ # 通知设置
+│   │   └── display/   # 显示设置
+│   ├── debug/         # 调试工具
+│   └── errors/        # 错误页面
+├── routes/            # TanStack Router 路由
+│   ├── __root.tsx     # 根路由
+│   ├── _authenticated/# 需要认证的路由
+│   │   ├── ai-chat/   # AI 对话路由
+│   │   ├── skills/    # 技能管理路由
+│   │   ├── users/     # 用户管理路由
+│   │   ├── settings/  # 设置路由
+│   │   ├── agent-management/  # Agent 管理
+│   │   ├── mcp-management/    # MCP 管理
+│   │   ├── help-center/       # 帮助中心
+│   │   ├── debug/     # 调试页面
+│   │   └── errors/    # 错误页面
+│   ├── (auth)/        # 认证相关路由
+│   └── (errors)/      # 错误路由
+├── stores/            # Zustand 状态管理
+│   ├── auth-store.ts  # 认证状态
+│   └── chat-store.ts  # 聊天状态
+├── hooks/             # 全局自定义 Hooks
+├── lib/               # 工具函数
+│   └── api/          # API 客户端
+├── mocks/             # 测试 Mock
+│   ├── data/         # Mock 数据（JSON）
+│   └── utils/        # Mock 工具
+├── context/           # React Context
+├── config/            # 配置文件
+└── styles/            # 全局样式
 
 server/
-├── index.ts            # Express 服务器入口
-├── config/             # 配置文件
-│   └── env.ts          # 环境变量验证
-├── routes/             # API 路由
+├── index.ts           # Express 服务器入口
+├── __tests__/         # 测试文件
+│   ├── fixtures/      # 测试固定数据
+│   ├── helpers/       # 测试辅助函数
+│   ├── integration/   # 集成测试
+│   └── unit/          # 单元测试
+├── config/            # 配置文件
+│   └── env.ts         # 环境变量验证
+├── routes/            # API 路由
 │   ├── opencode.routes.ts
 │   ├── skills.routes.ts
 │   └── sessions.routes.ts
-├── services/           # 业务逻辑
+├── services/          # 业务逻辑
+│   ├── auth/          # 认证服务
 │   ├── database.service.ts  # 数据库连接管理
 │   ├── opencode.service.ts
 │   └── sessions.service.ts
-├── repositories/       # 数据访问层
+├── repositories/      # 数据访问层
 │   ├── base.repository.ts   # 通用仓储基类
 │   └── sessions.repository.ts
-├── controllers/        # 控制器层
+├── controllers/       # 控制器层
 │   └── sessions.controller.ts
-├── middleware/         # 中间件
+├── middleware/        # 中间件
 │   ├── auth.middleware.ts
 │   ├── error-handler.ts
 │   ├── prisma-metrics.ts
 │   └── retry-middleware.ts
-├── utils/              # 工具函数
-│   ├── metrics.ts      # Prometheus 指标
-│   └── logger.ts       # 结构化日志
-└── types/              # 类型定义
+├── utils/             # 工具函数
+│   ├── metrics.ts     # Prometheus 指标
+│   └── logger.ts      # 结构化日志
+└── types/             # 类型定义
     ├── session.types.ts
     └── index.ts
 ```
@@ -141,7 +214,11 @@ server/
 
 #### Auth Store (`src/stores/auth-store.ts`)
 
-管理用户认证状态
+管理用户认证状态：
+
+- **认证提供商**: Clerk (用户认证和会话管理)
+- **权限控制**: CASL (基于能力的访问控制)
+- **用户状态**: 登录状态、用户信息、权限配置
 
 ### AI 对话功能架构
 
@@ -267,6 +344,20 @@ const session = await prisma.session.findUnique({ where: { sessionId } });
 - **组件命名**: 使用 PascalCase 命名组件文件和组件名
 - **Hooks 命名**: 自定义 Hooks 必须以 `use` 开头
 
+### 6. 测试规范
+
+项目使用 Vitest 进行测试：
+
+- **测试框架**: Vitest + @vitest/ui
+- **API Mock**: MSW (Mock Service Worker)
+- **测试数据**: @faker-js/faker 生成测试数据
+- **测试覆盖率**: 通过 `pnpm test:coverage` 生成报告
+
+**测试文件位置**:
+- 单元测试：与源文件同目录，命名为 `*.test.ts` 或 `*.spec.ts`
+- Mock 数据：`src/mocks/data/` (JSON 文件)
+- MSW handlers：`src/mocks/handlers/`
+
 ## 参考文档
 
 - [OpenCode API 文档](docs/openapi.json)
@@ -276,5 +367,5 @@ const session = await prisma.session.findUnique({ where: { sessionId } });
 - [TanStack Router 文档](https://tanstack.com/router/latest)
 - [TanStack Query 文档](https://tanstack.com/query/latest)
 - [Prometheus 指标最佳实践](https://prometheus.io/docs/practices/naming/)
-
-- JSON 文件存储 Mock 数据（`src/mocks/data/`）
+- [Vitest 文档](https://vitest.dev)
+- [MSW 文档](https://mswjs.io)

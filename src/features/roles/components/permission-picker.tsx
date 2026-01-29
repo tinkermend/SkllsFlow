@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Check } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -14,7 +14,7 @@ type PermissionPickerProps = {
 };
 
 export function PermissionPicker({ value, onChange }: PermissionPickerProps) {
-  const [selectedModule, setSelectedModule] = useState<string | null>(null);
+  const [collapsedModules, setCollapsedModules] = useState<Record<string, boolean>>({});
 
   const { data: permissions = [], isLoading } = useQuery({
     queryKey: ["permissions"],
@@ -24,20 +24,24 @@ export function PermissionPicker({ value, onChange }: PermissionPickerProps) {
     },
   });
 
-  // 按模块分组权限
-  const groupedPermissions = permissions.reduce(
-    (acc, permission) => {
-      const module = permission.module || "其他";
-      if (!acc[module]) {
-        acc[module] = [];
-      }
-      acc[module].push(permission);
-      return acc;
-    },
-    {} as Record<string, Permission[]>,
-  );
+  // 按模块分组权限 - 使用 useMemo 避免每次渲染都重新创建对象
+  const groupedPermissions = useMemo(() => {
+    return permissions.reduce(
+      (acc, permission) => {
+        const module = permission.module || "其他";
+        if (!acc[module]) {
+          acc[module] = [];
+        }
+        acc[module].push(permission);
+        return acc;
+      },
+      {} as Record<string, Permission[]>,
+    );
+  }, [permissions]);
 
-  const modules = Object.keys(groupedPermissions).sort();
+  const modules = useMemo(() => {
+    return Object.keys(groupedPermissions).sort();
+  }, [groupedPermissions]);
 
   const handleTogglePermission = (permissionId: string) => {
     if (value.includes(permissionId)) {
@@ -63,6 +67,13 @@ export function PermissionPicker({ value, onChange }: PermissionPickerProps) {
       });
       onChange(newValue);
     }
+  };
+
+  const toggleModuleVisibility = (module: string) => {
+    setCollapsedModules((prev) => ({
+      ...prev,
+      [module]: !prev[module],
+    }));
   };
 
   if (isLoading) {
@@ -95,28 +106,25 @@ export function PermissionPicker({ value, onChange }: PermissionPickerProps) {
             const allSelected = selectedCount === modulePermissionIds.length;
             const someSelected = selectedCount > 0 && !allSelected;
 
+            const isCollapsed = collapsedModules[module] ?? false;
             return (
               <div key={module} className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Checkbox
-                    checked={allSelected}
-                    ref={(el) => {
-                      if (el) {
-                        // @ts-expect-error - Radix UI Checkbox supports indeterminate
-                        el.indeterminate = someSelected;
-                      }
-                    }}
+                    checked={allSelected ? true : someSelected ? "indeterminate" : false}
                     onCheckedChange={() => handleToggleModule(module)}
                   />
                   <button
                     type="button"
-                    onClick={() =>
-                      setSelectedModule(
-                        selectedModule === module ? null : module,
-                      )
-                    }
+                    onClick={() => toggleModuleVisibility(module)}
                     className="flex items-center gap-2 text-sm font-medium hover:text-primary"
                   >
+                    <ChevronDown
+                      className={cn(
+                        "h-4 w-4 transition-transform",
+                        isCollapsed && "-rotate-90",
+                      )}
+                    />
                     {module}
                     <Badge variant="secondary" className="text-xs">
                       {selectedCount}/{modulePermissionIds.length}
@@ -124,41 +132,46 @@ export function PermissionPicker({ value, onChange }: PermissionPickerProps) {
                   </button>
                 </div>
 
-                <div className="ml-6 space-y-2">
-                  {modulePermissions.map((permission) => {
-                    const isSelected = value.includes(permission.id);
-                    return (
-                      <div
-                        key={permission.id}
-                        className={cn(
-                          "flex items-start gap-2 p-2 rounded-md hover:bg-muted/50 cursor-pointer",
-                          isSelected && "bg-muted",
-                        )}
-                        onClick={() => handleTogglePermission(permission.id)}
-                      >
-                        <Checkbox checked={isSelected} className="mt-0.5" />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium">
-                              {permission.name}
-                            </span>
-                            <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
-                              {permission.code}
-                            </code>
+                {!isCollapsed && (
+                  <div className="ml-6 space-y-2">
+                    {modulePermissions.map((permission) => {
+                      const isSelected = value.includes(permission.id);
+                      return (
+                        <div
+                          key={permission.id}
+                          className={cn(
+                            "flex items-start gap-2 p-2 rounded-md hover:bg-muted/50",
+                            isSelected && "bg-muted",
+                          )}
+                        >
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={() => handleTogglePermission(permission.id)}
+                            className="mt-0.5"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium">
+                                {permission.name}
+                              </span>
+                              <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
+                                {permission.code}
+                              </code>
+                            </div>
+                            {permission.description && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {permission.description}
+                              </p>
+                            )}
                           </div>
-                          {permission.description && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {permission.description}
-                            </p>
+                          {isSelected && (
+                            <Check className="h-4 w-4 text-primary flex-shrink-0" />
                           )}
                         </div>
-                        {isSelected && (
-                          <Check className="h-4 w-4 text-primary flex-shrink-0" />
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             );
           })}

@@ -1,11 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { usersApi } from '@/lib/api/users';
-import type { GetUsersParams } from '@/lib/api/users';
+import { usersApi, type GetUsersParams } from '@/lib/api/users';
 
 export function useUsers(params: GetUsersParams) {
   return useQuery({
     queryKey: ['users', params],
     queryFn: () => usersApi.getUsers(params).then(res => res.data),
+    keepPreviousData: true,
   });
 }
 

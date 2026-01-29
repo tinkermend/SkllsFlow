@@ -3,14 +3,16 @@ import { Badge } from '@/components/ui/badge';
 import { DataTableRowActions } from './data-table-row-actions';
 import type { Menu } from '../data/schema';
 
-export const menusColumns: ColumnDef<Menu>[] = [
+export type MenuRow = Menu & { depth?: number };
+
+export const menusColumns: ColumnDef<MenuRow>[] = [
   {
     accessorKey: 'name',
     header: '菜单名称',
     cell: ({ row }) => {
-      const level = row.depth || 0;
+      const level = row.original.depth ?? 0;
       return (
-        <div style={{ paddingLeft: `${level * 20}px` }}>
+        <div style={{ paddingLeft: `${level * 20}px` }} className='flex items-center gap-2'>
           {row.original.name}
         </div>
       );
@@ -37,6 +39,25 @@ export const menusColumns: ColumnDef<Menu>[] = [
         </Badge>
       );
     },
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id));
+    },
+  },
+  {
+    accessorKey: 'isVisible',
+    header: '显示',
+    cell: ({ row }) => {
+      const isVisible = row.original.isVisible;
+      return (
+        <Badge variant={isVisible ? 'default' : 'secondary'}>
+          {isVisible ? '可见' : '隐藏'}
+        </Badge>
+      );
+    },
+    filterFn: (row, id, value) => {
+      const state = row.original.isVisible ? 'visible' : 'hidden';
+      return value.includes(state);
+    },
   },
   {
     accessorKey: 'sort',
@@ -52,6 +73,9 @@ export const menusColumns: ColumnDef<Menu>[] = [
           {status === 'active' ? '启用' : '禁用'}
         </Badge>
       );
+    },
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id));
     },
   },
   {
