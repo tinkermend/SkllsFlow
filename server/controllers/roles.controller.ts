@@ -1,33 +1,9 @@
 import { type Request, type Response } from 'express';
 import { DatabaseService } from '../services/database.service.js';
+import { serializePrisma } from '../utils/serialization.js';
 
 function getPrisma() {
   return DatabaseService.getInstance();
-}
-
-/**
- * 将对象中的 BigInt 转换为 String
- */
-function serializeBigInt(obj: any): any {
-  if (obj === null || obj === undefined) return obj;
-
-  if (typeof obj === 'bigint') {
-    return obj.toString();
-  }
-
-  if (Array.isArray(obj)) {
-    return obj.map(serializeBigInt);
-  }
-
-  if (typeof obj === 'object') {
-    const result: any = {};
-    for (const key in obj) {
-      result[key] = serializeBigInt(obj[key]);
-    }
-    return result;
-  }
-
-  return obj;
 }
 
 export async function listRoles(req: Request, res: Response) {
@@ -39,7 +15,7 @@ export async function listRoles(req: Request, res: Response) {
     },
     orderBy: { sort: 'asc' },
   });
-  res.json(serializeBigInt(roles));
+  res.json(serializePrisma(roles));
 }
 
 export async function createRole(req: Request, res: Response) {
@@ -58,7 +34,7 @@ export async function createRole(req: Request, res: Response) {
     },
   });
 
-  res.status(201).json(serializeBigInt(role));
+  res.status(201).json(serializePrisma(role));
 }
 
 export async function updateRole(req: Request, res: Response) {
@@ -87,5 +63,5 @@ export async function updateRole(req: Request, res: Response) {
     });
   });
 
-  res.json(serializeBigInt(role));
+  res.json(serializePrisma(role));
 }

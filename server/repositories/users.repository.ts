@@ -65,6 +65,58 @@ export class UserRepository extends BaseRepository<
       },
     });
   }
+
+  /**
+   * 通过 UUID 查找用户（别名方法，与 findByUserId 相同）
+   */
+  async findByUUID(userUUId: string) {
+    return this.findByUserId(userUUId);
+  }
+
+  /**
+   * 分页查询用户列表
+   */
+  async findManyWithPagination(params: {
+    skip: number;
+    take: number;
+    where?: Prisma.UserWhereInput;
+    orderBy?: Prisma.UserOrderByWithRelationInput;
+  }) {
+    const { skip, take, where, orderBy } = params;
+
+    const [users, total] = await Promise.all([
+      this.prisma.user.findMany({
+        skip,
+        take,
+        where,
+        orderBy,
+        select: {
+          id: true,
+          userUUId: true,
+          accountNo: true,
+          email: true,
+          username: true,
+          avatar: true,
+          status: true,
+          lastLoginAt: true,
+          createdAt: true,
+          userRoles: {
+            include: {
+              role: {
+                select: {
+                  name: true,
+                  code: true,
+                },
+              },
+            },
+          },
+        },
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+
+    return { users, total };
+  }
 }
 
 let _userRepository: UserRepository | null = null;

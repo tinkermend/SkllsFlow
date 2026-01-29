@@ -16,6 +16,13 @@ router.use(jwtAuthMiddleware);
 router.get('/', requirePermissions('user:view'), usersController.getUsers);
 
 /**
+ * @route   POST /api/users
+ * @desc    创建新用户
+ * @access  Private + user:create
+ */
+router.post('/', requirePermissions('user:create'), usersController.createUser);
+
+/**
  * @route   GET /api/users/:id
  * @desc    获取用户详情
  * @access  Private + user:view

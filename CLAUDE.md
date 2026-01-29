@@ -277,18 +277,4 @@ const session = await prisma.session.findUnique({ where: { sessionId } });
 - [TanStack Query 文档](https://tanstack.com/query/latest)
 - [Prometheus 指标最佳实践](https://prometheus.io/docs/practices/naming/)
 
-## Active Technologies
-- TypeScript 5.9.3, Node.js 20+ (001-rbac-validation-testing)
-- PostgreSQL 16 (测试数据库，独立于生产环境) (001-rbac-validation-testing)
-
-- Node.js + TypeScript 5.9.3 (001-session-db-storage)
-- PostgreSQL 16 (aiops database, sessions table) (001-session-db-storage)
-- Prisma ORM 7.3.0 (001-session-db-storage)
-
-- TypeScript 5.9.3, Node.js (for Express backend) + MSW (Mock Service Worker), Vite, Axios, React 19
 - JSON 文件存储 Mock 数据（`src/mocks/data/`）
-
-## Recent Changes
-
-- 001-session-db-storage: Added Prisma ORM 7.3.0 for database management, PostgreSQL 16 integration with connection pooling, metrics collection (prom-client), and retry logic. Implemented session persistence with Repository pattern.
-- 001-msw-mock: Added TypeScript 5.9.3, Node.js (for Express backend) + MSW (Mock Service Worker), Vite, Axios, React 19

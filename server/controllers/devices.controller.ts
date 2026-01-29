@@ -6,11 +6,11 @@ import { getRefreshTokenRepository } from '../repositories/refresh-tokens.reposi
  */
 export async function getDevices(req: Request, res: Response) {
   try {
-    if (!req.user) {
+    if (!req.userInternalId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const devices = await getRefreshTokenRepository().findActiveTokensByUserId(req.user.id);
+    const devices = await getRefreshTokenRepository().findActiveTokensByUserId(req.userInternalId);
 
     // 格式化设备信息
     const formattedDevices = devices.map((token) => ({
@@ -37,7 +37,7 @@ export async function getDevices(req: Request, res: Response) {
  */
 export async function revokeDevice(req: Request, res: Response) {
   try {
-    if (!req.user) {
+    if (!req.userInternalId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
@@ -49,7 +49,7 @@ export async function revokeDevice(req: Request, res: Response) {
       return res.status(404).json({ error: 'Device not found' });
     }
 
-    if (token.userId !== req.user.id) {
+    if (token.userId !== req.userInternalId) {
       return res.status(403).json({ error: 'Forbidden' });
     }
 

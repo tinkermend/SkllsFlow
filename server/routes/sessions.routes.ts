@@ -1,11 +1,11 @@
 import { Router, type Request, type Response, type NextFunction, type Router as RouterType } from 'express';
 import { SessionsController } from '../controllers/sessions.controller.js';
-import { authMiddleware } from '../middleware/auth.middleware.js';
+import { jwtAuthMiddleware } from '../middleware/jwt-auth.middleware.js';
 
 const router: RouterType = Router();
 
 // Authentication middleware - all routes require auth
-router.use(authMiddleware);
+router.use(jwtAuthMiddleware);
 
 // Middleware to create controller instance per request
 router.use((req: Request, res: Response, next: NextFunction) => {

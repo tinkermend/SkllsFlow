@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { AlertTriangle } from "lucide-react";
-import { showSubmittedData } from "@/lib/show-submitted-data";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { useDeleteUser } from "../hooks/use-users";
+import { toast } from "sonner";
 import { type User } from "../data/schema";
 
 type UserDeleteDialogProps = {
@@ -21,12 +22,19 @@ export function UsersDeleteDialog({
   currentRow,
 }: UserDeleteDialogProps) {
   const [value, setValue] = useState("");
+  const deleteUser = useDeleteUser();
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (value.trim() !== currentRow.username) return;
 
-    onOpenChange(false);
-    showSubmittedData(currentRow, "以下用户已被删除：");
+    try {
+      await deleteUser.mutateAsync(currentRow.id);
+      toast.success("用户删除成功");
+      onOpenChange(false);
+      setValue("");
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || error.message || "删除失败");
+    }
   };
 
   return (
@@ -34,7 +42,7 @@ export function UsersDeleteDialog({
       open={open}
       onOpenChange={onOpenChange}
       handleConfirm={handleDelete}
-      disabled={value.trim() !== currentRow.username}
+      disabled={value.trim() !== currentRow.username || deleteUser.isPending}
       title={
         <span className="text-destructive">
           <AlertTriangle

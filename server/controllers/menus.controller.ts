@@ -1,5 +1,6 @@
 import { type Request, type Response } from 'express';
 import { DatabaseService } from '../services/database.service.js';
+import { serializePrisma } from '../utils/serialization.js';
 
 function getPrisma() {
   return DatabaseService.getInstance();
@@ -22,7 +23,7 @@ export async function listMenus(req: Request, res: Response) {
       where: { parentId: null },
       orderBy: { sort: 'asc' },
     });
-    res.json(menus);
+    res.json(serializePrisma(menus));
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -45,7 +46,7 @@ export async function getMenuById(req: Request, res: Response) {
       return res.status(404).json({ error: '菜单不存在' });
     }
 
-    res.json(menu);
+    res.json(serializePrisma(menu));
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -73,7 +74,7 @@ export async function createMenu(req: Request, res: Response) {
       },
     });
 
-    res.status(201).json(menu);
+    res.status(201).json(serializePrisma(menu));
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -103,7 +104,7 @@ export async function updateMenu(req: Request, res: Response) {
       },
     });
 
-    res.json(menu);
+    res.json(serializePrisma(menu));
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -140,11 +141,11 @@ export async function deleteMenu(req: Request, res: Response) {
  */
 export async function getUserMenus(req: Request, res: Response) {
   try {
-    if (!req.user) {
+    if (!req.userInternalId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const userId = req.user.id;
+    const userId = req.userInternalId;
 
     // 获取用户的所有角色
     const userRoles = await getPrisma().userRole.findMany({
@@ -178,7 +179,7 @@ export async function getUserMenus(req: Request, res: Response) {
       orderBy: { sort: 'asc' },
     });
 
-    res.json(menus);
+    res.json(serializePrisma(menus));
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

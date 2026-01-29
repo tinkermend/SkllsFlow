@@ -1,11 +1,11 @@
 import { Router, type Request, type Response, type Router as RouterType } from 'express'
-import { openCodeService } from '../services/opencode.service'
-import { authMiddleware } from '../middleware/auth.middleware'
+import { openCodeService } from '../services/opencode.service.js'
+import { jwtAuthMiddleware } from '../middleware/jwt-auth.middleware.js'
 
 const router: RouterType = Router()
 
 // 所有路由都需要认证
-router.use(authMiddleware)
+router.use(jwtAuthMiddleware)
 
 /**
  * GET /api/opencode/connection
