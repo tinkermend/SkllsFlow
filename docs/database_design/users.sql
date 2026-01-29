@@ -1,9 +1,18 @@
+-- Active: 1769677791565@@127.0.0.1@5432@aiops@aiops
 -- ============================================
 -- 用户表 (users)
 -- ============================================
 -- 说明：存储平台用户信息和认证凭据
 -- Schema: aiops
 -- ============================================
+
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
 -- 删除已存在的表
 DROP TABLE IF EXISTS aiops.users CASCADE;

@@ -12,6 +12,7 @@
 
 INSERT INTO
     aiops.users (
+        user_uuid,
         account_no,
         email,
         password_hash,
@@ -21,6 +22,7 @@ INSERT INTO
         updated_at
     )
 VALUES (
+        gen_random_uuid(),
         'admin',
         'admin@aiops.com',
         '$2b$10$P55QrQQoiQEsWF9NfBHghe2AynNOQ4u5iWk60fz44igfov32LeOJi',
@@ -30,6 +32,7 @@ VALUES (
         NOW()
     ),
     (
+        gen_random_uuid(),
         'user',
         'user@aiops.com',
         '$2b$10$EPDsHeaP/y28HS5spQMPZujDUz9iEU1yLXkrG0NbbA6kN2XCaNH4G',
@@ -400,6 +403,55 @@ VALUES (
         'agent',
         'delete',
         'agents',
+        NOW(),
+        NOW()
+    )
+ON CONFLICT (code) DO NOTHING;
+
+-- 3.7 菜单管理权限
+INSERT INTO
+    aiops.permissions (
+        name,
+        code,
+        resource,
+        action,
+        module,
+        created_at,
+        updated_at
+    )
+VALUES (
+        '查看菜单',
+        'menu:view',
+        'menu',
+        'view',
+        'menus',
+        NOW(),
+        NOW()
+    ),
+    (
+        '创建菜单',
+        'menu:create',
+        'menu',
+        'create',
+        'menus',
+        NOW(),
+        NOW()
+    ),
+    (
+        '更新菜单',
+        'menu:update',
+        'menu',
+        'update',
+        'menus',
+        NOW(),
+        NOW()
+    ),
+    (
+        '删除菜单',
+        'menu:delete',
+        'menu',
+        'delete',
+        'menus',
         NOW(),
         NOW()
     )

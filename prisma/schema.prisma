@@ -16,19 +16,33 @@ datasource db {
 // ============================================
 // 用户表
 // ============================================
+/// 系统用户表，存储用户基本信息和认证数据
 model User {
+  /// 主键 ID，自增
   id                 BigInt      @id @default(autoincrement())
-  userUUId             String      @unique @default(uuid()) @map("user_uuid") @db.Uuid  // 业务 ID
-  accountNo          String      @unique @map("account_no")      // 账号
-  email              String      @unique                          // 邮箱
-  passwordHash       String      @map("password_hash")            // 密码哈希
-  username           String?                                      // 用户名
-  avatar             String?                                      // 头像 URL
-  status             user_status @default(active)                 // 状态
-  lastLoginAt        DateTime?   @map("last_login_at")            // 最后登录时间
-  loginFailedCount   Int         @default(0) @map("login_failed_count")   // 登录失败次数
-  lockedUntil        DateTime?   @map("locked_until")             // 锁定截止时间
+  /// 业务 UUID，用于对外暴露的用户标识
+  userUUId             String      @unique @default(uuid()) @map("user_uuid") @db.Uuid
+  /// 账号，用于登录，唯一
+  accountNo          String      @unique @map("account_no")
+  /// 邮箱地址，唯一
+  email              String      @unique
+  /// 密码哈希值（bcrypt）
+  passwordHash       String      @map("password_hash")
+  /// 用户昵称
+  username           String?
+  /// 头像 URL 地址
+  avatar             String?
+  /// 账户状态（active: 激活, disabled: 禁用）
+  status             user_status @default(active)
+  /// 最后登录时间
+  lastLoginAt        DateTime?   @map("last_login_at")
+  /// 连续登录失败次数
+  loginFailedCount   Int         @default(0) @map("login_failed_count")
+  /// 账户锁定截止时间
+  lockedUntil        DateTime?   @map("locked_until")
+  /// 创建时间
   createdAt          DateTime    @default(now()) @map("created_at")
+  /// 更新时间
   updatedAt          DateTime    @updatedAt @map("updated_at")
 
   // 关联关系
@@ -47,20 +61,31 @@ model User {
 // ============================================
 // 角色表
 // ============================================
+/// 系统角色表，定义用户权限组
 model Role {
+  /// 主键 ID，自增
   id          BigInt       @id @default(autoincrement())
-  name        String                                          // 角色名称
-  code        String       @unique                            // 角色代码 (admin, user)
-  description String?                                         // 角色描述
-  isSystem    Boolean      @default(false) @map("is_system")  // 是否系统内置
-  sort        Int          @default(0)                        // 排序
-  status      role_status  @default(active)                   // 状态
+  /// 角色名称（如：管理员、普通用户）
+  name        String
+  /// 角色代码，唯一标识（如：admin、user）
+  code        String       @unique
+  /// 角色描述说明
+  description String?
+  /// 是否为系统内置角色（内置角色不可删除）
+  isSystem    Boolean      @default(false) @map("is_system")
+  /// 排序权重，数值越小越靠前
+  sort        Int          @default(0)
+  /// 角色状态（active: 激活, disabled: 禁用）
+  status      role_status  @default(active)
+  /// 创建时间
   createdAt   DateTime     @default(now()) @map("created_at")
+  /// 更新时间
   updatedAt   DateTime     @updatedAt @map("updated_at")
 
   // 关联关系
   userRoles       UserRole[]
   rolePermissions RolePermission[]
+  roleMenus       RoleMenu[]
 
   @@index([code])
   @@index([status])
@@ -71,15 +96,25 @@ model Role {
 // ============================================
 // 权限表
 // ============================================
+/// 系统权限表，定义细粒度的操作权限
 model Permission {
+  /// 主键 ID，自增
   id          BigInt   @id @default(autoincrement())
-  name        String                                          // 权限名称
-  code        String   @unique                                // 权限代码 (user:create)
-  resource    String                                          // 资源 (user, session)
-  action      String                                          // 操作 (create, read, update, delete)
-  description String?                                         // 权限描述
-  module      String                                          // 所属模块 (users, sessions, skills)
+  /// 权限名称（如：创建用户）
+  name        String
+  /// 权限代码，唯一标识（格式：resource:action，如：user:create）
+  code        String   @unique
+  /// 资源类型（如：user、session、skill）
+  resource    String
+  /// 操作类型（如：create、read、update、delete）
+  action      String
+  /// 权限描述说明
+  description String?
+  /// 所属功能模块（如：users、sessions、skills）
+  module      String
+  /// 创建时间
   createdAt   DateTime @default(now()) @map("created_at")
+  /// 更新时间
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   // 关联关系
@@ -94,10 +129,15 @@ model Permission {
 // ============================================
 // 用户-角色关联表 (多对多)
 // ============================================
+/// 用户与角色的多对多关联表
 model UserRole {
+  /// 主键 ID，自增
   id        BigInt   @id @default(autoincrement())
+  /// 用户 ID，外键关联 users 表
   userId    BigInt   @map("user_id")
+  /// 角色 ID，外键关联 roles 表
   roleId    BigInt   @map("role_id")
+  /// 创建时间
   createdAt DateTime @default(now()) @map("created_at")
 
   // 关联关系
@@ -114,10 +154,15 @@ model UserRole {
 // ============================================
 // 角色-权限关联表 (多对多)
 // ============================================
+/// 角色与权限的多对多关联表
 model RolePermission {
+  /// 主键 ID，自增
   id           BigInt   @id @default(autoincrement())
+  /// 角色 ID，外键关联 roles 表
   roleId       BigInt   @map("role_id")
+  /// 权限 ID，外键关联 permissions 表
   permissionId BigInt   @map("permission_id")
+  /// 创建时间
   createdAt    DateTime @default(now()) @map("created_at")
 
   // 关联关系
@@ -134,17 +179,28 @@ model RolePermission {
 // ============================================
 // 刷新令牌表
 // ============================================
+/// JWT 刷新令牌表，用于令牌轮换和会话管理
 model RefreshToken {
+  /// 主键 ID，自增
   id           BigInt    @id @default(autoincrement())
-  tokenHash    String    @unique @map("token_hash")          // 经过哈希的刷新令牌
-  deviceId     String?   @map("device_id")                   // 设备指纹
-  ipAddress    String?   @map("ip_address")                  // 登录 IP
-  userAgent    String?   @map("user_agent")                  // UA
+  /// 刷新令牌的哈希值，唯一
+  tokenHash    String    @unique @map("token_hash")
+  /// 设备指纹标识
+  deviceId     String?   @map("device_id")
+  /// 登录 IP 地址
+  ipAddress    String?   @map("ip_address")
+  /// 用户代理字符串（浏览器信息）
+  userAgent    String?   @map("user_agent")
+  /// 用户 ID，外键关联 users 表
   userId       BigInt    @map("user_id")
-  expiresAt    DateTime  @map("expires_at")                  // 过期时间
+  /// 令牌过期时间
+  expiresAt    DateTime  @map("expires_at")
+  /// 创建时间
   createdAt    DateTime  @default(now()) @map("created_at")
-  rotatedAt    DateTime? @map("rotated_at")                  // 轮换时间
-  revokedAt    DateTime? @map("revoked_at")                  // 撤销时间
+  /// 令牌轮换时间
+  rotatedAt    DateTime? @map("rotated_at")
+  /// 令牌撤销时间
+  revokedAt    DateTime? @map("revoked_at")
 
   // 关联关系
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -158,15 +214,25 @@ model RefreshToken {
 // ============================================
 // 审计日志表
 // ============================================
+/// 系统审计日志表，记录所有重要操作
 model AuditLog {
+  /// 主键 ID，自增
   id         BigInt   @id @default(autoincrement())
+  /// 操作用户 ID（可为空，如匿名操作）
   userId     BigInt?  @map("user_id")
-  action     String                                          // 操作类型 (login, create_user, etc.)
-  resource   String                                          // 资源类型
-  resourceId String?  @map("resource_id")                    // 资源 ID
-  details    Json?                                           // 操作详情 (JSON)
-  ipAddress  String?  @map("ip_address")                     // IP 地址
-  userAgent  String?  @map("user_agent")                     // User Agent
+  /// 操作类型（如：login、create_user、delete_session）
+  action     String
+  /// 资源类型（如：user、session、role）
+  resource   String
+  /// 资源 ID（被操作的资源标识）
+  resourceId String?  @map("resource_id")
+  /// 操作详情，JSON 格式存储
+  details    Json?
+  /// 操作来源 IP 地址
+  ipAddress  String?  @map("ip_address")
+  /// 用户代理字符串（浏览器信息）
+  userAgent  String?  @map("user_agent")
+  /// 创建时间
   createdAt  DateTime @default(now()) @map("created_at")
 
   @@index([userId])
@@ -180,16 +246,27 @@ model AuditLog {
 // ============================================
 // 会话表
 // ============================================
+/// OpenCode 会话表，存储 AI 对话会话信息
 model Session {
+  /// 主键 ID，自增
   id             BigInt         @id @default(autoincrement())
+  /// 会话唯一标识符，对应 OpenCode session ID
   sessionId      String         @unique @map("session_id")
+  /// 会话标题
   title          String
+  /// 用户 ID，外键关联 users 表
   userId         BigInt         @map("user_id")
+  /// 项目 ID，默认为 global
   projectId      String         @default("global") @map("project_id")
+  /// 会话状态（active: 活跃, delete: 已删除）
   status         session_status @default(active)
+  /// OpenCode 服务器地址
   opencodeServer String         @default("http://127.0.0.1:4096") @map("opencode_server")
+  /// 工作目录路径
   directory      String?
+  /// 创建时间
   createdAt      DateTime       @default(now()) @map("created_at")
+  /// 更新时间
   updatedAt      DateTime       @updatedAt @map("updated_at")
 
   // 关联关系
@@ -200,6 +277,77 @@ model Session {
   @@index([updatedAt(sort: Desc)])
   @@schema("aiops")
   @@map("sessions")
+}
+
+// ============================================
+// 菜单表
+// ============================================
+/// 系统菜单表，用于动态菜单和权限控制
+model Menu {
+  /// 主键 ID，自增
+  id          BigInt      @id @default(autoincrement())
+  /// 菜单名称
+  name        String
+  /// 路由路径（如：/users、/settings）
+  path        String?
+  /// 图标名称（对应图标库中的图标）
+  icon        String?
+  /// 父菜单 ID，用于构建树形结构
+  parentId    BigInt?     @map("parent_id")
+  /// 排序权重，数值越小越靠前
+  sort        Int         @default(0)
+  /// 菜单类型（menu: 菜单, button: 按钮）
+  type        menu_type   @default(menu)
+  /// 权限标识，用于权限校验
+  permission  String?
+  /// 是否在菜单中显示
+  isVisible   Boolean     @default(true) @map("is_visible")
+  /// 是否为外部链接
+  isExternal  Boolean     @default(false) @map("is_external")
+  /// 菜单状态（active: 激活, disabled: 禁用）
+  status      menu_status @default(active)
+  /// 创建时间
+  createdAt   DateTime    @default(now()) @map("created_at")
+  /// 更新时间
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  // 自关联关系
+  parent   Menu?  @relation("MenuToMenu", fields: [parentId], references: [id], onDelete: Cascade)
+  children Menu[] @relation("MenuToMenu")
+
+  // 角色菜单关联
+  roleMenus RoleMenu[]
+
+  @@index([parentId])
+  @@index([sort])
+  @@index([status])
+  @@schema("aiops")
+  @@map("menus")
+}
+
+// ============================================
+// 角色-菜单关联表 (多对多)
+// ============================================
+/// 角色与菜单的多对多关联表
+model RoleMenu {
+  /// 主键 ID，自增
+  id        BigInt   @id @default(autoincrement())
+  /// 角色 ID，外键关联 roles 表
+  roleId    BigInt   @map("role_id")
+  /// 菜单 ID，外键关联 menus 表
+  menuId    BigInt   @map("menu_id")
+  /// 创建时间
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // 关联关系
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  menu Menu @relation(fields: [menuId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, menuId])
+  @@index([roleId])
+  @@index([menuId])
+  @@schema("aiops")
+  @@map("role_menus")
 }
 
 // ============================================
@@ -224,4 +372,330 @@ enum session_status {
   delete
 
   @@schema("aiops")
+}
+
+enum menu_type {
+  menu      // 菜单
+  button    // 按钮
+
+  @@schema("aiops")
+}
+
+enum menu_status {
+  active    // 激活
+  disabled  // 禁用
+
+  @@schema("aiops")
+}
+
+// ============================================
+// Agent 表
+// ============================================
+/// OpenCode Agent 配置表，存储 Agent 的配置信息
+model Agent {
+  /// 主键 ID，自增
+  id                BigInt      @id @default(autoincrement())
+  /// Agent 唯一标识符
+  agentId           String      @unique @map("agent_id") @db.VarChar(64)
+  /// Agent 名称，唯一
+  name              String      @unique @db.VarChar(120)
+  /// Agent 描述说明
+  description       String?     @db.Text
+  /// 温度参数（0.0-1.0），控制 LLM 响应的随机性
+  temperature       Decimal?    @db.Decimal(3, 2)
+  /// 最大步数限制，控制 Agent 迭代次数
+  maxSteps          Int?        @map("max_steps")
+  /// 系统提示词，自定义系统提示词内容
+  systemPrompt      String?     @map("system_prompt") @db.Text
+  /// 工具权限配置，JSONB 格式
+  toolsPermissions  Json?       @map("tools_permissions")
+  /// 操作权限配置，JSONB 格式
+  actionPermissions Json?       @map("action_permissions")
+  /// 模式：primary（主代理）、subagent（子代理）、all（全局可用）
+  mode              agent_mode  @default(all)
+  /// 覆盖的模型（如：anthropic/claude-haiku-4-20250514）
+  model             String?     @db.VarChar(255)
+  /// 服务商特定参数，JSONB 格式
+  additionalParams  Json?       @map("additional_params")
+  /// 配置文件内容，Markdown 格式
+  configContent     String?     @map("config_content") @db.Text
+  /// 是否禁用，true 表示 Agent 不可用
+  disabled          Boolean     @default(false)
+  /// 是否隐藏，是否在菜单中隐藏（仅子代理）
+  hidden            Boolean     @default(false)
+  /// 创建人 ID
+  createdBy         BigInt      @map("created_by")
+  /// 创建时间
+  createdAt         DateTime    @default(now()) @map("created_at")
+  /// 更新人 ID
+  updatedBy         BigInt?     @map("updated_by")
+  /// 更新时间
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+  /// 删除人 ID
+  deletedBy         BigInt?     @map("deleted_by")
+  /// 删除时间（软删除）
+  deletedAt         DateTime?   @map("deleted_at")
+
+  // 关联关系
+  sessionAgents SessionAgent[]
+
+  @@index([mode])
+  @@index([disabled])
+  @@schema("aiops")
+  @@map("agents")
+}
+
+enum agent_mode {
+  primary   // 主代理
+  subagent  // 子代理
+  all       // 全局可用
+
+  @@schema("aiops")
+}
+
+// ============================================
+// 技能表
+// ============================================
+/// 技能表，存储平台可用的 AI 技能信息
+model Skill {
+  /// 主键 ID，自增
+  id          BigInt       @id @default(autoincrement())
+  /// 技能唯一标识符
+  skillId     String       @unique @map("skill_id") @db.VarChar(64)
+  /// 技能名称
+  name        String       @db.VarChar(120)
+  /// 技能描述说明
+  description String?      @db.Text
+  /// 图标样式
+  icon        String?      @db.VarChar(100)
+  /// 技能分类（如：code-analysis、data-processing）
+  category    String       @db.VarChar(100)
+  /// 技能标签数组
+  tags        String[]     @db.VarChar(180)
+  /// 状态（active: 启用, disabled: 禁用）
+  status      skill_status @default(active)
+  /// 排序值，数字越小越靠前
+  sortOrder   Int          @default(0) @map("sort_order")
+  /// 技能压缩包文件路径
+  filePath    String       @map("file_path") @db.VarChar(255)
+  /// 创建人 ID
+  createdBy   BigInt       @map("created_by")
+  /// 创建时间
+  createdAt   DateTime     @default(now()) @map("created_at")
+  /// 更新人 ID
+  updatedBy   BigInt?      @map("updated_by")
+  /// 更新时间
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  // 关联关系
+  sessionSkills SessionSkill[]
+  userSkills    UserSkill[]
+
+  @@index([name])
+  @@index([category])
+  @@index([status])
+  @@index([sortOrder])
+  @@index([category, status, sortOrder])
+  @@schema("aiops")
+  @@map("skills")
+}
+
+enum skill_status {
+  active    // 启用
+  disabled  // 禁用
+
+  @@schema("aiops")
+}
+
+// ============================================
+// MCP 服务表
+// ============================================
+/// MCP 服务表，存储 Model Context Protocol 服务的连接与能力元数据
+model McpService {
+  /// 主键 ID，自增
+  id                   BigInt             @id @default(autoincrement())
+  /// MCP 服务唯一标识符
+  mcpId                String             @unique @map("mcp_id") @db.VarChar(64)
+  /// MCP 服务名称，唯一
+  name                 String             @unique @db.VarChar(120)
+  /// MCP 服务描述说明
+  description          String?            @db.Text
+  /// 服务版本号或协议版本
+  version              String?            @db.VarChar(50)
+  /// 传输类型：stdio（本地进程）、sse（服务器发送事件）、websocket
+  transportType        mcp_transport_type @map("transport_type")
+  /// 连接细节，JSONB 格式
+  connectionConfig     Json               @map("connection_config")
+  /// 环境变量，仅用于 stdio 模式
+  envVars              Json               @default("{}") @map("env_vars")
+  /// 认证凭证，应用层加密后的字符串
+  encryptedAuthInfo    String?            @map("encrypted_auth_info") @db.Text
+  /// 能力快照，缓存 Tools/Resources 列表
+  cachedCapabilities   Json               @default("{}") @map("cached_capabilities")
+  /// 服务状态：active、inactive、error、maintenance
+  status               mcp_status         @default(inactive)
+  /// 最后健康检查时间
+  lastHealthCheckAt    DateTime?          @map("last_health_check_at")
+  /// 健康检查结果，JSONB 格式
+  healthCheckResult    Json?              @map("health_check_result")
+  /// 错误信息，简短的错误描述
+  errorMessage         String?            @map("error_message") @db.Text
+  /// 创建时间
+  createdAt            DateTime           @default(now()) @map("created_at")
+  /// 更新时间
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+
+  // 关联关系
+  sessionMcps SessionMcp[]
+
+  @@index([mcpId])
+  @@index([status])
+  @@index([transportType])
+  @@schema("aiops")
+  @@map("mcp_services")
+}
+
+enum mcp_transport_type {
+  stdio     // 本地进程
+  sse       // 服务器发送事件
+  websocket // WebSocket
+
+  @@schema("aiops")
+}
+
+enum mcp_status {
+  active      // 活跃
+  inactive    // 未激活
+  error       // 错误
+  maintenance // 维护中
+
+  @@schema("aiops")
+}
+
+// ============================================
+// 消息表
+// ============================================
+/// 消息表，存储会话中的所有消息
+model Message {
+  /// 主键 ID，自增
+  id        BigInt        @id @default(autoincrement())
+  /// 消息唯一标识符
+  messageId String        @unique @map("message_id") @db.VarChar(64)
+  /// 会话 ID，关联 sessions 表
+  sessionId String        @map("session_id") @db.VarChar(100)
+  /// 消息内容
+  content   String        @db.Text
+  /// 消息角色：user（用户）、assistant（AI助手）、system（系统）
+  role      message_role
+  /// 创建人 ID（user 角色时为用户 ID）
+  createdBy BigInt?       @map("created_by")
+  /// 创建时间
+  createdAt DateTime      @default(now()) @map("created_at")
+
+  @@index([sessionId])
+  @@index([createdAt(sort: Desc)])
+  @@index([sessionId, createdAt(sort: Desc)])
+  @@schema("aiops")
+  @@map("messages")
+}
+
+enum message_role {
+  user      // 用户
+  assistant // AI助手
+  system    // 系统
+
+  @@schema("aiops")
+}
+
+// ============================================
+// 会话-Agent 关联表
+// ============================================
+/// 会话与 Agent 的关联表，记录会话中使用的 Agent
+model SessionAgent {
+  /// 会话 ID，关联 sessions 表
+  sessionId String   @map("session_id") @db.VarChar(100)
+  /// Agent ID，关联 agents 表
+  agentId   BigInt   @map("agent_id")
+  /// 关联创建时间
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // 关联关系
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@id([sessionId, agentId])
+  @@index([agentId])
+  @@schema("aiops")
+  @@map("session_agents")
+}
+
+// ============================================
+// 会话-MCP 服务关联表
+// ============================================
+/// 会话与 MCP 服务的关联表，记录会话中使用的 MCP 服务
+model SessionMcp {
+  /// 会话 ID，关联 sessions 表
+  sessionId String   @map("session_id") @db.VarChar(100)
+  /// MCP 服务 ID，关联 mcp_services 表
+  mcpId     BigInt   @map("mcp_id")
+  /// 关联创建时间
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // 关联关系
+  mcpService McpService @relation(fields: [mcpId], references: [id], onDelete: Cascade)
+
+  @@id([sessionId, mcpId])
+  @@index([mcpId])
+  @@schema("aiops")
+  @@map("session_mcps")
+}
+
+// ============================================
+// 会话-技能关联表
+// ============================================
+/// 会话与技能的关联表，记录会话中使用的技能
+model SessionSkill {
+  /// 会话 ID，关联 sessions 表
+  sessionId String   @map("session_id") @db.VarChar(100)
+  /// 技能 ID，关联 skills 表
+  skillId   String   @map("skill_id") @db.VarChar(64)
+  /// 关联创建时间
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // 关联关系
+  skill Skill @relation(fields: [skillId], references: [skillId], onDelete: Cascade)
+
+  @@id([sessionId, skillId])
+  @@index([skillId])
+  @@schema("aiops")
+  @@map("session_skills")
+}
+
+// ============================================
+// 用户-技能关联表
+// ============================================
+/// 用户技能关联表，记录用户在特定会话中使用的技能
+model UserSkill {
+  /// 主键 ID，自增
+  id        BigInt   @id @default(autoincrement())
+  /// 用户 ID，关联 users 表
+  userId    BigInt   @map("user_id")
+  /// 技能 ID，关联 skills 表
+  skillId   String   @map("skill_id") @db.VarChar(64)
+  /// 会话 ID，关联 sessions 表
+  sessionId String   @map("session_id") @db.VarChar(100)
+  /// 排序值，用于页面显示卡片排序，数字越小越靠前
+  sortOrder Int      @default(0) @map("sort_order")
+  /// 创建时间
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // 关联关系
+  skill Skill @relation(fields: [skillId], references: [skillId], onDelete: Cascade)
+
+  @@unique([userId, skillId, sessionId], name: "uk_user_skill_session")
+  @@index([userId])
+  @@index([skillId])
+  @@index([sessionId])
+  @@index([userId, sessionId, sortOrder])
+  @@schema("aiops")
+  @@map("user_skill")
 }
