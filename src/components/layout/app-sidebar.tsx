@@ -4,11 +4,13 @@ import {
   SidebarContent,
   SidebarHeader,
   SidebarRail,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
 } from "@/components/ui/sidebar";
-// import { AppTitle } from './app-title'
 import { sidebarData } from "./data/sidebar-data";
 import { NavGroup } from "./nav-group";
-import { TeamSwitcher } from "./team-switcher";
+import { AudioWaveform } from "lucide-react";
 
 export function AppSidebar() {
   const { collapsible, variant } = useLayout();
@@ -16,11 +18,24 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible={collapsible} variant={variant}>
       <SidebarHeader>
-        <TeamSwitcher teams={sidebarData.teams} />
-
-        {/* Replace <TeamSwitch /> with the following <AppTitle />
-         /* if you want to use the normal app title instead of TeamSwitch dropdown */}
-        {/* <AppTitle /> */}
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              size="lg"
+              className="h-auto py-3 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            >
+              <div className="flex aspect-square size-10 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                <AudioWaveform className="size-5" />
+              </div>
+              <div className="grid flex-1 text-start leading-tight">
+                <span className="truncate text-lg font-bold">新炬网络</span>
+                <span className="truncate text-sm text-muted-foreground">
+                  OS-Native 智能平台
+                </span>
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
         {sidebarData.navGroups.map((props) => (

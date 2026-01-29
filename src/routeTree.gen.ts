@@ -23,7 +23,6 @@ import { Route as AuthenticatedSkillsIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedMcpManagementIndexRouteImport } from './routes/_authenticated/mcp-management/index'
 import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_authenticated/help-center/index'
-import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authenticated/chats/index'
 import { Route as AuthenticatedAiChatIndexRouteImport } from './routes/_authenticated/ai-chat/index'
 import { Route as AuthenticatedAgentManagementIndexRouteImport } from './routes/_authenticated/agent-management/index'
 import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings/notifications'
@@ -110,11 +109,6 @@ const AuthenticatedHelpCenterIndexRoute =
     path: '/help-center/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedChatsIndexRoute = AuthenticatedChatsIndexRouteImport.update({
-  id: '/chats/',
-  path: '/chats/',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedAiChatIndexRoute =
   AuthenticatedAiChatIndexRouteImport.update({
     id: '/ai-chat/',
@@ -198,7 +192,6 @@ export interface FileRoutesByFullPath {
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/agent-management': typeof AuthenticatedAgentManagementIndexRoute
   '/ai-chat': typeof AuthenticatedAiChatIndexRoute
-  '/chats': typeof AuthenticatedChatsIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
   '/mcp-management': typeof AuthenticatedMcpManagementIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
@@ -224,7 +217,6 @@ export interface FileRoutesByTo {
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/agent-management': typeof AuthenticatedAgentManagementIndexRoute
   '/ai-chat': typeof AuthenticatedAiChatIndexRoute
-  '/chats': typeof AuthenticatedChatsIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
   '/mcp-management': typeof AuthenticatedMcpManagementIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
@@ -253,7 +245,6 @@ export interface FileRoutesById {
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/_authenticated/agent-management/': typeof AuthenticatedAgentManagementIndexRoute
   '/_authenticated/ai-chat/': typeof AuthenticatedAiChatIndexRoute
-  '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
   '/_authenticated/mcp-management/': typeof AuthenticatedMcpManagementIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
@@ -282,7 +273,6 @@ export interface FileRouteTypes {
     | '/settings/notifications'
     | '/agent-management'
     | '/ai-chat'
-    | '/chats'
     | '/help-center'
     | '/mcp-management'
     | '/settings/'
@@ -308,7 +298,6 @@ export interface FileRouteTypes {
     | '/settings/notifications'
     | '/agent-management'
     | '/ai-chat'
-    | '/chats'
     | '/help-center'
     | '/mcp-management'
     | '/settings'
@@ -336,7 +325,6 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/notifications'
     | '/_authenticated/agent-management/'
     | '/_authenticated/ai-chat/'
-    | '/_authenticated/chats/'
     | '/_authenticated/help-center/'
     | '/_authenticated/mcp-management/'
     | '/_authenticated/settings/'
@@ -457,13 +445,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHelpCenterIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/chats/': {
-      id: '/_authenticated/chats/'
-      path: '/chats'
-      fullPath: '/chats'
-      preLoaderRoute: typeof AuthenticatedChatsIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/ai-chat/': {
       id: '/_authenticated/ai-chat/'
       path: '/ai-chat'
@@ -581,7 +562,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
   AuthenticatedAgentManagementIndexRoute: typeof AuthenticatedAgentManagementIndexRoute
   AuthenticatedAiChatIndexRoute: typeof AuthenticatedAiChatIndexRoute
-  AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
   AuthenticatedMcpManagementIndexRoute: typeof AuthenticatedMcpManagementIndexRoute
   AuthenticatedSkillsIndexRoute: typeof AuthenticatedSkillsIndexRoute
@@ -596,7 +576,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAgentManagementIndexRoute:
     AuthenticatedAgentManagementIndexRoute,
   AuthenticatedAiChatIndexRoute: AuthenticatedAiChatIndexRoute,
-  AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
   AuthenticatedMcpManagementIndexRoute: AuthenticatedMcpManagementIndexRoute,
   AuthenticatedSkillsIndexRoute: AuthenticatedSkillsIndexRoute,

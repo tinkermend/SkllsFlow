@@ -1,17 +1,10 @@
 import {
   Blocks,
   LayoutDashboard,
-  Monitor,
-  Bell,
   Network,
   Package,
-  Palette,
   Settings,
-  Wrench,
-  UserCog,
   Users,
-  MessagesSquare,
-  AudioWaveform,
   Bot,
   Shield,
   Menu,
@@ -20,16 +13,8 @@ import {
 import { type SidebarData } from "../types";
 
 export const sidebarData: SidebarData = {
-  teams: [
-    {
-      name: "新炬网络",
-      logo: AudioWaveform,
-      plan: "OS-Native 智能平台",
-    },
-  ],
   navGroups: [
     {
-      title: "主导航",
       items: [
         {
           title: "仪表盘",
@@ -55,12 +40,6 @@ export const sidebarData: SidebarData = {
           title: "技能箱",
           url: "/skills",
           icon: Package,
-        },
-        {
-          title: "智能协作",
-          url: "/chats",
-          badge: "3",
-          icon: MessagesSquare,
         },
         {
           title: "系统管理",
