@@ -77,7 +77,7 @@ export function useAuth() {
       )
       navigate({ to: redirect || '/' })
     } catch (error: any) {
-      const message = error.response?.data?.message || '登录失败，请重试'
+      const message = error.response?.data?.error || error.response?.data?.message || '登录失败，请重试'
       toast.error(message)
       throw error
     }

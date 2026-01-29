@@ -103,6 +103,11 @@ export class RefreshTokenRepository extends BaseRepository<
   }
 }
 
-export const refreshTokenRepository = new RefreshTokenRepository(
-  DatabaseService.getInstance()
-);
+let _refreshTokenRepository: RefreshTokenRepository | null = null;
+
+export function getRefreshTokenRepository(): RefreshTokenRepository {
+  if (!_refreshTokenRepository) {
+    _refreshTokenRepository = new RefreshTokenRepository(DatabaseService.getInstance());
+  }
+  return _refreshTokenRepository;
+}

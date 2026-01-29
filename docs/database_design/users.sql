@@ -26,6 +26,8 @@ CREATE TABLE aiops.users (
     avatar VARCHAR(500),
     status aiops.user_status NOT NULL DEFAULT 'active',
     last_login_at TIMESTAMPTZ,
+    login_failed_count INT NOT NULL DEFAULT 0,
+    locked_until TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -51,6 +53,10 @@ COMMENT ON COLUMN aiops.users.avatar IS '头像：头像 URL 地址';
 COMMENT ON COLUMN aiops.users.status IS '状态：active（激活）、disabled（禁用）';
 
 COMMENT ON COLUMN aiops.users.last_login_at IS '最后登录时间：用户最后一次登录的时间';
+
+COMMENT ON COLUMN aiops.users.login_failed_count IS '登录失败次数：连续登录失败的次数';
+
+COMMENT ON COLUMN aiops.users.locked_until IS '锁定截止时间：账户锁定的截止时间';
 
 COMMENT ON COLUMN aiops.users.created_at IS '创建时间：记录创建时间';
 

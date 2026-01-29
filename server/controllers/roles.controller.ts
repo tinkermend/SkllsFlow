@@ -1,10 +1,12 @@
 import { Request, Response } from 'express';
 import { DatabaseService } from '../services/database.service.js';
 
-const prisma = DatabaseService.getInstance();
+function getPrisma() {
+  return DatabaseService.getInstance();
+}
 
 export async function listRoles(req: Request, res: Response) {
-  const roles = await prisma.role.findMany({
+  const roles = await getPrisma().role.findMany({
     include: {
       rolePermissions: {
         include: { permission: true },
@@ -18,7 +20,7 @@ export async function listRoles(req: Request, res: Response) {
 export async function createRole(req: Request, res: Response) {
   const { name, code, description, permissionIds } = req.body;
 
-  const role = await prisma.role.create({
+  const role = await getPrisma().role.create({
     data: {
       name,
       code,
@@ -38,7 +40,7 @@ export async function updateRole(req: Request, res: Response) {
   const { id } = req.params;
   const { name, description, status, permissionIds } = req.body;
 
-  const role = await prisma.$transaction(async (tx) => {
+  const role = await getPrisma().$transaction(async (tx) => {
     await tx.role.update({
       where: { id: BigInt(id) },
       data: { name, description, status },

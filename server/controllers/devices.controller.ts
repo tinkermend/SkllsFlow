@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { refreshTokenRepository } from '../repositories/refresh-tokens.repository.js';
+import { getRefreshTokenRepository } from '../repositories/refresh-tokens.repository.js';
 
 /**
  * 获取当前用户的所有活跃设备
@@ -10,7 +10,7 @@ export async function getDevices(req: Request, res: Response) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const devices = await refreshTokenRepository.findActiveTokensByUserId(req.user.id);
+    const devices = await getRefreshTokenRepository().findActiveTokensByUserId(req.user.id);
 
     // 格式化设备信息
     const formattedDevices = devices.map((token) => ({
@@ -44,7 +44,7 @@ export async function revokeDevice(req: Request, res: Response) {
     const { tokenId } = req.params;
 
     // 验证令牌是否属于当前用户
-    const token = await refreshTokenRepository.findById(BigInt(tokenId));
+    const token = await getRefreshTokenRepository().findById(BigInt(tokenId));
     if (!token) {
       return res.status(404).json({ error: 'Device not found' });
     }
@@ -54,7 +54,7 @@ export async function revokeDevice(req: Request, res: Response) {
     }
 
     // 撤销令牌
-    await refreshTokenRepository.revokeToken(BigInt(tokenId));
+    await getRefreshTokenRepository().revokeToken(BigInt(tokenId));
 
     res.json({ message: '设备已踢出' });
   } catch (error: any) {

@@ -2,8 +2,8 @@ import crypto from 'crypto';
 import { DatabaseService } from '../database.service.js';
 import { passwordService } from './password.service.js';
 import { jwtService, JWTPayload } from './jwt.service.js';
-import { userRepository } from '../../repositories/users.repository.js';
-import { refreshTokenRepository } from '../../repositories/refresh-tokens.repository.js';
+import { getUserRepository } from '../../repositories/users.repository.js';
+import { getRefreshTokenRepository } from '../../repositories/refresh-tokens.repository.js';
 
 export interface LoginInput {
   accountNo: string;
@@ -37,7 +37,9 @@ export interface AuthResponse {
 }
 
 export class AuthService {
-  private prisma = DatabaseService.getInstance();
+  private get prisma() {
+    return DatabaseService.getInstance();
+  }
   private readonly refreshTokenTtlDays = 7;
   private readonly MAX_LOGIN_ATTEMPTS = 5;
   private readonly LOCKOUT_DURATION_MINUTES = 30;
@@ -47,7 +49,7 @@ export class AuthService {
    */
   async login(input: LoginInput): Promise<AuthResponse> {
     // 1. 查找用户
-    const user = await userRepository.findByAccountNo(input.accountNo);
+    const user = await getUserRepository().findByAccountNo(input.accountNo);
     if (!user) {
       throw new Error('用户不存在');
     }
@@ -95,7 +97,7 @@ export class AuthService {
     });
 
     // 7. 更新最后登录时间
-    await userRepository.updateLastLogin(user.userUUId);  // 使用 userUUId 字段 (UUID)
+    await getUserRepository().updateLastLogin(user.userUUId);  // 使用 userUUId 字段 (UUID)
 
     return {
       user: {
@@ -122,13 +124,13 @@ export class AuthService {
     }
 
     // 2. 检查账号是否已存在
-    const existingUser = await userRepository.findByAccountNo(input.accountNo);
+    const existingUser = await getUserRepository().findByAccountNo(input.accountNo);
     if (existingUser) {
       throw new Error('账号已存在');
     }
 
     // 3. 检查邮箱是否已存在
-    const existingEmail = await userRepository.findByEmail(input.email);
+    const existingEmail = await getUserRepository().findByEmail(input.email);
     if (existingEmail) {
       throw new Error('邮箱已被使用');
     }
@@ -210,7 +212,7 @@ export class AuthService {
 
     // 2. 检查令牌是否存在
     const hashed = this.hashToken(refreshToken);
-    const tokenRecord = await refreshTokenRepository.findByTokenHash(hashed);
+    const tokenRecord = await getRefreshTokenRepository().findByTokenHash(hashed);
     if (!tokenRecord) {
       throw new Error('Refresh token not found');
     }
@@ -224,7 +226,7 @@ export class AuthService {
     }
 
     // 3. 检查用户是否存在
-    const user = await userRepository.findByUserId(payload.userId);  // 改为使用 UUID 查找
+    const user = await getUserRepository().findByUserId(payload.userId);  // 改为使用 UUID 查找
     if (!user || user.status !== 'active') {
       throw new Error('User not found or disabled');
     }
@@ -241,7 +243,7 @@ export class AuthService {
 
     const newExpires = new Date();
     newExpires.setDate(newExpires.getDate() + this.refreshTokenTtlDays);
-    await refreshTokenRepository.rotateToken(
+    await getRefreshTokenRepository().rotateToken(
       tokenRecord.id,
       this.hashToken(newRefreshToken),
       newExpires
@@ -258,14 +260,14 @@ export class AuthService {
    * 用户登出
    */
   async logout(refreshToken: string): Promise<void> {
-    await refreshTokenRepository.revokeTokenByHash(this.hashToken(refreshToken));
+    await getRefreshTokenRepository().revokeTokenByHash(this.hashToken(refreshToken));
   }
 
   /**
    * 获取当前用户信息
    */
   async me(userId: string) {  // 改为 string (UUID，来自 JWT)
-    const user = await userRepository.findByUserId(userId);  // 使用 UUID 查找
+    const user = await getUserRepository().findByUserId(userId);  // 使用 UUID 查找
     if (!user) {
       throw new Error('User not found');
     }
@@ -340,7 +342,7 @@ export class AuthService {
     const refreshTokenExpiresAt = new Date();
     refreshTokenExpiresAt.setDate(refreshTokenExpiresAt.getDate() + this.refreshTokenTtlDays);
 
-    await refreshTokenRepository.createToken(
+    await getRefreshTokenRepository().createToken(
       userId,
       this.hashToken(refreshToken),
       refreshTokenExpiresAt,
@@ -391,4 +393,11 @@ export class AuthService {
   }
 }
 
-export const authService = new AuthService();
+let _authService: AuthService | null = null;
+
+export function getAuthService(): AuthService {
+  if (!_authService) {
+    _authService = new AuthService();
+  }
+  return _authService;
+}

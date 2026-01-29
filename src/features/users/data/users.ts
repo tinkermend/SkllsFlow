@@ -1,33 +1,32 @@
-import { faker } from '@faker-js/faker'
+import { faker } from "@faker-js/faker";
 
 // Set a fixed seed for consistent data generation
-faker.seed(67890)
+faker.seed(67890);
+
+const roles = ["superadmin", "admin", "cashier", "manager"] as const;
 
 export const users = Array.from({ length: 500 }, () => {
-  const firstName = faker.person.firstName()
-  const lastName = faker.person.lastName()
   return {
-    id: faker.string.uuid(),
-    firstName,
-    lastName,
-    username: faker.internet
-      .username({ firstName, lastName })
-      .toLocaleLowerCase(),
-    email: faker.internet.email({ firstName }).toLocaleLowerCase(),
-    phoneNumber: faker.phone.number({ style: 'international' }),
+    userId: faker.string.uuid(),
+    accountNo: faker.string.numeric(10),
+    email: faker.internet.email(),
+    username: faker.internet.username().toLocaleLowerCase() || null,
+    avatar: faker.image.avatar() || null,
     status: faker.helpers.arrayElement([
-      'active',
-      'inactive',
-      'invited',
-      'suspended',
+      "active",
+      "inactive",
+      "invited",
+      "suspended",
     ]),
-    role: faker.helpers.arrayElement([
-      'superadmin',
-      'admin',
-      'cashier',
-      'manager',
-    ]),
+    lastLoginAt: faker.date.recent(),
     createdAt: faker.date.past(),
-    updatedAt: faker.date.recent(),
-  }
-})
+    userRoles: [
+      {
+        role: {
+          name: faker.helpers.arrayElement(roles),
+          code: faker.helpers.arrayElement(roles),
+        },
+      },
+    ],
+  };
+});

@@ -1,7 +1,9 @@
 import { DatabaseService } from '../database.service.js';
 
 export class RBACService {
-  private prisma = DatabaseService.getInstance();
+  private get prisma() {
+    return DatabaseService.getInstance();
+  }
 
   /**
    * 获取用户的所有权限代码
@@ -106,4 +108,11 @@ export class RBACService {
   }
 }
 
-export const rbacService = new RBACService();
+let _rbacService: RBACService | null = null;
+
+export function getRBACService(): RBACService {
+  if (!_rbacService) {
+    _rbacService = new RBACService();
+  }
+  return _rbacService;
+}

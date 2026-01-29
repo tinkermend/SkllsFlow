@@ -33,4 +33,6 @@ user_session/
 specs/
 server/__tests__/
 
+server/__tests__/
+
 /generated/prisma

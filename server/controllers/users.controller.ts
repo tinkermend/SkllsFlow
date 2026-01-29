@@ -1,7 +1,9 @@
 import { Request, Response } from 'express';
 import { DatabaseService } from '../services/database.service.js';
 
-const prisma = DatabaseService.getInstance();
+function getPrisma() {
+  return DatabaseService.getInstance();
+}
 
 export async function getUsers(req: Request, res: Response) {
   try {
@@ -21,7 +23,7 @@ export async function getUsers(req: Request, res: Response) {
       : {};
 
     const [users, total] = await Promise.all([
-      prisma.user.findMany({
+      getPrisma().user.findMany({
         where,
         skip,
         take,
@@ -48,7 +50,7 @@ export async function getUsers(req: Request, res: Response) {
         },
         orderBy: { createdAt: 'desc' },
       }),
-      prisma.user.count({ where }),
+      getPrisma().user.count({ where }),
     ]);
 
     res.json({
@@ -67,7 +69,7 @@ export async function getUserById(req: Request, res: Response) {
   try {
     const { id } = req.params;
 
-    const user = await prisma.user.findUnique({
+    const user = await getPrisma().user.findUnique({
       where: { id: BigInt(id) },
       select: {
         id: true,
@@ -110,7 +112,7 @@ export async function updateUser(req: Request, res: Response) {
     const { id } = req.params;
     const { username, avatar, status } = req.body;
 
-    const user = await prisma.user.update({
+    const user = await getPrisma().user.update({
       where: { id: BigInt(id) },
       data: {
         username,
@@ -138,7 +140,7 @@ export async function deleteUser(req: Request, res: Response) {
   try {
     const { id } = req.params;
 
-    await prisma.user.delete({
+    await getPrisma().user.delete({
       where: { id: BigInt(id) },
     });
 
@@ -154,12 +156,12 @@ export async function assignRoles(req: Request, res: Response) {
     const { roleIds } = req.body;
 
     // 删除现有角色
-    await prisma.userRole.deleteMany({
+    await getPrisma().userRole.deleteMany({
       where: { userId: BigInt(id) },
     });
 
     // 分配新角色
-    await prisma.userRole.createMany({
+    await getPrisma().userRole.createMany({
       data: roleIds.map((roleId: bigint) => ({
         userId: BigInt(id),
         roleId,

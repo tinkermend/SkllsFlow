@@ -278,6 +278,8 @@ const session = await prisma.session.findUnique({ where: { sessionId } });
 - [Prometheus 指标最佳实践](https://prometheus.io/docs/practices/naming/)
 
 ## Active Technologies
+- TypeScript 5.9.3, Node.js 20+ (001-rbac-validation-testing)
+- PostgreSQL 16 (测试数据库，独立于生产环境) (001-rbac-validation-testing)
 
 - Node.js + TypeScript 5.9.3 (001-session-db-storage)
 - PostgreSQL 16 (aiops database, sessions table) (001-session-db-storage)
