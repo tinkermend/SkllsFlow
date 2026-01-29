@@ -1,6 +1,6 @@
 import { Router, type Request, type Response, type NextFunction, type Router as RouterType } from 'express';
 import { SkillsController } from '../controllers/skills.controller.js';
-import { authMiddleware } from '../middleware/auth.middleware.js';
+import { jwtAuthMiddleware } from '../middleware/jwt-auth.middleware.js';
 
 const router: RouterType = Router();
 
@@ -15,7 +15,7 @@ router.use((req: Request, res: Response, next: NextFunction) => {
  */
 
 // GET /api/skills/my-skills - Get current user's skills (requires auth)
-router.get('/my-skills', authMiddleware, (req: Request, res: Response) => {
+router.get('/my-skills', jwtAuthMiddleware, (req: Request, res: Response) => {
   req.skillsController.getMySkills(req, res);
 });
 

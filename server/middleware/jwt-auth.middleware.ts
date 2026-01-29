@@ -1,5 +1,6 @@
 import { type Request, type Response, type NextFunction } from 'express';
 import { jwtService } from '../services/auth/jwt.service.js';
+import { getUserRepository } from '../repositories/users.repository.js';
 
 /**
  * 扩展 Express Request 类型
@@ -7,11 +8,13 @@ import { jwtService } from '../services/auth/jwt.service.js';
 declare global {
   namespace Express {
     interface Request {
-      userId?: string;  // 新增：方便直接访问 UUID
+      userId?: string;
+      userInternalId?: bigint;
       user?: {
-        userId: string;  // 改为 UUID (对外 API)
+        userId: string;
         accountNo: string;
         email: string;
+        id: bigint;
       };
     }
   }
@@ -20,11 +23,11 @@ declare global {
 /**
  * JWT 认证中间件
  */
-export function jwtAuthMiddleware(
+export async function jwtAuthMiddleware(
   req: Request,
   res: Response,
   next: NextFunction
-) {
+): Promise<void> {
   try {
     // 1. 从 Authorization Header 提取 token
     const authHeader = req.headers.authorization;
@@ -50,31 +53,43 @@ export function jwtAuthMiddleware(
     }
 
     // 4. 将用户信息注入请求
+    const userRecord = await getUserRepository().findByUserId(payload.userId);
+    if (!userRecord) {
+      res.status(401).json({
+        error: 'Unauthorized',
+        message: 'User not found',
+      });
+      return;
+    }
+
     req.user = {
-      userId: payload.userId,  // 改为 UUID (对外 API)
+      userId: payload.userId,
       accountNo: payload.accountNo,
       email: payload.email,
+      id: userRecord.id,
     };
 
-    req.userId = payload.userId;  // 新增：方便直接访问
+    req.userId = payload.userId;
+    req.userInternalId = userRecord.id;
 
     next();
   } catch (error) {
-    return res.status(401).json({
+    res.status(401).json({
       error: 'Unauthorized',
       message: 'Invalid or expired token',
     });
+    return;
   }
 }
 
 /**
  * 可选的 JWT 认证中间件 (不强制要求)
  */
-export function optionalJwtAuthMiddleware(
+export async function optionalJwtAuthMiddleware(
   req: Request,
   res: Response,
   next: NextFunction
-) {
+): Promise<void> {
   try {
     const authHeader = req.headers.authorization;
 
@@ -83,17 +98,23 @@ export function optionalJwtAuthMiddleware(
       const payload = jwtService.verify(token);
 
       if (payload.type === 'access') {
-        req.user = {
-          userId: payload.userId,  // 改为 UUID (对外 API)
-          accountNo: payload.accountNo,
-          email: payload.email,
-        };
-        req.userId = payload.userId;  // 新增：方便直接访问
+        const userRecord = await getUserRepository().findByUserId(payload.userId);
+        if (userRecord) {
+          req.user = {
+            userId: payload.userId,
+            accountNo: payload.accountNo,
+            email: payload.email,
+            id: userRecord.id,
+          };
+          req.userId = payload.userId;
+          req.userInternalId = userRecord.id;
+        }
       }
     }
 
     next();
   } catch {
-    next();
+    // Ignore optional auth failures
   }
+  next();
 }

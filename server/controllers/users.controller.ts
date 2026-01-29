@@ -1,5 +1,6 @@
 import { type Request, type Response } from 'express';
 import { DatabaseService } from '../services/database.service.js';
+import { serializePrisma } from '../utils/serialization.js';
 
 function getPrisma() {
   return DatabaseService.getInstance();
@@ -54,7 +55,7 @@ export async function getUsers(req: Request, res: Response) {
     ]);
 
     res.json({
-      data: users,
+      data: serializePrisma(users),
       total,
       page: Number(page),
       limit: Number(limit),
@@ -101,7 +102,7 @@ export async function getUserById(req: Request, res: Response) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json(user);
+    res.json(serializePrisma(user));
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -130,7 +131,7 @@ export async function updateUser(req: Request, res: Response) {
       },
     });
 
-    res.json(user);
+    res.json(serializePrisma(user));
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
