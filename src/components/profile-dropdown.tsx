@@ -54,12 +54,6 @@ export function ProfileDropdown() {
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link to='/settings'>
-                账单
-                <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to='/settings'>
                 设置
                 <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
               </Link>
