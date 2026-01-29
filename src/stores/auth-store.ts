@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { getCookie, setCookie, removeCookie } from '@/lib/cookies'
 
 const ACCESS_TOKEN = 'thisisjustarandomstring'
+const USER_INFO = 'user_info'
 
 interface AuthUser {
   userId: string  // 改为 UUID (对外 API)
@@ -28,11 +29,24 @@ interface AuthState {
 export const useAuthStore = create<AuthState>()((set) => {
   const cookieState = getCookie(ACCESS_TOKEN)
   const initToken = cookieState ? JSON.parse(cookieState) : ''
+
+  // 从 cookie 中恢复用户信息
+  const userCookie = getCookie(USER_INFO)
+  const initUser = userCookie ? JSON.parse(userCookie) : null
+
   return {
     auth: {
-      user: null,
+      user: initUser,
       setUser: (user) =>
-        set((state) => ({ ...state, auth: { ...state.auth, user } })),
+        set((state) => {
+          // 持久化用户信息到 cookie
+          if (user) {
+            setCookie(USER_INFO, JSON.stringify(user))
+          } else {
+            removeCookie(USER_INFO)
+          }
+          return { ...state, auth: { ...state.auth, user } }
+        }),
       accessToken: initToken,
       accessTokenExpiresAt: 0,
       setAccessToken: (accessToken, expiresIn) =>
@@ -55,6 +69,7 @@ export const useAuthStore = create<AuthState>()((set) => {
       reset: () =>
         set((state) => {
           removeCookie(ACCESS_TOKEN)
+          removeCookie(USER_INFO)
           return {
             ...state,
             auth: {

@@ -1,8 +1,33 @@
-import { Request, Response } from 'express';
+import { type Request, type Response } from 'express';
 import { DatabaseService } from '../services/database.service.js';
 
 function getPrisma() {
   return DatabaseService.getInstance();
+}
+
+/**
+ * 将对象中的 BigInt 转换为 String
+ */
+function serializeBigInt(obj: any): any {
+  if (obj === null || obj === undefined) return obj;
+
+  if (typeof obj === 'bigint') {
+    return obj.toString();
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(serializeBigInt);
+  }
+
+  if (typeof obj === 'object') {
+    const result: any = {};
+    for (const key in obj) {
+      result[key] = serializeBigInt(obj[key]);
+    }
+    return result;
+  }
+
+  return obj;
 }
 
 export async function listPermissions(req: Request, res: Response) {
@@ -12,7 +37,7 @@ export async function listPermissions(req: Request, res: Response) {
     orderBy: [{ module: 'asc' }, { action: 'asc' }],
   });
 
-  res.json(permissions);
+  res.json(serializeBigInt(permissions));
 }
 
 export async function syncPermissions(req: Request, res: Response) {

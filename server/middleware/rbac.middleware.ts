@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { type Request, type Response, type NextFunction } from 'express';
 import { getRBACService } from '../services/auth/rbac.service.js';
 
 /**
@@ -12,7 +12,7 @@ export function requirePermissions(...permissions: string[]) {
 
     try {
       const hasPermission = await getRBACService().hasAllPermissions(
-        req.user.id,
+        req.userId!,
         permissions
       );
 
@@ -43,7 +43,7 @@ export function requireAnyPermission(...permissions: string[]) {
 
     try {
       const hasPermission = await getRBACService().hasAnyPermission(
-        req.user.id,
+        req.userId!,
         permissions
       );
 
@@ -74,7 +74,7 @@ export function requireRoles(...roles: string[]) {
 
     try {
       const hasAllRoles = await Promise.all(
-        roles.map((role) => getRBACService().hasRole(req.user!.id, role))
+        roles.map((role) => getRBACService().hasRole(req.userId!, role))
       );
 
       if (!hasAllRoles.every(Boolean)) {
@@ -103,7 +103,7 @@ export function requireAnyRole(...roles: string[]) {
     }
 
     try {
-      const hasAnyRole = await getRBACService().hasAnyRole(req.user!.id, roles);
+      const hasAnyRole = await getRBACService().hasAnyRole(req.userId!, roles);
 
       if (!hasAnyRole) {
         return res.status(403).json({

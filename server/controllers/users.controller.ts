@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { type Request, type Response } from 'express';
 import { DatabaseService } from '../services/database.service.js';
 
 function getPrisma() {

@@ -49,6 +49,7 @@ model User {
   userRoles     UserRole[]
   refreshTokens RefreshToken[]
   sessions      Session[]
+  userSkills    UserSkill[]
 
   @@index([status])
   @@index([userUUId])
@@ -689,6 +690,7 @@ model UserSkill {
   createdAt DateTime @default(now()) @map("created_at")
 
   // 关联关系
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   skill Skill @relation(fields: [skillId], references: [skillId], onDelete: Cascade)
 
   @@unique([userId, skillId, sessionId], name: "uk_user_skill_session")

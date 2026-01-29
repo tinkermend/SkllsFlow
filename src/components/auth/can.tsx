@@ -1,6 +1,6 @@
-import { ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import { useAbility } from '@/context/ability-context'
-import { Actions, Subjects } from '@/lib/ability'
+import { type Actions, type Subjects } from '@/lib/ability'
 
 interface CanProps {
   /** 操作类型 */

@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { type Request, type Response } from 'express';
 import { getAuthService } from '../services/auth/auth.service.js';
 
 const REFRESH_COOKIE_OPTIONS = {

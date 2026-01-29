@@ -1,5 +1,5 @@
 import { useAbility } from '@/context/ability-context'
-import { Actions, Subjects } from '@/lib/ability'
+import { type Actions, type Subjects } from '@/lib/ability'
 
 /**
  * 权限检查 Hook

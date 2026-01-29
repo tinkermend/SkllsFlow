@@ -1,25 +1,26 @@
 import axios from 'axios'
-import { API_CONFIG, API_ENDPOINTS } from '@/config/api'
+import { apiClient } from '@/lib/api-client'
+import { API_ENDPOINTS } from '@/config/api'
 import type { Skill, SessionSkill } from '../types'
 
 /**
- * 创建 Axios 实例
- */
-const apiClient = axios.create({
-  baseURL: API_CONFIG.baseUrl,
-  timeout: API_CONFIG.timeout,
-})
-
-/**
  * Skills API
- * Mock 逻辑由 MSW 接管，此处只保留真实 API 调用
+ * 使用统一的 apiClient，自动处理认证 token
  */
 export const skillsApi = {
   /**
-   * 获取技能列表
+   * 获取所有平台技能列表
    */
   async getSkills(): Promise<Skill[]> {
     const response = await apiClient.get<Skill[]>(API_ENDPOINTS.skills.list)
+    return response.data
+  },
+
+  /**
+   * 获取当前用户的技能列表
+   */
+  async getMySkills(): Promise<Skill[]> {
+    const response = await apiClient.get<Skill[]>(API_ENDPOINTS.skills.mySkills)
     return response.data
   },
 

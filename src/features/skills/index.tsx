@@ -11,7 +11,7 @@ import { UninstallSkillDialog } from './components/uninstall-skill-dialog'
 import { DisableSkillDialog } from './components/disable-skill-dialog'
 import { DeleteSkillDialog } from './components/delete-skill-dialog'
 import { CreateSkillDialog } from './components/create-skill-dialog'
-import { useSkills, useDeleteSkill, useUpdateSkill } from './hooks/use-skills'
+import { useSkills, useMySkills, useDeleteSkill, useUpdateSkill } from './hooks/use-skills'
 import { skillsApi } from './api/skills.api'
 import { type SkillTab, type Skill, type SessionSkill, SkillStatus } from './types'
 
@@ -33,8 +33,14 @@ export function Skills() {
   const [skillToDelete, setSkillToDelete] = useState<Skill | null>(null)
   const [deleteRelatedSessions, setDeleteRelatedSessions] = useState<SessionSkill[]>([])
 
-  // 获取技能列表
-  const { data: skills = [], isLoading, error } = useSkills()
+  // 获取技能列表（根据 activeTab 决定调用哪个 API）
+  const { data: platformSkills = [], isLoading: isPlatformLoading, error: platformError } = useSkills()
+  const { data: mySkills = [], isLoading: isMySkillsLoading, error: mySkillsError } = useMySkills()
+
+  // 根据当前 tab 选择对应的数据
+  const skills = activeTab === 'my-skills' ? mySkills : platformSkills
+  const isLoading = activeTab === 'my-skills' ? isMySkillsLoading : isPlatformLoading
+  const error = activeTab === 'my-skills' ? mySkillsError : platformError
 
   // 删除技能
   const deleteSkillMutation = useDeleteSkill()

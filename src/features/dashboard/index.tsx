@@ -16,7 +16,6 @@ import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { Analytics } from './components/analytics'
 import { Overview } from './components/overview'
-import { RecentSales } from './components/recent-sales'
 
 export function Dashboard() {
   return (
@@ -145,25 +144,14 @@ export function Dashboard() {
                 </CardContent>
               </Card>
             </div>
-            <div className='grid grid-cols-1 gap-4 lg:grid-cols-7'>
-              <Card className='col-span-1 lg:col-span-4'>
-                <CardHeader>
-                  <CardTitle>概览</CardTitle>
-                </CardHeader>
-                <CardContent className='ps-2'>
-                  <Overview />
-                </CardContent>
-              </Card>
-              <Card className='col-span-1 lg:col-span-3'>
-                <CardHeader>
-                  <CardTitle>最近销售</CardTitle>
-                  <CardDescription>本月共完成 265 笔销售。</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <RecentSales />
-                </CardContent>
-              </Card>
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>概览</CardTitle>
+              </CardHeader>
+              <CardContent className='ps-2'>
+                <Overview />
+              </CardContent>
+            </Card>
           </TabsContent>
           <TabsContent value='analytics' className='space-y-4'>
             <Analytics />

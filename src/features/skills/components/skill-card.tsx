@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { usePermission } from '@/hooks/use-permission'
+import { parseIcon } from '@/lib/icon-parser'
 import { SkillStatus, type Skill } from '../types'
 
 interface SkillCardProps {
@@ -38,6 +39,9 @@ export function SkillCard({
   onToggleStatus,
 }: SkillCardProps) {
   const { can } = usePermission()
+
+  // 解析图标字符串为 React 组件
+  const IconComponent = parseIcon(skill.icon)
 
   const statusConfig = {
     [SkillStatus.ACTIVE]: {
@@ -72,8 +76,8 @@ export function SkillCard({
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3 flex-1 min-w-0">
             {/* Logo */}
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted text-2xl">
-              {skill.iconPath}
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
+              <IconComponent className="h-5 w-5" />
             </div>
             {/* 名称 */}
             <CardTitle className="text-base font-semibold leading-tight truncate">

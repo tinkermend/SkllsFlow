@@ -25,9 +25,10 @@ export function authMiddleware(
     return next()
   }
 
-  // 3. 开发环境下使用默认用户
+  // 3. 开发环境下使用默认用户 UUID
   if (process.env.REQUIRE_AUTH !== 'true') {
-    req.userId = 'dev-user-1'
+    // 使用真实的 UUID（从数据库查询得到的 admin 用户）
+    req.userId = '3a00f1a8-12d2-4f77-83b3-424a04e19f01'
     return next()
   }
 

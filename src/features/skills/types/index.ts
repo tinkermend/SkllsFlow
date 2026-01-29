@@ -17,9 +17,9 @@ export interface Skill {
   /** 技能名称 */
   name: string
   /** 技能描述 */
-  description: string
-  /** 图标文件路径 */
-  iconPath: string
+  description: string | null
+  /** 图标样式 */
+  icon: string | null
   /** 技能分类：如 code-analysis, data-processing */
   category: string
   /** 技能标签数组 */
@@ -35,7 +35,7 @@ export interface Skill {
   /** 创建时间 */
   createdAt: string
   /** 更新人ID */
-  updatedBy?: number
+  updatedBy?: number | null
   /** 更新时间 */
   updatedAt: string
   /** 关联会话 ID（前端使用，非数据库字段） */

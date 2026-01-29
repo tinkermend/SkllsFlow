@@ -1,4 +1,4 @@
-import { Router, Request, Response, NextFunction, type Router as RouterType } from 'express';
+import { Router, type Request, type Response, type NextFunction, type Router as RouterType } from 'express';
 import { SessionsController } from '../controllers/sessions.controller.js';
 import { authMiddleware } from '../middleware/auth.middleware.js';
 

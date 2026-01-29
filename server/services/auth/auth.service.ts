@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { DatabaseService } from '../database.service.js';
 import { passwordService } from './password.service.js';
-import { jwtService, JWTPayload } from './jwt.service.js';
+import { jwtService, type JWTPayload } from './jwt.service.js';
 import { getUserRepository } from '../../repositories/users.repository.js';
 import { getRefreshTokenRepository } from '../../repositories/refresh-tokens.repository.js';
 

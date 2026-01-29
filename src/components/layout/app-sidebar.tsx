@@ -1,4 +1,5 @@
 import { useLayout } from '@/context/layout-provider'
+import { useAuthStore } from '@/stores/auth-store'
 import {
   Sidebar,
   SidebarContent,
@@ -14,6 +15,21 @@ import { TeamSwitcher } from './team-switcher'
 
 export function AppSidebar() {
   const { collapsible, variant } = useLayout()
+  const { auth } = useAuthStore()
+
+  // 从 auth store 获取真实用户数据
+  const user = auth.user
+    ? {
+        name: auth.user.username,
+        email: auth.user.email,
+        avatar: '/avatars/shadcn.jpg', // 可以后续从用户数据中获取
+      }
+    : {
+        name: '游客',
+        email: '',
+        avatar: '/avatars/shadcn.jpg',
+      }
+
   return (
     <Sidebar collapsible={collapsible} variant={variant}>
       <SidebarHeader>
@@ -29,7 +45,7 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={sidebarData.user} />
+        <NavUser user={user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

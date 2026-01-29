@@ -194,7 +194,38 @@ VALUES (
     )
 ON CONFLICT (code) DO NOTHING;
 
--- 3.3 会话管理权限
+-- 3.3 权限管理权限
+INSERT INTO
+    aiops.permissions (
+        name,
+        code,
+        resource,
+        action,
+        module,
+        created_at,
+        updated_at
+    )
+VALUES (
+        '查看权限',
+        'permission:view',
+        'permission',
+        'view',
+        'permissions',
+        NOW(),
+        NOW()
+    ),
+    (
+        '同步权限',
+        'permission:sync',
+        'permission',
+        'sync',
+        'permissions',
+        NOW(),
+        NOW()
+    )
+ON CONFLICT (code) DO NOTHING;
+
+-- 3.4 会话管理权限
 INSERT INTO
     aiops.permissions (
         name,
@@ -243,7 +274,7 @@ VALUES (
     )
 ON CONFLICT (code) DO NOTHING;
 
--- 3.4 技能管理权限
+-- 3.5 技能管理权限
 INSERT INTO
     aiops.permissions (
         name,
@@ -310,7 +341,7 @@ VALUES (
     )
 ON CONFLICT (code) DO NOTHING;
 
--- 3.5 MCP 管理权限
+-- 3.6 MCP 管理权限
 INSERT INTO
     aiops.permissions (
         name,
@@ -359,7 +390,7 @@ VALUES (
     )
 ON CONFLICT (code) DO NOTHING;
 
--- 3.6 Agent 管理权限
+-- 3.7 Agent 管理权限
 INSERT INTO
     aiops.permissions (
         name,
@@ -408,7 +439,7 @@ VALUES (
     )
 ON CONFLICT (code) DO NOTHING;
 
--- 3.7 菜单管理权限
+-- 3.8 菜单管理权限
 INSERT INTO
     aiops.permissions (
         name,
@@ -497,3 +528,56 @@ VALUES
     NOW()
   )
 ON CONFLICT (user_id, role_id) DO NOTHING;
+
+-- ============================================
+-- 技能测试数据
+-- ============================================
+-- 说明：初始化技能表测试数据
+-- ============================================
+
+-- 7. 插入技能测试数据
+INSERT INTO
+    aiops.skills (
+        skill_id,
+        name,
+        description,
+        icon,
+        category,
+        tags,
+        status,
+        sort_order,
+        file_path,
+        created_by,
+        created_at,
+        updated_at
+    )
+VALUES
+    (
+        'code-review-assistant',
+        '代码审查助手',
+        '智能代码审查工具，支持多种编程语言的代码质量检查、安全漏洞扫描和最佳实践建议',
+        'lucide:code-2',
+        'code-analysis',
+        ARRAY['代码审查', '质量检查', '安全扫描', 'TypeScript', 'JavaScript', 'Python'],
+        'active',
+        1,
+        '/skills/code-review-assistant.zip',
+        (SELECT id FROM aiops.users WHERE account_no = 'admin'),
+        NOW(),
+        NOW()
+    ),
+    (
+        'data-visualization',
+        '数据可视化生成器',
+        '根据数据自动生成图表和可视化报告，支持多种图表类型（折线图、柱状图、饼图等）',
+        'lucide:bar-chart-3',
+        'data-processing',
+        ARRAY['数据分析', '图表生成', '可视化', 'ECharts', 'D3.js'],
+        'active',
+        2,
+        '/skills/data-visualization.zip',
+        (SELECT id FROM aiops.users WHERE account_no = 'admin'),
+        NOW(),
+        NOW()
+    )
+ON CONFLICT (skill_id) DO NOTHING;

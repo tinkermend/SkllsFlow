@@ -26,6 +26,7 @@ export const API_ENDPOINTS = {
   // 技能管理
   skills: {
     list: "/skills",
+    mySkills: "/skills/my-skills",
     detail: (id: string) => `/skills/${id}`,
     create: "/skills",
     update: (id: string) => `/skills/${id}`,

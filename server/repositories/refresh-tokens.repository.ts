@@ -1,5 +1,5 @@
 import { BaseRepository } from './base.repository.js';
-import { Prisma, RefreshToken } from '@prisma/client';
+import { type Prisma, type RefreshToken } from '@prisma/client';
 import { DatabaseService } from '../services/database.service.js';
 
 export class RefreshTokenRepository extends BaseRepository<

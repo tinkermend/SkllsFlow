@@ -1,4 +1,4 @@
-import { PrismaClient, Session, Prisma } from "@prisma/client";
+import { type PrismaClient, type Session, type Prisma } from "@prisma/client";
 import { BaseRepository } from "./base.repository.js";
 
 /**

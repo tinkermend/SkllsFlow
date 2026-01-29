@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { type Request, type Response } from 'express';
 import { getRefreshTokenRepository } from '../repositories/refresh-tokens.repository.js';
 
 /**

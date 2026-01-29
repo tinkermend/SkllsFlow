@@ -23,8 +23,8 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const { auth } = useAuthStore()
 
   // 检查权限
-  const canUpdate = auth.user?.permissions.includes('role:update')
-  const canDelete = auth.user?.permissions.includes('role:delete')
+  const canUpdate = auth.user?.permissions?.includes('role:update') ?? false
+  const canDelete = auth.user?.permissions?.includes('role:delete') ?? false
 
   // 如果没有任何操作权限，不显示操作按钮
   if (!canUpdate && !canDelete) {

@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import { useAuthStore } from '@/stores/auth-store'
 
 interface PermissionGuardProps {
@@ -31,6 +31,12 @@ export function PermissionGuard({
   fallback = null,
 }: PermissionGuardProps) {
   const { auth } = useAuthStore()
+
+  // 开发环境：如果未启用认证，默认拥有所有权限
+  const requireAuth = import.meta.env.VITE_REQUIRE_AUTH === 'true'
+  if (!requireAuth && !auth.user) {
+    return <>{children}</>
+  }
 
   const hasPermission = auth.user?.permissions?.includes(permission) ?? false
 

@@ -31,7 +31,7 @@ function parseSchema(schemaContent: string): TableInfo[] {
   let currentTable: TableInfo | null = null;
   let currentComment = '';
   let inModel = false;
-  let schemaName = 'aiops'; // 默认 schema
+  const schemaName = 'aiops'; // 默认 schema
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();

@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import { AbilityContext } from '@/context/ability-context'
 import { defineAbilityFor } from '@/lib/ability'
 import { useAuthStore } from '@/stores/auth-store'

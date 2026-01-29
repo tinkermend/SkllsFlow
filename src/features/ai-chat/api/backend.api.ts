@@ -1,21 +1,16 @@
-import axios from 'axios'
+import { apiClient } from '@/lib/api-client'
 import type { OpenCodeConnectionResponse } from '../types'
 
-// 后端 API 基础 URL - 在实际项目中应该从环境变量获取
-const BACKEND_API_URL = import.meta.env.VITE_API_URL || '/api'
-
-const backendClient = axios.create({
-  baseURL: BACKEND_API_URL,
-  timeout: 30000,
-  withCredentials: true,
-})
-
+/**
+ * 后端 API
+ * 使用统一的 apiClient，自动处理认证 token
+ */
 export const backendApi = {
   /**
    * 获取 OpenCode 连接信息
    */
   getOpenCodeConnection: async (): Promise<OpenCodeConnectionResponse> => {
-    const response = await backendClient.get<OpenCodeConnectionResponse>(
+    const response = await apiClient.get<OpenCodeConnectionResponse>(
       '/opencode/connection'
     )
     return response.data
@@ -26,7 +21,7 @@ export const backendApi = {
    */
   startOpenCode: async (): Promise<OpenCodeConnectionResponse> => {
     const response =
-      await backendClient.post<OpenCodeConnectionResponse>('/opencode/start')
+      await apiClient.post<OpenCodeConnectionResponse>('/opencode/start')
     return response.data
   },
 
@@ -34,7 +29,7 @@ export const backendApi = {
    * 停止 OpenCode 实例
    */
   stopOpenCode: async (): Promise<{ success: boolean }> => {
-    const response = await backendClient.post<{ success: boolean }>(
+    const response = await apiClient.post<{ success: boolean }>(
       '/opencode/stop'
     )
     return response.data
@@ -44,7 +39,7 @@ export const backendApi = {
    * 健康检查
    */
   checkHealth: async (): Promise<{ healthy: boolean; version?: string }> => {
-    const response = await backendClient.get<{
+    const response = await apiClient.get<{
       healthy: boolean
       version?: string
     }>('/opencode/health')
@@ -52,4 +47,5 @@ export const backendApi = {
   },
 }
 
-export { backendClient }
+// 导出 apiClient 作为 backendClient（保持向后兼容）
+export { apiClient as backendClient }

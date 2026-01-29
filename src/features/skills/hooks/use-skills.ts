@@ -15,12 +15,22 @@ export const skillsKeys = {
 }
 
 /**
- * 获取技能列表
+ * 获取技能列表（平台技能）
  */
 export function useSkills() {
   return useQuery({
     queryKey: skillsKeys.lists(),
     queryFn: () => skillsApi.getSkills(),
+  })
+}
+
+/**
+ * 获取当前用户的技能列表
+ */
+export function useMySkills() {
+  return useQuery({
+    queryKey: [...skillsKeys.lists(), 'my-skills'],
+    queryFn: () => skillsApi.getMySkills(),
   })
 }
 

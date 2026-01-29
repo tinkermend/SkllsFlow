@@ -1,5 +1,5 @@
 import { BaseRepository } from './base.repository.js';
-import { Prisma, User } from '@prisma/client';
+import { type Prisma, type User } from '@prisma/client';
 import { DatabaseService } from '../services/database.service.js';
 
 export class UserRepository extends BaseRepository<
