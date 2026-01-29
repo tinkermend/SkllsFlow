@@ -106,14 +106,15 @@ export function DataTable<TData, TValue>({
           filters={filters}
         />
       )}
-      <div className="overflow-hidden rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="group/row">
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead
+      <div className="rounded-md border">
+        <div className="w-full overflow-x-auto">
+          <Table className="min-w-[720px]">
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id} className="group/row">
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead
                       key={header.id}
                       colSpan={header.colSpan}
                       className={cn(
@@ -129,8 +130,8 @@ export function DataTable<TData, TValue>({
                             header.getContext(),
                           )}
                     </TableHead>
-                  );
-                })}
+                      );
+                  })}
               </TableRow>
             ))}
           </TableHeader>
@@ -171,6 +172,7 @@ export function DataTable<TData, TValue>({
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
       <DataTablePagination table={table} className="mt-auto" />
     </div>

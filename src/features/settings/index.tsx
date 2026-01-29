@@ -19,6 +19,31 @@ export function Settings() {
     return 'menus'
   }
 
+  const activeTab = getActiveTab()
+
+  const tabMeta: Record<
+    string,
+    {
+      title: string
+      description: string
+    }
+  > = {
+    menus: {
+      title: '菜单管理',
+      description: '管理系统菜单结构和权限分配',
+    },
+    roles: {
+      title: '角色管理',
+      description: '配置系统角色及访问控制策略',
+    },
+    permissions: {
+      title: '权限管理',
+      description: '查看与同步系统权限定义，确保资源受控',
+    },
+  }
+
+  const { title, description } = tabMeta[activeTab]
+
   const handleTabChange = (value: string) => {
     const routes: Record<string, string> = {
       menus: '/settings/menus',
@@ -42,13 +67,11 @@ export function Settings() {
       <Main fixed>
         <div className='space-y-6'>
           <div>
-            <h1 className='text-3xl font-bold tracking-tight'>系统管理</h1>
-            <p className='text-muted-foreground mt-2'>
-              管理系统菜单、角色和权限配置
-            </p>
+            <h1 className='text-3xl font-bold tracking-tight'>{title}</h1>
+            <p className='text-muted-foreground mt-2'>{description}</p>
           </div>
 
-          <Tabs value={getActiveTab()} onValueChange={handleTabChange}>
+          <Tabs value={activeTab} onValueChange={handleTabChange}>
             <TabsList>
               <TabsTrigger value='menus'>
                 <Menu className='me-2' size={16} />
@@ -64,7 +87,7 @@ export function Settings() {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value={getActiveTab()} className='mt-6'>
+            <TabsContent value={activeTab} className='mt-6'>
               <Outlet />
             </TabsContent>
           </Tabs>
