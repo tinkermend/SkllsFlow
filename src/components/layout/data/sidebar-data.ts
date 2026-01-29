@@ -37,7 +37,7 @@ export const sidebarData: SidebarData = {
           icon: Network,
         },
         {
-          title: "技能箱",
+          title: "技能管理",
           url: "/skills",
           icon: Package,
         },

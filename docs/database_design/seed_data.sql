@@ -94,7 +94,7 @@ VALUES (
         'user:view',
         'user',
         'view',
-        'users',
+        '用户管理',
         NOW(),
         NOW()
     ),
@@ -103,7 +103,7 @@ VALUES (
         'user:create',
         'user',
         'create',
-        'users',
+        '用户管理',
         NOW(),
         NOW()
     ),
@@ -112,7 +112,7 @@ VALUES (
         'user:update',
         'user',
         'update',
-        'users',
+        '用户管理',
         NOW(),
         NOW()
     ),
@@ -121,7 +121,7 @@ VALUES (
         'user:delete',
         'user',
         'delete',
-        'users',
+        '用户管理',
         NOW(),
         NOW()
     ),
@@ -130,7 +130,7 @@ VALUES (
         'user:assign-roles',
         'user',
         'assign-roles',
-        'users',
+        '用户管理',
         NOW(),
         NOW()
     )
@@ -152,7 +152,7 @@ VALUES (
         'role:view',
         'role',
         'view',
-        'roles',
+        '角色管理',
         NOW(),
         NOW()
     ),
@@ -161,7 +161,7 @@ VALUES (
         'role:create',
         'role',
         'create',
-        'roles',
+        '角色管理',
         NOW(),
         NOW()
     ),
@@ -170,7 +170,7 @@ VALUES (
         'role:update',
         'role',
         'update',
-        'roles',
+        '角色管理',
         NOW(),
         NOW()
     ),
@@ -179,7 +179,7 @@ VALUES (
         'role:delete',
         'role',
         'delete',
-        'roles',
+        '角色管理',
         NOW(),
         NOW()
     ),
@@ -188,7 +188,7 @@ VALUES (
         'role:assign-permissions',
         'role',
         'assign-permissions',
-        'roles',
+        '角色管理',
         NOW(),
         NOW()
     )
@@ -210,7 +210,7 @@ VALUES (
         'permission:view',
         'permission',
         'view',
-        'permissions',
+        '权限管理',
         NOW(),
         NOW()
     ),
@@ -219,7 +219,7 @@ VALUES (
         'permission:sync',
         'permission',
         'sync',
-        'permissions',
+        '权限管理',
         NOW(),
         NOW()
     )
@@ -241,7 +241,7 @@ VALUES (
         'session:view',
         'session',
         'view',
-        'sessions',
+        '会话管理',
         NOW(),
         NOW()
     ),
@@ -250,7 +250,7 @@ VALUES (
         'session:create',
         'session',
         'create',
-        'sessions',
+        '会话管理',
         NOW(),
         NOW()
     ),
@@ -259,7 +259,7 @@ VALUES (
         'session:update',
         'session',
         'update',
-        'sessions',
+        '会话管理',
         NOW(),
         NOW()
     ),
@@ -268,7 +268,7 @@ VALUES (
         'session:delete',
         'session',
         'delete',
-        'sessions',
+        '会话管理',
         NOW(),
         NOW()
     )
@@ -290,7 +290,7 @@ VALUES (
         'skill:view',
         'skill',
         'view',
-        'skills',
+        '技能管理',
         NOW(),
         NOW()
     ),
@@ -299,7 +299,7 @@ VALUES (
         'skill:create',
         'skill',
         'create',
-        'skills',
+        '技能管理',
         NOW(),
         NOW()
     ),
@@ -308,7 +308,7 @@ VALUES (
         'skill:update',
         'skill',
         'update',
-        'skills',
+        '技能管理',
         NOW(),
         NOW()
     ),
@@ -317,7 +317,7 @@ VALUES (
         'skill:delete',
         'skill',
         'delete',
-        'skills',
+        '技能管理',
         NOW(),
         NOW()
     ),
@@ -326,7 +326,7 @@ VALUES (
         'skill:install',
         'skill',
         'install',
-        'skills',
+        '技能管理',
         NOW(),
         NOW()
     ),
@@ -335,7 +335,7 @@ VALUES (
         'skill:uninstall',
         'skill',
         'uninstall',
-        'skills',
+        '技能管理',
         NOW(),
         NOW()
     )
@@ -357,7 +357,7 @@ VALUES (
         'mcp:view',
         'mcp',
         'view',
-        'mcps',
+        'MCP管理',
         NOW(),
         NOW()
     ),
@@ -366,7 +366,7 @@ VALUES (
         'mcp:create',
         'mcp',
         'create',
-        'mcps',
+        'MCP管理',
         NOW(),
         NOW()
     ),
@@ -375,7 +375,7 @@ VALUES (
         'mcp:update',
         'mcp',
         'update',
-        'mcps',
+        'MCP管理',
         NOW(),
         NOW()
     ),
@@ -384,7 +384,7 @@ VALUES (
         'mcp:delete',
         'mcp',
         'delete',
-        'mcps',
+        'MCP管理',
         NOW(),
         NOW()
     )
@@ -406,7 +406,7 @@ VALUES (
         'agent:view',
         'agent',
         'view',
-        'agents',
+        'Agent管理',
         NOW(),
         NOW()
     ),
@@ -415,7 +415,7 @@ VALUES (
         'agent:create',
         'agent',
         'create',
-        'agents',
+        'Agent管理',
         NOW(),
         NOW()
     ),
@@ -424,7 +424,7 @@ VALUES (
         'agent:update',
         'agent',
         'update',
-        'agents',
+        'Agent管理',
         NOW(),
         NOW()
     ),
@@ -433,7 +433,7 @@ VALUES (
         'agent:delete',
         'agent',
         'delete',
-        'agents',
+        'Agent管理',
         NOW(),
         NOW()
     )
@@ -455,7 +455,7 @@ VALUES (
         'menu:view',
         'menu',
         'view',
-        'menus',
+        '菜单管理',
         NOW(),
         NOW()
     ),
@@ -464,7 +464,7 @@ VALUES (
         'menu:create',
         'menu',
         'create',
-        'menus',
+        '菜单管理',
         NOW(),
         NOW()
     ),
@@ -473,7 +473,7 @@ VALUES (
         'menu:update',
         'menu',
         'update',
-        'menus',
+        '菜单管理',
         NOW(),
         NOW()
     ),
@@ -482,7 +482,7 @@ VALUES (
         'menu:delete',
         'menu',
         'delete',
-        'menus',
+        '菜单管理',
         NOW(),
         NOW()
     )
