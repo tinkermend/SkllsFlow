@@ -52,7 +52,12 @@ export function SkillCard({
     },
   }
 
-  const config = statusConfig[skill.status]
+  // 防御性处理：如果状态值不在配置中，使用默认配置
+  const config = statusConfig[skill.status] || {
+    label: skill.status || '未知',
+    variant: 'secondary' as const,
+    className: 'bg-gray-400 hover:bg-gray-500',
+  }
 
   // 根据模式设置不同的卡片样式
   const cardClassName =
