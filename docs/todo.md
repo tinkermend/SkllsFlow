@@ -35,8 +35,8 @@
 
 - [ ] 完成智能对话中会话删除后端逻辑, 当前会话删除只是调用 opencode 接口进行删除, 但还需要调用 后端 3001 api 将库表中的会话相关数据进行清除,清除逻辑如下: - 删除 session_skills 表关联此会话的 skills, 表定义见 @docs/database_design/session_skills.md - 删除 session_agents 表关联此会话的 agents信息, 表定义见 @docs/database_design/session_agents.md - 删除 session_mcps 表关联此会话的 mcps信息, 表定义见 @docs/database_design/session_mcps.md - 最后 删除 sessions 表关联此会话的会话信息, 表定义见 @docs/database_design/sessions.md - 这几个删除操作为一个事务任务,要不全部成功要不全部失败
 
-## mcp管理
 
+## mcp管理
 
 
 ## other
@@ -52,6 +52,9 @@
 
 - [ ] `feat:`  删除 "设置" ,不是删除 "主题设置", 同时检查是否有与 "设置" 关联的页面进行删除, 当前 点击 "设置" 跳转到的 "http://localhost:5173/settings/menus" 页面是不需要删除的
 
-## new feature
 
-- [ ] 智能对话页面新增
+
+
+2026-01-30 09:57:03
+
+- [ ] 

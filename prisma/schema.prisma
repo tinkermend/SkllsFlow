@@ -46,10 +46,12 @@ model User {
   updatedAt          DateTime    @updatedAt @map("updated_at")
 
   // 关联关系
-  userRoles     UserRole[]
-  refreshTokens RefreshToken[]
-  sessions      Session[]
-  userSkills    UserSkill[]
+  userRoles           UserRole[]
+  refreshTokens       RefreshToken[]
+  sessions            Session[]
+  userSkills          UserSkill[]
+  mcpServices         McpService[]           @relation("McpServiceCreator")
+  mcpMarketplaceItems McpMarketplaceItem[]   @relation("McpMarketplaceCreator")
 
   @@index([status])
   @@index([userUUId])
@@ -546,12 +548,31 @@ model McpService {
   /// 更新时间
   updatedAt            DateTime           @updatedAt @map("updated_at")
 
+  // 扩展字段
+  /// 分类 ID，外键关联 mcp_categories 表
+  categoryId           BigInt?            @map("category_id")
+  /// 图标（emoji 或 URL）
+  icon                 String?            @db.VarChar(200)
+  /// 开发语言：python/javascript/go/other
+  language             String?            @db.VarChar(50)
+  /// 创建者用户 ID，关联 users 表
+  createdByUserId      BigInt?            @map("created_by_user_id")
+
   // 关联关系
-  sessionMcps SessionMcp[]
+  sessionMcps      SessionMcp[]
+  category         McpCategory?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  creator          User?                @relation("McpServiceCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  mcpTools         McpTool[]
+  mcpResources     McpResource[]
+  tags             McpServiceTag[]
+  marketplaceItem  McpMarketplaceItem?
 
   @@index([mcpId])
   @@index([status])
   @@index([transportType])
+  @@index([categoryId])
+  @@index([createdByUserId])
+  @@index([language])
   @@schema("aiops")
   @@map("mcp_services")
 }
@@ -700,4 +721,177 @@ model UserSkill {
   @@index([userId, sessionId, sortOrder])
   @@schema("aiops")
   @@map("user_skill")
+}
+
+// ============================================
+// MCP 分类表
+// ============================================
+/// MCP 分类表，用于 MCP 市场分类管理
+model McpCategory {
+  /// 主键 ID，自增
+  id          BigInt    @id @default(autoincrement())
+  /// 分类唯一标识符
+  categoryId  String    @unique @map("category_id") @db.VarChar(64)
+  /// 分类名称
+  name        String    @db.VarChar(120)
+  /// 分类描述
+  description String?   @db.Text
+  /// 分类图标
+  icon        String?   @db.VarChar(100)
+  /// 排序权重，数值越小越靠前
+  sortOrder   Int       @default(0) @map("sort_order")
+  /// 状态：active(激活)、disabled(禁用)
+  status      String    @default("active") @db.VarChar(20)
+  /// 创建时间
+  createdAt   DateTime  @default(now()) @map("created_at")
+  /// 更新时间
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // 关联关系
+  mcpServices      McpService[]
+  marketplaceItems McpMarketplaceItem[]
+
+  @@index([status])
+  @@index([sortOrder])
+  @@schema("aiops")
+  @@map("mcp_categories")
+}
+
+// ============================================
+// MCP 标签表
+// ============================================
+/// MCP 标签表，存储通用标签
+model McpTag {
+  /// 主键 ID，自增
+  id        BigInt   @id @default(autoincrement())
+  /// 标签名称
+  name      String   @unique @db.VarChar(50)
+  /// 标签颜色（十六进制）
+  color     String?  @db.VarChar(7)
+  /// 创建时间
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // 关联关系
+  mcpServices McpServiceTag[]
+
+  @@schema("aiops")
+  @@map("mcp_tags")
+}
+
+// ============================================
+// MCP 服务标签关联表
+// ============================================
+/// MCP 服务与标签的多对多关联表
+model McpServiceTag {
+  /// MCP 服务 ID，外键关联 mcp_services 表
+  mcpId     BigInt   @map("mcp_id")
+  /// 标签 ID，外键关联 mcp_tags 表
+  tagId     BigInt   @map("tag_id")
+  /// 关联创建时间
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // 关联关系
+  mcpService McpService @relation(fields: [mcpId], references: [id], onDelete: Cascade)
+  tag        McpTag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([mcpId, tagId])
+  @@index([mcpId])
+  @@index([tagId])
+  @@schema("aiops")
+  @@map("mcp_service_tags")
+}
+
+// ============================================
+// MCP 工具定义表
+// ============================================
+/// MCP 工具定义表，存储每个 MCP 服务提供的工具
+model McpTool {
+  /// 主键 ID，自增
+  id              BigInt   @id @default(autoincrement())
+  /// MCP 服务 ID，外键关联 mcp_services 表
+  mcpId           BigInt   @map("mcp_id")
+  /// 工具名称
+  toolName        String   @map("tool_name") @db.VarChar(120)
+  /// 工具描述
+  toolDescription String?  @map("tool_description") @db.Text
+  /// 工具参数 JSON Schema 定义
+  toolSchema      Json     @map("tool_schema")
+  /// 创建时间
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // 关联关系
+  mcpService McpService @relation(fields: [mcpId], references: [id], onDelete: Cascade)
+
+  @@unique([mcpId, toolName])
+  @@index([mcpId])
+  @@schema("aiops")
+  @@map("mcp_tools")
+}
+
+// ============================================
+// MCP 资源定义表
+// ============================================
+/// MCP 资源定义表，存储每个 MCP 服务提供的资源
+model McpResource {
+  /// 主键 ID，自增
+  id                  BigInt   @id @default(autoincrement())
+  /// MCP 服务 ID，外键关联 mcp_services 表
+  mcpId               BigInt   @map("mcp_id")
+  /// 资源名称
+  resourceName        String   @map("resource_name") @db.VarChar(120)
+  /// 资源类型
+  resourceType        String   @map("resource_type") @db.VarChar(50)
+  /// 资源描述
+  resourceDescription String?  @map("resource_description") @db.Text
+  /// 资源模式定义（可选）
+  resourceSchema      Json?    @map("resource_schema")
+  /// 创建时间
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  // 关联关系
+  mcpService McpService @relation(fields: [mcpId], references: [id], onDelete: Cascade)
+
+  @@unique([mcpId, resourceName])
+  @@index([mcpId])
+  @@schema("aiops")
+  @@map("mcp_resources")
+}
+
+// ============================================
+// MCP 市场项目表
+// ============================================
+/// MCP 市场项目表，存储市场展示的 MCP 服务信息
+model McpMarketplaceItem {
+  /// 主键 ID，自增
+  id                BigInt    @id @default(autoincrement())
+  /// MCP 服务 ID，外键关联 mcp_services 表
+  mcpId             BigInt    @unique @map("mcp_id")
+  /// 创建者用户 ID，外键关联 users 表
+  creatorUserId     BigInt?   @map("creator_user_id")
+  /// 分类 ID，外键关联 mcp_categories 表
+  categoryId        BigInt?   @map("category_id")
+  /// 是否已验证
+  isVerified        Boolean   @default(false) @map("is_verified")
+  /// MCP 服务 URL
+  serverUrl         String?   @map("server_url") @db.VarChar(500)
+  /// 文档 URL
+  documentationUrl  String?   @map("documentation_url") @db.VarChar(500)
+  /// README 文档内容（Markdown格式）
+  readmeContent     String?   @map("readme_content") @db.Text
+  /// 当前安装次数
+  installationCount Int       @default(0) @map("installation_count")
+  /// 创建时间
+  createdAt         DateTime  @default(now()) @map("created_at")
+  /// 更新时间
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  // 关联关系
+  mcpService McpService   @relation(fields: [mcpId], references: [id], onDelete: Cascade)
+  creator    User?        @relation("McpMarketplaceCreator", fields: [creatorUserId], references: [id], onDelete: SetNull)
+  category   McpCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([categoryId])
+  @@index([creatorUserId])
+  @@schema("aiops")
+  @@map("mcp_marketplace_items")
 }
