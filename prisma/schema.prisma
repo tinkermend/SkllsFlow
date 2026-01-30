@@ -19,46 +19,46 @@ datasource db {
 /// 系统用户表，存储用户基本信息和认证数据
 model User {
   /// 主键 ID，自增
-  id                 BigInt      @id @default(autoincrement())
+  id               BigInt      @id @default(autoincrement())
   /// 业务 UUID，用于对外暴露的用户标识
-  userUUId             String      @unique @default(uuid()) @map("user_uuid") @db.Uuid
+  userUUId         String      @unique @default(uuid()) @map("user_uuid") @db.Uuid
   /// 账号，用于登录，唯一
-  accountNo          String      @unique @map("account_no")
+  accountNo        String      @unique @map("account_no")
   /// 邮箱地址，唯一
-  email              String      @unique
+  email            String      @unique
   /// 密码哈希值（bcrypt）
-  passwordHash       String      @map("password_hash")
+  passwordHash     String      @map("password_hash")
   /// 用户昵称
-  username           String?
+  username         String?
   /// 头像 URL 地址
-  avatar             String?
+  avatar           String?
   /// 账户状态（active: 激活, disabled: 禁用）
-  status             user_status @default(active)
+  status           user_status @default(active)
   /// 最后登录时间
-  lastLoginAt        DateTime?   @map("last_login_at")
+  lastLoginAt      DateTime?   @map("last_login_at")
   /// 连续登录失败次数
-  loginFailedCount   Int         @default(0) @map("login_failed_count")
+  loginFailedCount Int         @default(0) @map("login_failed_count")
   /// 账户锁定截止时间
-  lockedUntil        DateTime?   @map("locked_until")
+  lockedUntil      DateTime?   @map("locked_until")
   /// 创建时间
-  createdAt          DateTime    @default(now()) @map("created_at")
+  createdAt        DateTime    @default(now()) @map("created_at")
   /// 更新时间
-  updatedAt          DateTime    @updatedAt @map("updated_at")
+  updatedAt        DateTime    @updatedAt @map("updated_at")
 
   // 关联关系
   userRoles           UserRole[]
   refreshTokens       RefreshToken[]
   sessions            Session[]
   userSkills          UserSkill[]
-  mcpServices         McpService[]           @relation("McpServiceCreator")
-  mcpMarketplaceItems McpMarketplaceItem[]   @relation("McpMarketplaceCreator")
+  mcpServices         McpService[]         @relation("McpServiceCreator")
+  mcpMarketplaceItems McpMarketplaceItem[] @relation("McpMarketplaceCreator")
 
   @@index([status])
   @@index([userUUId])
   @@index([accountNo])
   @@index([email])
-  @@schema("aiops")
   @@map("users")
+  @@schema("aiops")
 }
 
 // ============================================
@@ -67,23 +67,23 @@ model User {
 /// 系统角色表，定义用户权限组
 model Role {
   /// 主键 ID，自增
-  id          BigInt       @id @default(autoincrement())
+  id          BigInt      @id @default(autoincrement())
   /// 角色名称（如：管理员、普通用户）
   name        String
   /// 角色代码，唯一标识（如：admin、user）
-  code        String       @unique
+  code        String      @unique
   /// 角色描述说明
   description String?
   /// 是否为系统内置角色（内置角色不可删除）
-  isSystem    Boolean      @default(false) @map("is_system")
+  isSystem    Boolean     @default(false) @map("is_system")
   /// 排序权重，数值越小越靠前
-  sort        Int          @default(0)
+  sort        Int         @default(0)
   /// 角色状态（active: 激活, disabled: 禁用）
-  status      role_status  @default(active)
+  status      role_status @default(active)
   /// 创建时间
-  createdAt   DateTime     @default(now()) @map("created_at")
+  createdAt   DateTime    @default(now()) @map("created_at")
   /// 更新时间
-  updatedAt   DateTime     @updatedAt @map("updated_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
 
   // 关联关系
   userRoles       UserRole[]
@@ -92,8 +92,8 @@ model Role {
 
   @@index([code])
   @@index([status])
-  @@schema("aiops")
   @@map("roles")
+  @@schema("aiops")
 }
 
 // ============================================
@@ -125,8 +125,8 @@ model Permission {
 
   @@index([module])
   @@index([code])
-  @@schema("aiops")
   @@map("permissions")
+  @@schema("aiops")
 }
 
 // ============================================
@@ -147,11 +147,10 @@ model UserRole {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, roleId])
   @@index([userId])
   @@index([roleId])
-  @@schema("aiops")
   @@map("user_roles")
+  @@schema("aiops")
 }
 
 // ============================================
@@ -175,8 +174,8 @@ model RolePermission {
   @@unique([roleId, permissionId])
   @@index([roleId])
   @@index([permissionId])
-  @@schema("aiops")
   @@map("role_permissions")
+  @@schema("aiops")
 }
 
 // ============================================
@@ -185,33 +184,33 @@ model RolePermission {
 /// JWT 刷新令牌表，用于令牌轮换和会话管理
 model RefreshToken {
   /// 主键 ID，自增
-  id           BigInt    @id @default(autoincrement())
+  id        BigInt    @id @default(autoincrement())
   /// 刷新令牌的哈希值，唯一
-  tokenHash    String    @unique @map("token_hash")
+  tokenHash String    @unique @map("token_hash")
   /// 设备指纹标识
-  deviceId     String?   @map("device_id")
+  deviceId  String?   @map("device_id")
   /// 登录 IP 地址
-  ipAddress    String?   @map("ip_address")
+  ipAddress String?   @map("ip_address")
   /// 用户代理字符串（浏览器信息）
-  userAgent    String?   @map("user_agent")
+  userAgent String?   @map("user_agent")
   /// 用户 ID，外键关联 users 表
-  userId       BigInt    @map("user_id")
+  userId    BigInt    @map("user_id")
   /// 令牌过期时间
-  expiresAt    DateTime  @map("expires_at")
+  expiresAt DateTime  @map("expires_at")
   /// 创建时间
-  createdAt    DateTime  @default(now()) @map("created_at")
+  createdAt DateTime  @default(now()) @map("created_at")
   /// 令牌轮换时间
-  rotatedAt    DateTime? @map("rotated_at")
+  rotatedAt DateTime? @map("rotated_at")
   /// 令牌撤销时间
-  revokedAt    DateTime? @map("revoked_at")
+  revokedAt DateTime? @map("revoked_at")
 
   // 关联关系
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([deviceId])
-  @@schema("aiops")
   @@map("refresh_tokens")
+  @@schema("aiops")
 }
 
 // ============================================
@@ -242,8 +241,8 @@ model AuditLog {
   @@index([action])
   @@index([resource])
   @@index([createdAt])
-  @@schema("aiops")
   @@map("audit_logs")
+  @@schema("aiops")
 }
 
 // ============================================
@@ -278,8 +277,8 @@ model Session {
   @@index([userId])
   @@index([status])
   @@index([updatedAt(sort: Desc)])
-  @@schema("aiops")
   @@map("sessions")
+  @@schema("aiops")
 }
 
 // ============================================
@@ -288,31 +287,31 @@ model Session {
 /// 系统菜单表，用于动态菜单和权限控制
 model Menu {
   /// 主键 ID，自增
-  id          BigInt      @id @default(autoincrement())
+  id         BigInt      @id @default(autoincrement())
   /// 菜单名称
-  name        String
+  name       String
   /// 路由路径（如：/users、/settings）
-  path        String?
+  path       String?
   /// 图标名称（对应图标库中的图标）
-  icon        String?
+  icon       String?
   /// 父菜单 ID，用于构建树形结构
-  parentId    BigInt?     @map("parent_id")
+  parentId   BigInt?     @map("parent_id")
   /// 排序权重，数值越小越靠前
-  sort        Int         @default(0)
+  sort       Int         @default(0)
   /// 菜单类型（menu: 菜单, button: 按钮）
-  type        menu_type   @default(menu)
+  type       menu_type   @default(menu)
   /// 权限标识，用于权限校验
-  permission  String?
+  permission String?
   /// 是否在菜单中显示
-  isVisible   Boolean     @default(true) @map("is_visible")
+  isVisible  Boolean     @default(true) @map("is_visible")
   /// 是否为外部链接
-  isExternal  Boolean     @default(false) @map("is_external")
+  isExternal Boolean     @default(false) @map("is_external")
   /// 菜单状态（active: 激活, disabled: 禁用）
-  status      menu_status @default(active)
+  status     menu_status @default(active)
   /// 创建时间
-  createdAt   DateTime    @default(now()) @map("created_at")
+  createdAt  DateTime    @default(now()) @map("created_at")
   /// 更新时间
-  updatedAt   DateTime    @updatedAt @map("updated_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
 
   // 自关联关系
   parent   Menu?  @relation("MenuToMenu", fields: [parentId], references: [id], onDelete: Cascade)
@@ -324,8 +323,8 @@ model Menu {
   @@index([parentId])
   @@index([sort])
   @@index([status])
-  @@schema("aiops")
   @@map("menus")
+  @@schema("aiops")
 }
 
 // ============================================
@@ -349,23 +348,23 @@ model RoleMenu {
   @@unique([roleId, menuId])
   @@index([roleId])
   @@index([menuId])
-  @@schema("aiops")
   @@map("role_menus")
+  @@schema("aiops")
 }
 
 // ============================================
 // 枚举类型
 // ============================================
 enum user_status {
-  active      // 激活
-  disabled    // 禁用
+  active // 激活
+  disabled // 禁用
 
   @@schema("aiops")
 }
 
 enum role_status {
-  active      // 激活
-  disabled    // 禁用
+  active // 激活
+  disabled // 禁用
 
   @@schema("aiops")
 }
@@ -378,15 +377,15 @@ enum session_status {
 }
 
 enum menu_type {
-  menu      // 菜单
-  button    // 按钮
+  menu // 菜单
+  button // 按钮
 
   @@schema("aiops")
 }
 
 enum menu_status {
-  active    // 激活
-  disabled  // 禁用
+  active // 激活
+  disabled // 禁用
 
   @@schema("aiops")
 }
@@ -397,61 +396,61 @@ enum menu_status {
 /// OpenCode Agent 配置表，存储 Agent 的配置信息
 model Agent {
   /// 主键 ID，自增
-  id                BigInt      @id @default(autoincrement())
+  id                BigInt     @id @default(autoincrement())
   /// Agent 唯一标识符
-  agentId           String      @unique @map("agent_id") @db.VarChar(64)
+  agentId           String     @unique @map("agent_id") @db.VarChar(64)
   /// Agent 名称，唯一
-  name              String      @unique @db.VarChar(120)
+  name              String     @unique @db.VarChar(120)
   /// Agent 描述说明
-  description       String?     @db.Text
+  description       String?    @db.Text
   /// 温度参数（0.0-1.0），控制 LLM 响应的随机性
-  temperature       Decimal?    @db.Decimal(3, 2)
+  temperature       Decimal?   @db.Decimal(3, 2)
   /// 最大步数限制，控制 Agent 迭代次数
-  maxSteps          Int?        @map("max_steps")
+  maxSteps          Int?       @map("max_steps")
   /// 系统提示词，自定义系统提示词内容
-  systemPrompt      String?     @map("system_prompt") @db.Text
+  systemPrompt      String?    @map("system_prompt") @db.Text
   /// 工具权限配置，JSONB 格式
-  toolsPermissions  Json?       @map("tools_permissions")
+  toolsPermissions  Json?      @map("tools_permissions")
   /// 操作权限配置，JSONB 格式
-  actionPermissions Json?       @map("action_permissions")
+  actionPermissions Json?      @map("action_permissions")
   /// 模式：primary（主代理）、subagent（子代理）、all（全局可用）
-  mode              agent_mode  @default(all)
+  mode              agent_mode @default(all)
   /// 覆盖的模型（如：anthropic/claude-haiku-4-20250514）
-  model             String?     @db.VarChar(255)
+  model             String?    @db.VarChar(255)
   /// 服务商特定参数，JSONB 格式
-  additionalParams  Json?       @map("additional_params")
+  additionalParams  Json?      @map("additional_params")
   /// 配置文件内容，Markdown 格式
-  configContent     String?     @map("config_content") @db.Text
+  configContent     String?    @map("config_content") @db.Text
   /// 是否禁用，true 表示 Agent 不可用
-  disabled          Boolean     @default(false)
+  disabled          Boolean    @default(false)
   /// 是否隐藏，是否在菜单中隐藏（仅子代理）
-  hidden            Boolean     @default(false)
+  hidden            Boolean    @default(false)
   /// 创建人 ID
-  createdBy         BigInt      @map("created_by")
+  createdBy         BigInt     @map("created_by")
   /// 创建时间
-  createdAt         DateTime    @default(now()) @map("created_at")
+  createdAt         DateTime   @default(now()) @map("created_at")
   /// 更新人 ID
-  updatedBy         BigInt?     @map("updated_by")
+  updatedBy         BigInt?    @map("updated_by")
   /// 更新时间
-  updatedAt         DateTime    @updatedAt @map("updated_at")
+  updatedAt         DateTime   @updatedAt @map("updated_at")
   /// 删除人 ID
-  deletedBy         BigInt?     @map("deleted_by")
+  deletedBy         BigInt?    @map("deleted_by")
   /// 删除时间（软删除）
-  deletedAt         DateTime?   @map("deleted_at")
+  deletedAt         DateTime?  @map("deleted_at")
 
   // 关联关系
   sessionAgents SessionAgent[]
 
   @@index([mode])
   @@index([disabled])
-  @@schema("aiops")
   @@map("agents")
+  @@schema("aiops")
 }
 
 enum agent_mode {
-  primary   // 主代理
-  subagent  // 子代理
-  all       // 全局可用
+  primary // 主代理
+  subagent // 子代理
+  all // 全局可用
 
   @@schema("aiops")
 }
@@ -499,13 +498,13 @@ model Skill {
   @@index([status])
   @@index([sortOrder])
   @@index([category, status, sortOrder])
-  @@schema("aiops")
   @@map("skills")
+  @@schema("aiops")
 }
 
 enum skill_status {
-  active    // 启用
-  disabled  // 禁用
+  active // 启用
+  disabled // 禁用
 
   @@schema("aiops")
 }
@@ -516,56 +515,56 @@ enum skill_status {
 /// MCP 服务表，存储 Model Context Protocol 服务的连接与能力元数据
 model McpService {
   /// 主键 ID，自增
-  id                   BigInt             @id @default(autoincrement())
+  id                 BigInt             @id @default(autoincrement())
   /// MCP 服务唯一标识符
-  mcpId                String             @unique @map("mcp_id") @db.VarChar(64)
+  mcpId              String             @unique @map("mcp_id") @db.VarChar(64)
   /// MCP 服务名称，唯一
-  name                 String             @unique @db.VarChar(120)
+  name               String             @unique @db.VarChar(120)
   /// MCP 服务描述说明
-  description          String?            @db.Text
+  description        String?
   /// 服务版本号或协议版本
-  version              String?            @db.VarChar(50)
+  version            String?            @db.VarChar(50)
   /// 传输类型：stdio（本地进程）、sse（服务器发送事件）、websocket
-  transportType        mcp_transport_type @map("transport_type")
+  transportType      mcp_transport_type @map("transport_type")
   /// 连接细节，JSONB 格式
-  connectionConfig     Json               @map("connection_config")
+  connectionConfig   Json               @map("connection_config")
   /// 环境变量，仅用于 stdio 模式
-  envVars              Json               @default("{}") @map("env_vars")
+  envVars            Json               @default("{}") @map("env_vars")
   /// 认证凭证，应用层加密后的字符串
-  encryptedAuthInfo    String?            @map("encrypted_auth_info") @db.Text
+  encryptedAuthInfo  String?            @map("encrypted_auth_info")
   /// 能力快照，缓存 Tools/Resources 列表
-  cachedCapabilities   Json               @default("{}") @map("cached_capabilities")
+  cachedCapabilities Json               @default("{}") @map("cached_capabilities")
   /// 服务状态：active、inactive、error、maintenance
-  status               mcp_status         @default(inactive)
+  status             mcp_status         @default(inactive)
   /// 最后健康检查时间
-  lastHealthCheckAt    DateTime?          @map("last_health_check_at")
+  lastHealthCheckAt  DateTime?          @map("last_health_check_at")
   /// 健康检查结果，JSONB 格式
-  healthCheckResult    Json?              @map("health_check_result")
+  healthCheckResult  Json?              @map("health_check_result")
   /// 错误信息，简短的错误描述
-  errorMessage         String?            @map("error_message") @db.Text
+  errorMessage       String?            @map("error_message")
   /// 创建时间
-  createdAt            DateTime           @default(now()) @map("created_at")
+  createdAt          DateTime           @default(now()) @map("created_at")
   /// 更新时间
-  updatedAt            DateTime           @updatedAt @map("updated_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
 
   // 扩展字段
   /// 分类 ID，外键关联 mcp_categories 表
-  categoryId           BigInt?            @map("category_id")
+  categoryId      BigInt? @map("category_id")
   /// 图标（emoji 或 URL）
-  icon                 String?            @db.VarChar(200)
+  icon            String? @db.VarChar(200)
   /// 开发语言：python/javascript/go/other
-  language             String?            @db.VarChar(50)
+  language        String? @db.VarChar(50)
   /// 创建者用户 ID，关联 users 表
-  createdByUserId      BigInt?            @map("created_by_user_id")
+  createdByUserId BigInt? @map("created_by_user_id")
 
   // 关联关系
-  sessionMcps      SessionMcp[]
-  category         McpCategory?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  creator          User?                @relation("McpServiceCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
-  mcpTools         McpTool[]
-  mcpResources     McpResource[]
-  tags             McpServiceTag[]
-  marketplaceItem  McpMarketplaceItem?
+  category        McpCategory? @relation("McpServiceCategory", fields: [categoryId], references: [id], onDelete: SetNull)
+  creator         User?        @relation("McpServiceCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  sessionMcps     SessionMcp[]
+  tools           McpTool[]
+  resources       McpResource[]
+  tags            McpServiceTag[]
+  marketplaceItem McpMarketplaceItem?
 
   @@index([mcpId])
   @@index([status])
@@ -573,22 +572,22 @@ model McpService {
   @@index([categoryId])
   @@index([createdByUserId])
   @@index([language])
-  @@schema("aiops")
   @@map("mcp_services")
+  @@schema("aiops")
 }
 
 enum mcp_transport_type {
-  stdio     // 本地进程
-  sse       // 服务器发送事件
+  stdio // 本地进程
+  sse // 服务器发送事件
   websocket // WebSocket
 
   @@schema("aiops")
 }
 
 enum mcp_status {
-  active      // 活跃
-  inactive    // 未激活
-  error       // 错误
+  active // 活跃
+  inactive // 未激活
+  error // 错误
   maintenance // 维护中
 
   @@schema("aiops")
@@ -600,31 +599,31 @@ enum mcp_status {
 /// 消息表，存储会话中的所有消息
 model Message {
   /// 主键 ID，自增
-  id        BigInt        @id @default(autoincrement())
+  id        BigInt       @id @default(autoincrement())
   /// 消息唯一标识符
-  messageId String        @unique @map("message_id") @db.VarChar(64)
+  messageId String       @unique @map("message_id") @db.VarChar(64)
   /// 会话 ID，关联 sessions 表
-  sessionId String        @map("session_id") @db.VarChar(100)
+  sessionId String       @map("session_id") @db.VarChar(100)
   /// 消息内容
-  content   String        @db.Text
+  content   String       @db.Text
   /// 消息角色：user（用户）、assistant（AI助手）、system（系统）
   role      message_role
   /// 创建人 ID（user 角色时为用户 ID）
-  createdBy BigInt?       @map("created_by")
+  createdBy BigInt?      @map("created_by")
   /// 创建时间
-  createdAt DateTime      @default(now()) @map("created_at")
+  createdAt DateTime     @default(now()) @map("created_at")
 
   @@index([sessionId])
   @@index([createdAt(sort: Desc)])
   @@index([sessionId, createdAt(sort: Desc)])
-  @@schema("aiops")
   @@map("messages")
+  @@schema("aiops")
 }
 
 enum message_role {
-  user      // 用户
+  user // 用户
   assistant // AI助手
-  system    // 系统
+  system // 系统
 
   @@schema("aiops")
 }
@@ -646,8 +645,8 @@ model SessionAgent {
 
   @@id([sessionId, agentId])
   @@index([agentId])
-  @@schema("aiops")
   @@map("session_agents")
+  @@schema("aiops")
 }
 
 // ============================================
@@ -667,8 +666,8 @@ model SessionMcp {
 
   @@id([sessionId, mcpId])
   @@index([mcpId])
-  @@schema("aiops")
   @@map("session_mcps")
+  @@schema("aiops")
 }
 
 // ============================================
@@ -688,8 +687,8 @@ model SessionSkill {
 
   @@id([sessionId, skillId])
   @@index([skillId])
-  @@schema("aiops")
   @@map("session_skills")
+  @@schema("aiops")
 }
 
 // ============================================
@@ -719,8 +718,8 @@ model UserSkill {
   @@index([skillId])
   @@index([sessionId])
   @@index([userId, sessionId, sortOrder])
-  @@schema("aiops")
   @@map("user_skill")
+  @@schema("aiops")
 }
 
 // ============================================
@@ -729,32 +728,32 @@ model UserSkill {
 /// MCP 分类表，用于 MCP 市场分类管理
 model McpCategory {
   /// 主键 ID，自增
-  id          BigInt    @id @default(autoincrement())
+  id          BigInt   @id @default(autoincrement())
   /// 分类唯一标识符
-  categoryId  String    @unique @map("category_id") @db.VarChar(64)
+  categoryId  String   @unique @map("category_id") @db.VarChar(64)
   /// 分类名称
-  name        String    @db.VarChar(120)
+  name        String   @db.VarChar(120)
   /// 分类描述
-  description String?   @db.Text
+  description String?  @db.Text
   /// 分类图标
-  icon        String?   @db.VarChar(100)
+  icon        String?  @db.VarChar(100)
   /// 排序权重，数值越小越靠前
-  sortOrder   Int       @default(0) @map("sort_order")
+  sortOrder   Int      @default(0) @map("sort_order")
   /// 状态：active(激活)、disabled(禁用)
-  status      String    @default("active") @db.VarChar(20)
+  status      String   @default("active") @db.VarChar(20)
   /// 创建时间
-  createdAt   DateTime  @default(now()) @map("created_at")
+  createdAt   DateTime @default(now()) @map("created_at")
   /// 更新时间
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   // 关联关系
-  mcpServices      McpService[]
+  mcpServices      McpService[]         @relation("McpServiceCategory")
   marketplaceItems McpMarketplaceItem[]
 
   @@index([status])
   @@index([sortOrder])
-  @@schema("aiops")
   @@map("mcp_categories")
+  @@schema("aiops")
 }
 
 // ============================================
@@ -774,8 +773,8 @@ model McpTag {
   // 关联关系
   mcpServices McpServiceTag[]
 
-  @@schema("aiops")
   @@map("mcp_tags")
+  @@schema("aiops")
 }
 
 // ============================================
@@ -784,11 +783,11 @@ model McpTag {
 /// MCP 服务与标签的多对多关联表
 model McpServiceTag {
   /// MCP 服务 ID，外键关联 mcp_services 表
-  mcpId     BigInt   @map("mcp_id")
+  mcpId     BigInt    @map("mcp_id")
   /// 标签 ID，外键关联 mcp_tags 表
-  tagId     BigInt   @map("tag_id")
+  tagId     BigInt    @map("tag_id")
   /// 关联创建时间
-  createdAt DateTime @default(now()) @map("created_at")
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
 
   // 关联关系
   mcpService McpService @relation(fields: [mcpId], references: [id], onDelete: Cascade)
@@ -797,8 +796,8 @@ model McpServiceTag {
   @@id([mcpId, tagId])
   @@index([mcpId])
   @@index([tagId])
-  @@schema("aiops")
   @@map("mcp_service_tags")
+  @@schema("aiops")
 }
 
 // ============================================
@@ -824,8 +823,8 @@ model McpTool {
 
   @@unique([mcpId, toolName])
   @@index([mcpId])
-  @@schema("aiops")
   @@map("mcp_tools")
+  @@schema("aiops")
 }
 
 // ============================================
@@ -853,8 +852,8 @@ model McpResource {
 
   @@unique([mcpId, resourceName])
   @@index([mcpId])
-  @@schema("aiops")
   @@map("mcp_resources")
+  @@schema("aiops")
 }
 
 // ============================================
@@ -863,27 +862,27 @@ model McpResource {
 /// MCP 市场项目表，存储市场展示的 MCP 服务信息
 model McpMarketplaceItem {
   /// 主键 ID，自增
-  id                BigInt    @id @default(autoincrement())
+  id                BigInt   @id @default(autoincrement())
   /// MCP 服务 ID，外键关联 mcp_services 表
-  mcpId             BigInt    @unique @map("mcp_id")
+  mcpId             BigInt   @unique @map("mcp_id")
   /// 创建者用户 ID，外键关联 users 表
-  creatorUserId     BigInt?   @map("creator_user_id")
+  creatorUserId     BigInt?  @map("creator_user_id")
   /// 分类 ID，外键关联 mcp_categories 表
-  categoryId        BigInt?   @map("category_id")
+  categoryId        BigInt?  @map("category_id")
   /// 是否已验证
-  isVerified        Boolean   @default(false) @map("is_verified")
+  isVerified        Boolean  @default(false) @map("is_verified")
   /// MCP 服务 URL
-  serverUrl         String?   @map("server_url") @db.VarChar(500)
+  serverUrl         String?  @map("server_url") @db.VarChar(500)
   /// 文档 URL
-  documentationUrl  String?   @map("documentation_url") @db.VarChar(500)
+  documentationUrl  String?  @map("documentation_url") @db.VarChar(500)
   /// README 文档内容（Markdown格式）
-  readmeContent     String?   @map("readme_content") @db.Text
+  readmeContent     String?  @map("readme_content") @db.Text
   /// 当前安装次数
-  installationCount Int       @default(0) @map("installation_count")
+  installationCount Int      @default(0) @map("installation_count")
   /// 创建时间
-  createdAt         DateTime  @default(now()) @map("created_at")
+  createdAt         DateTime @default(now()) @map("created_at")
   /// 更新时间
-  updatedAt         DateTime  @updatedAt @map("updated_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
 
   // 关联关系
   mcpService McpService   @relation(fields: [mcpId], references: [id], onDelete: Cascade)
@@ -892,6 +891,6 @@ model McpMarketplaceItem {
 
   @@index([categoryId])
   @@index([creatorUserId])
-  @@schema("aiops")
   @@map("mcp_marketplace_items")
+  @@schema("aiops")
 }

@@ -336,6 +336,38 @@ const session = await sessionRepository.findBySessionId(sessionId);
 const session = await prisma.session.findUnique({ where: { sessionId } });
 ```
 
+### 6. BigInt 序列化规范
+
+PostgreSQL 的 `BIGINT` 类型在 Prisma 中映射为 JavaScript 的 `BigInt`，而 `JSON.stringify()` 默认不支持序列化 `BigInt`。项目提供了统一的序列化工具来处理这个问题。
+
+**核心工具**: `server/utils/bigint-serializer.ts`
+
+**使用方法**:
+
+```typescript
+import { serializeBigInt } from '../utils/bigint-serializer.js';
+
+// 在 Service 层返回数据前进行序列化
+async getAllCategories() {
+  const categories = await this.categoriesRepo.findAllActiveWithCount();
+  return serializeBigInt(categories);  // 自动将所有 BigInt 转换为 string
+}
+```
+
+**重要特性**:
+
+- 自动递归处理嵌套对象和数组
+- 保留 `Date` 对象不做转换（Express 会自动序列化为 ISO 字符串）
+- 支持批量序列化：`serializeBigIntArray(items)`
+
+**最佳实践**:
+
+- ✅ 在 Service 层返回数据前统一序列化
+- ✅ 前端类型定义中将 `id` 等 BigInt 字段定义为 `string`
+- ❌ 不要在 Repository 层序列化（保持数据层的原始类型）
+- ❌ 不要在 Controller 层序列化（应该在 Service 层统一处理）
+
+
 ## 强制规范
 
 - **文档语言**: 所有输出的文档内容使用简体中文
@@ -343,6 +375,12 @@ const session = await prisma.session.findUnique({ where: { sessionId } });
 - **类型安全**: 严格使用 TypeScript，避免 `any` 类型
 - **组件命名**: 使用 PascalCase 命名组件文件和组件名
 - **Hooks 命名**: 自定义 Hooks 必须以 `use` 开头
+
+- **服务端 DatabaseService 延迟初始化**：禁止在类属性/构造函数中直接调用 `DatabaseService.getInstance()`，必须使用 getter 惰性初始化 `private get db() { return DatabaseService.getInstance(); }`
+- **API 客户端统一入口**：所有 API 导入必须使用 `@/lib/api-client`，禁止创建 `@/lib/api/*` 子路径或别名混淆
+- **功能模块启动验证**：新增功能必须通过 `pnpm dev` 和 `pnpm dev:server` 启动测试，确认前后端均无编译/运行时错误后方可提交
+- **Hooks 单一职责与集中导出**：相似功能禁止分散在多个 hooks 文件，必须通过统一的 `index.ts` barrel export 管理，导入路径必须与导出文件严格对应
+- **类型检查零容忍**：提交前必须运行 `pnpm lint && pnpm typecheck`，禁止提交包含 "模块未找到" 或 "导出不存在" 错误的代码
 
 ### 6. 测试规范
 
@@ -354,6 +392,7 @@ const session = await prisma.session.findUnique({ where: { sessionId } });
 - **测试覆盖率**: 通过 `pnpm test:coverage` 生成报告
 
 **测试文件位置**:
+
 - 单元测试：与源文件同目录，命名为 `*.test.ts` 或 `*.spec.ts`
 - Mock 数据：`src/mocks/data/` (JSON 文件)
 - MSW handlers：`src/mocks/handlers/`
