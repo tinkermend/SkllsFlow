@@ -1,8 +1,11 @@
 import axios from "axios";
 import { useAuthStore } from "@/stores/auth-store";
 
+// 从环境变量读取 API 基础 URL
+// 开发环境：使用相对路径，通过 Vite 代理转发
+// 生产环境：使用完整的后端 URL
 const apiClient = axios.create({
-  baseURL: "/api",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "/api",
   timeout: 10000,
   withCredentials: true, // 携带 httpOnly Refresh Token
   headers: {

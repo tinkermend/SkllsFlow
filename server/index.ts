@@ -18,7 +18,7 @@ import { metricsEndpoint } from './utils/metrics.js'
 import { errorHandler } from './middleware/error-handler.js'
 
 const app: Express = express()
-const PORT = process.env.PORT || 3001
+const PORT = process.env.BACKEND_PORT || process.env.PORT || 3001
 
 // 中间件
 app.use(cors({

@@ -30,7 +30,8 @@ export const env = cleanEnv(process.env, {
   NODE_ENV: nodeEnvValidator({ default: 'development', desc: 'Node environment (development, production, test)' }),
 
   // Server
-  PORT: port({ default: 3001, desc: 'Server port' }),
+  BACKEND_HOST: str({ default: '127.0.0.1', desc: 'Backend server host address (IP or domain name)' }),
+  BACKEND_PORT: port({ default: 3001, desc: 'Backend server port (Node.js Express service)' }),
 
   // Database
   DATABASE_URL: str({ desc: 'PostgreSQL database connection URL' }),
