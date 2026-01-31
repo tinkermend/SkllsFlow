@@ -28,7 +28,7 @@ class DatabaseService {
       const adapter = new PrismaPg(this.pool);
       this.instance = new PrismaClient({
         adapter,
-        log: process.env.NODE_ENV === 'development'
+        log: env.NODE_ENV === 'development'
           ? ['query', 'error', 'warn']
           : ['error'],
       });

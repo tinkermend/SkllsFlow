@@ -1,10 +1,11 @@
 import { type Request, type Response } from 'express';
+import { env } from '../config/env.js';
 import { getAuthService } from '../services/auth/auth.service.js';
 
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
   sameSite: 'strict' as const,
-  secure: process.env.NODE_ENV === 'production',
+  secure: env.NODE_ENV === 'production',
   path: '/api/auth',
 };
 

@@ -1,4 +1,5 @@
 import { type Request, type Response } from 'express';
+import { env } from '../config/env.js';
 import { SessionsService } from '../services/sessions.service.js';
 
 /**
@@ -131,7 +132,7 @@ export class SessionsController {
     // Generic internal server error
     res.status(500).json({
       error: 'Internal server error',
-      message: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      message: env.NODE_ENV === 'development' ? error.message : undefined,
     });
   }
 }

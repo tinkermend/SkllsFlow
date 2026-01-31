@@ -3,6 +3,8 @@
  * Provides consistent logging format across the application
  */
 
+import { env } from '../config/env.js';
+
 type LogLevel = 'info' | 'warn' | 'error' | 'debug';
 
 interface LogContext {
@@ -36,7 +38,7 @@ class Logger {
     if (error instanceof Error) {
       context = {
         error: error.message,
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+        stack: env.NODE_ENV === 'development' ? error.stack : undefined,
       };
     } else if (error) {
       context = error;
@@ -46,7 +48,7 @@ class Logger {
   }
 
   debug(message: string, context?: LogContext): void {
-    if (process.env.NODE_ENV === 'development') {
+    if (env.NODE_ENV === 'development') {
       console.debug(this.formatMessage('debug', message, context));
     }
   }

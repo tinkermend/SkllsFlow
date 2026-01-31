@@ -2,10 +2,9 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient({
   // Connection Pool Configuration (FR-024)
-  log:
-    process.env.NODE_ENV === "development"
-      ? ["query", "info", "warn", "error"]
-      : ["error"],
+  log: import.meta.env.DEV
+    ? ["query", "info", "warn", "error"]
+    : ["error"],
 });
 
 // Retry logic with 100-200ms delay (FR-020)

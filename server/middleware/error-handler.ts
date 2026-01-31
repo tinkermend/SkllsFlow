@@ -1,5 +1,6 @@
 import { type Request, type Response, type NextFunction } from 'express';
 import { Prisma } from '@prisma/client';
+import { env } from '../config/env.js';
 
 /**
  * Error handler middleware
@@ -41,7 +42,7 @@ export function errorHandler(
     // Other Prisma errors
     res.status(500).json({
       error: 'Database error',
-      message: process.env.NODE_ENV === 'development' ? err.message : undefined,
+      message: env.NODE_ENV === 'development' ? err.message : undefined,
     });
     return;
   }
@@ -67,6 +68,6 @@ export function errorHandler(
   // Generic error
   res.status(500).json({
     error: 'Internal server error',
-    message: process.env.NODE_ENV === 'development' ? err.message : undefined,
+    message: env.NODE_ENV === 'development' ? err.message : undefined,
   });
 }

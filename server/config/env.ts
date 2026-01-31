@@ -12,9 +12,23 @@ const sessionStatusValidator = makeValidator<string>((value) => {
 });
 
 /**
+ * Node environment validator
+ */
+const nodeEnvValidator = makeValidator<string>((value) => {
+  const validEnvs = ['development', 'production', 'test'];
+  if (validEnvs.includes(value)) {
+    return value;
+  }
+  throw new Error(`Invalid NODE_ENV: must be one of ${validEnvs.join(', ')}`);
+});
+
+/**
  * Environment configuration validation
  */
 export const env = cleanEnv(process.env, {
+  // Environment
+  NODE_ENV: nodeEnvValidator({ default: 'development', desc: 'Node environment (development, production, test)' }),
+
   // Server
   PORT: port({ default: 3001, desc: 'Server port' }),
 

@@ -1,4 +1,5 @@
-import { Request, Response } from 'express';
+import { type Request, type Response } from 'express';
+import { env } from '../config/env.js';
 import { McpServicesService } from '../services/mcp-services.service.js';
 import { BusinessError } from '../utils/errors.js';
 
@@ -43,7 +44,7 @@ export class McpServicesController {
       }
       res.status(500).json({
         error: '服务器内部错误',
-        message: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        message: env.NODE_ENV === 'development' ? error.message : undefined,
       });
     }
   }
