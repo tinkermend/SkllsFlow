@@ -47,6 +47,7 @@ export interface McpMarketplaceItem {
   name: string;
   description?: string;
   icon?: string;
+  language?: string;
   categoryName: string;
   tags: string[];
   installationCount: number;

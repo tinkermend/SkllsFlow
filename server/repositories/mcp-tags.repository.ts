@@ -1,5 +1,5 @@
 import { BaseRepository } from './base.repository.js';
-import { Prisma } from '@prisma/client';
+import { type Prisma } from '@prisma/client';
 
 /**
  * MCP 标签数据访问层

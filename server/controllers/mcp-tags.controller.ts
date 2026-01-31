@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { type Request, type Response } from 'express';
 import { McpTagsService } from '../services/mcp-tags.service.js';
 import { BusinessError } from '../utils/errors.js';
 

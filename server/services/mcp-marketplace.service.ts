@@ -31,7 +31,27 @@ export class McpMarketplaceService {
     pageSize?: number;
   }) {
     const result = await this.marketplaceRepo.findMarketplaceItems(options);
-    return serializeBigInt(result);
+
+    // 转换数据格式为前端期望的扁平化结构
+    const transformedData = result.data.map((item: any) => ({
+      id: item.id,
+      mcpId: item.mcpService?.mcpId || item.mcpId,
+      name: item.mcpService?.name || '',
+      description: item.mcpService?.description,
+      icon: item.mcpService?.icon,
+      language: item.mcpService?.language,
+      categoryName: item.mcpService?.category?.name || '',
+      tags: item.mcpService?.tags?.map((t: any) => t.tag.name) || [],
+      installationCount: item.installationCount || 0,
+      isVerified: item.isVerified || false,
+      creatorUsername: item.mcpService?.creator?.username || '',
+      createdAt: item.createdAt,
+    }));
+
+    return serializeBigInt({
+      data: transformedData,
+      pagination: result.pagination,
+    });
   }
 
   /**

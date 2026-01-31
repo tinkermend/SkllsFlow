@@ -37,3 +37,6 @@ server/__tests__/
 server/__tests__/
 
 /generated/prisma
+
+# Auto Claude data directory
+.auto-claude/
