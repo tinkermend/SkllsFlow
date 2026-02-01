@@ -607,3 +607,121 @@ VALUES (
         1,
         1
     );
+INSERT INTO
+    aiops.permissions (
+        name,
+        code,
+        resource,
+        action,
+        description,
+        module,
+        created_at,
+        updated_at
+    )
+VALUES (
+        '查看智能服务',
+        'chatServer:view',
+        'chatServer',
+        'view',
+        '查看智能服务列表和详情',
+        'ai-chat',
+        NOW(),
+        NOW()
+    )
+ON CONFLICT (code) DO NOTHING;
+
+-- 2. 创建智能服务
+INSERT INTO
+    aiops.permissions (
+        name,
+        code,
+        resource,
+        action,
+        description,
+        module,
+        created_at,
+        updated_at
+    )
+VALUES (
+        '创建智能服务',
+        'chatServer:create',
+        'chatServer',
+        'create',
+        '创建新的智能服务',
+        'ai-chat',
+        NOW(),
+        NOW()
+    )
+ON CONFLICT (code) DO NOTHING;
+
+-- 3. 更新智能服务
+INSERT INTO
+    aiops.permissions (
+        name,
+        code,
+        resource,
+        action,
+        description,
+        module,
+        created_at,
+        updated_at
+    )
+VALUES (
+        '更新智能服务',
+        'chatServer:update',
+        'chatServer',
+        'update',
+        '更新智能服务配置和信息',
+        'ai-chat',
+        NOW(),
+        NOW()
+    )
+ON CONFLICT (code) DO NOTHING;
+
+-- 4. 删除智能服务
+INSERT INTO
+    aiops.permissions (
+        name,
+        code,
+        resource,
+        action,
+        description,
+        module,
+        created_at,
+        updated_at
+    )
+VALUES (
+        '删除智能服务',
+        'chatServer:delete',
+        'chatServer',
+        'delete',
+        '删除智能服务',
+        'ai-chat',
+        NOW(),
+        NOW()
+    )
+ON CONFLICT (code) DO NOTHING;
+
+-- 5. 连接智能服务
+INSERT INTO
+    aiops.permissions (
+        name,
+        code,
+        resource,
+        action,
+        description,
+        module,
+        created_at,
+        updated_at
+    )
+VALUES (
+        '连接智能服务',
+        'chatServer:connect',
+        'chatServer',
+        'connect',
+        '连接到智能服务',
+        'ai-chat',
+        NOW(),
+        NOW()
+    )
+ON CONFLICT (code) DO NOTHING;
