@@ -9,6 +9,12 @@ import {
   Shield,
   Menu,
   Lock,
+  Server,
+  Eye,
+  AlertTriangle,
+  MessageSquare,
+  FileText,
+  Activity,
 } from "lucide-react";
 import { type SidebarData } from "../types";
 
@@ -27,6 +33,11 @@ export const sidebarData: SidebarData = {
           icon: Bot,
         },
         {
+          title: "技能管理",
+          url: "/skills",
+          icon: Package,
+        },
+        {
           title: "MCP管理",
           url: "/mcp-management",
           icon: Blocks,
@@ -37,9 +48,40 @@ export const sidebarData: SidebarData = {
           icon: Network,
         },
         {
-          title: "技能管理",
-          url: "/skills",
-          icon: Package,
+          title: "服务管理",
+          url: "/service-management",
+          icon: Server,
+        },
+        {
+          title: "可观测性",
+          url: "/observability",
+          icon: Eye,
+        },
+        {
+          title: "告警管理",
+          url: "/alert-management",
+          icon: AlertTriangle,
+        },
+        {
+          title: "集群对话",
+          url: "/cluster-chat",
+          icon: MessageSquare,
+        },
+        {
+          title: "日志管理",
+          icon: FileText,
+          items: [
+            {
+              title: "操作日志",
+              url: "/logs/operation",
+              icon: Activity,
+            },
+            {
+              title: "对话日志",
+              url: "/logs/chat",
+              icon: MessageSquare,
+            },
+          ],
         },
         {
           title: "系统管理",
