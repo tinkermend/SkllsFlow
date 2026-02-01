@@ -1,4 +1,3 @@
-import { session_status } from '@prisma/client';
 import { SessionRepository } from '../repositories/sessions.repository.js';
 import { UserRepository } from '../repositories/users.repository.js';
 import { DatabaseService } from './database.service.js';
@@ -59,7 +58,7 @@ export class SessionsService {
       title: title,
       userId: user.id, // 使用数据库 ID (BigInt)
       projectId: dto.projectId || 'global',
-      status: session_status.active,
+      status: 'active' as const,
       opencodeServer: env.OPENCODE_API_URL,
       directory: dto.directory || null,
     };
