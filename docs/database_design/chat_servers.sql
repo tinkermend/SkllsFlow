@@ -6,10 +6,10 @@
 -- 创建时间：2026-02-01
 -- ============================================================================
 
-
 CREATE TABLE IF NOT EXISTS chat_servers (
     id BIGSERIAL PRIMARY KEY,
     chat_id UUID NOT NULL DEFAULT gen_random_uuid (),
+    name VARCHAR(120) NOT NULL,
     chat_dir TEXT NOT NULL,
     proxy_id BIGINT NOT NULL,
     host varchar(32) NOT NULL,
@@ -49,6 +49,8 @@ COMMENT ON TABLE chat_servers IS 'OpenCode Server 信息表，存储启动的对
 COMMENT ON COLUMN chat_servers.id IS '自增主键';
 
 COMMENT ON COLUMN chat_servers.chat_id IS '对话唯一标识符（UUID）';
+
+COMMENT ON COLUMN chat_servers.name IS '对话名称';
 
 COMMENT ON COLUMN chat_servers.chat_dir IS 'OpenCode Server 启动目录';
 

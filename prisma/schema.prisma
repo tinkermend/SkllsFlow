@@ -324,6 +324,8 @@ model ChatServer {
   id            BigInt              @id @default(autoincrement())
   /// 对话唯一标识符（UUID）
   chatId        String              @unique @default(uuid()) @map("chat_id") @db.Uuid
+  /// 聊天服务器名称
+  name          String              @db.VarChar(120)
   /// OpenCode Server 启动目录
   chatDir       String              @map("chat_dir") @db.Text
   /// 关联的代理服务器 ID
