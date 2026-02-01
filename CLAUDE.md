@@ -30,9 +30,6 @@ pnpm dev
 
 # 构建生产版本
 pnpm build
-
-# 预览生产构建
-pnpm preview
 ```
 
 ### 后端开发
@@ -59,22 +56,6 @@ pnpm format:check
 
 # 检查未使用的依赖和导出
 pnpm knip
-```
-
-### 测试
-
-```bash
-# 运行所有测试
-pnpm test
-
-# 监听模式运行测试
-pnpm test:watch
-
-# 使用 UI 界面运行测试
-pnpm test:ui
-
-# 生成测试覆盖率报告
-pnpm test:coverage
 ```
 
 ### 数据库管理
@@ -220,19 +201,6 @@ server/
 - **权限控制**: CASL (基于能力的访问控制)
 - **用户状态**: 登录状态、用户信息、权限配置
 
-### AI 对话功能架构
-
-AI 对话功能位于 `src/features/ai-chat/`，核心组件：
-
-1. **连接管理** (`connection-guard.tsx`)
-
-2. **会话管理** (`session-sidebar.tsx`, `session-item.tsx`)
-
-3. **消息展示** (`message-list.tsx`, `message-item.tsx`)
-
-4. **输入面板** (`chat-input.tsx`, `chat-panel.tsx`)
-
-5. **推理展示** (`reasoning-part.tsx`, `tool-reasoning.tsx`)
 
 ### 后端服务架构
 
@@ -302,14 +270,9 @@ import { useChatStore } from "@/stores/chat-store";
 
 ### 4. OpenCode API 集成
 
-OpenCode API 文档位于 `docs/openapi.json`，包含：
+OpenCode API 文档位于 `docs/opencode_api.json`，包含：
 
-- 健康检查: `/global/health`
-- 全局事件: `/global/event`
-- 项目管理: `/project/*`
-- 会话管理: `/session/*`
-
-后端服务 (`server/services/opencode.service.ts`) 负责：
+opencode 后端服务 (`server/services/opencode.service.ts`) 负责：
 
 - 管理 OpenCode 连接
 - 处理流式响应
@@ -326,33 +289,12 @@ OpenCode API 文档位于 `docs/openapi.json`，包含：
 - **指标收集**: 所有查询自动记录延迟、错误率和连接池指标
 - **重试机制**: 瞬态错误自动重试 1 次（150ms 延迟）
 
-**示例**:
-
-```typescript
-// ✅ 正确：使用 Repository
-const session = await sessionRepository.findBySessionId(sessionId);
-
-// ❌ 错误：直接使用 Prisma Client
-const session = await prisma.session.findUnique({ where: { sessionId } });
-```
-
 ### 6. BigInt 序列化规范
 
 PostgreSQL 的 `BIGINT` 类型在 Prisma 中映射为 JavaScript 的 `BigInt`，而 `JSON.stringify()` 默认不支持序列化 `BigInt`。项目提供了统一的序列化工具来处理这个问题。
 
 **核心工具**: `server/utils/bigint-serializer.ts`
 
-**使用方法**:
-
-```typescript
-import { serializeBigInt } from '../utils/bigint-serializer.js';
-
-// 在 Service 层返回数据前进行序列化
-async getAllCategories() {
-  const categories = await this.categoriesRepo.findAllActiveWithCount();
-  return serializeBigInt(categories);  // 自动将所有 BigInt 转换为 string
-}
-```
 
 **重要特性**:
 
@@ -381,6 +323,11 @@ async getAllCategories() {
 - **功能模块启动验证**：新增功能必须通过 `pnpm dev` 和 `pnpm dev:server` 启动测试，确认前后端均无编译/运行时错误后方可提交
 - **Hooks 单一职责与集中导出**：相似功能禁止分散在多个 hooks 文件，必须通过统一的 `index.ts` barrel export 管理，导入路径必须与导出文件严格对应
 - **类型检查零容忍**：提交前必须运行 `pnpm lint && pnpm typecheck`，禁止提交包含 "模块未找到" 或 "导出不存在" 错误的代码
+
+- **页面布局规范（宪法级）**：所有 `_authenticated/` 路由下的页面组件**必须**使用标准的 `<Header>` 和 `<Main>` 布局组件，确保顶部导航栏（搜索、主题切换、设置、用户菜单）在所有页面保持一致
+  - **强制要求**：在 `src/features/*/index.tsx` 中必须包含以下结构
+  - **Header 组件**：必须包含 `Search`、`ThemeSwitch`、`ConfigDrawer`、`ProfileDropdown`
+  - **Main 组件**：包裹页面的所有主要内容
 
 ### 6. 测试规范
 

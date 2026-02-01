@@ -21,8 +21,12 @@ import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authen
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as AuthenticatedSkillsIndexRouteImport } from './routes/_authenticated/skills/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
+import { Route as AuthenticatedServiceManagementIndexRouteImport } from './routes/_authenticated/service-management/index'
+import { Route as AuthenticatedObservabilityIndexRouteImport } from './routes/_authenticated/observability/index'
 import { Route as AuthenticatedMcpManagementIndexRouteImport } from './routes/_authenticated/mcp-management/index'
 import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_authenticated/help-center/index'
+import { Route as AuthenticatedClusterChatIndexRouteImport } from './routes/_authenticated/cluster-chat/index'
+import { Route as AuthenticatedAlertManagementIndexRouteImport } from './routes/_authenticated/alert-management/index'
 import { Route as AuthenticatedAiChatIndexRouteImport } from './routes/_authenticated/ai-chat/index'
 import { Route as AuthenticatedAgentManagementIndexRouteImport } from './routes/_authenticated/agent-management/index'
 import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
@@ -32,6 +36,8 @@ import { Route as AuthenticatedDebugAuthRouteImport } from './routes/_authentica
 import { Route as AuthenticatedSettingsRolesIndexRouteImport } from './routes/_authenticated/settings/roles/index'
 import { Route as AuthenticatedSettingsPermissionsIndexRouteImport } from './routes/_authenticated/settings/permissions/index'
 import { Route as AuthenticatedSettingsMenusIndexRouteImport } from './routes/_authenticated/settings/menus/index'
+import { Route as AuthenticatedLogsOperationIndexRouteImport } from './routes/_authenticated/logs/operation/index'
+import { Route as AuthenticatedLogsChatIndexRouteImport } from './routes/_authenticated/logs/chat/index'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -95,6 +101,18 @@ const AuthenticatedSettingsIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
+const AuthenticatedServiceManagementIndexRoute =
+  AuthenticatedServiceManagementIndexRouteImport.update({
+    id: '/service-management/',
+    path: '/service-management/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedObservabilityIndexRoute =
+  AuthenticatedObservabilityIndexRouteImport.update({
+    id: '/observability/',
+    path: '/observability/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedMcpManagementIndexRoute =
   AuthenticatedMcpManagementIndexRouteImport.update({
     id: '/mcp-management/',
@@ -105,6 +123,18 @@ const AuthenticatedHelpCenterIndexRoute =
   AuthenticatedHelpCenterIndexRouteImport.update({
     id: '/help-center/',
     path: '/help-center/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedClusterChatIndexRoute =
+  AuthenticatedClusterChatIndexRouteImport.update({
+    id: '/cluster-chat/',
+    path: '/cluster-chat/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAlertManagementIndexRoute =
+  AuthenticatedAlertManagementIndexRouteImport.update({
+    id: '/alert-management/',
+    path: '/alert-management/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAiChatIndexRoute =
@@ -160,6 +190,18 @@ const AuthenticatedSettingsMenusIndexRoute =
     path: '/menus/',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
+const AuthenticatedLogsOperationIndexRoute =
+  AuthenticatedLogsOperationIndexRouteImport.update({
+    id: '/logs/operation/',
+    path: '/logs/operation/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedLogsChatIndexRoute =
+  AuthenticatedLogsChatIndexRouteImport.update({
+    id: '/logs/chat/',
+    path: '/logs/chat/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRouteRouteWithChildren
@@ -176,11 +218,17 @@ export interface FileRoutesByFullPath {
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/agent-management': typeof AuthenticatedAgentManagementIndexRoute
   '/ai-chat': typeof AuthenticatedAiChatIndexRoute
+  '/alert-management': typeof AuthenticatedAlertManagementIndexRoute
+  '/cluster-chat': typeof AuthenticatedClusterChatIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
   '/mcp-management': typeof AuthenticatedMcpManagementIndexRoute
+  '/observability': typeof AuthenticatedObservabilityIndexRoute
+  '/service-management': typeof AuthenticatedServiceManagementIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/skills': typeof AuthenticatedSkillsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/logs/chat': typeof AuthenticatedLogsChatIndexRoute
+  '/logs/operation': typeof AuthenticatedLogsOperationIndexRoute
   '/settings/menus': typeof AuthenticatedSettingsMenusIndexRoute
   '/settings/permissions': typeof AuthenticatedSettingsPermissionsIndexRoute
   '/settings/roles': typeof AuthenticatedSettingsRolesIndexRoute
@@ -199,11 +247,17 @@ export interface FileRoutesByTo {
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/agent-management': typeof AuthenticatedAgentManagementIndexRoute
   '/ai-chat': typeof AuthenticatedAiChatIndexRoute
+  '/alert-management': typeof AuthenticatedAlertManagementIndexRoute
+  '/cluster-chat': typeof AuthenticatedClusterChatIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
   '/mcp-management': typeof AuthenticatedMcpManagementIndexRoute
+  '/observability': typeof AuthenticatedObservabilityIndexRoute
+  '/service-management': typeof AuthenticatedServiceManagementIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/skills': typeof AuthenticatedSkillsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/logs/chat': typeof AuthenticatedLogsChatIndexRoute
+  '/logs/operation': typeof AuthenticatedLogsOperationIndexRoute
   '/settings/menus': typeof AuthenticatedSettingsMenusIndexRoute
   '/settings/permissions': typeof AuthenticatedSettingsPermissionsIndexRoute
   '/settings/roles': typeof AuthenticatedSettingsRolesIndexRoute
@@ -225,11 +279,17 @@ export interface FileRoutesById {
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/_authenticated/agent-management/': typeof AuthenticatedAgentManagementIndexRoute
   '/_authenticated/ai-chat/': typeof AuthenticatedAiChatIndexRoute
+  '/_authenticated/alert-management/': typeof AuthenticatedAlertManagementIndexRoute
+  '/_authenticated/cluster-chat/': typeof AuthenticatedClusterChatIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
   '/_authenticated/mcp-management/': typeof AuthenticatedMcpManagementIndexRoute
+  '/_authenticated/observability/': typeof AuthenticatedObservabilityIndexRoute
+  '/_authenticated/service-management/': typeof AuthenticatedServiceManagementIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/skills/': typeof AuthenticatedSkillsIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/_authenticated/logs/chat/': typeof AuthenticatedLogsChatIndexRoute
+  '/_authenticated/logs/operation/': typeof AuthenticatedLogsOperationIndexRoute
   '/_authenticated/settings/menus/': typeof AuthenticatedSettingsMenusIndexRoute
   '/_authenticated/settings/permissions/': typeof AuthenticatedSettingsPermissionsIndexRoute
   '/_authenticated/settings/roles/': typeof AuthenticatedSettingsRolesIndexRoute
@@ -251,11 +311,17 @@ export interface FileRouteTypes {
     | '/settings/display'
     | '/agent-management'
     | '/ai-chat'
+    | '/alert-management'
+    | '/cluster-chat'
     | '/help-center'
     | '/mcp-management'
+    | '/observability'
+    | '/service-management'
     | '/settings/'
     | '/skills'
     | '/users'
+    | '/logs/chat'
+    | '/logs/operation'
     | '/settings/menus'
     | '/settings/permissions'
     | '/settings/roles'
@@ -274,11 +340,17 @@ export interface FileRouteTypes {
     | '/settings/display'
     | '/agent-management'
     | '/ai-chat'
+    | '/alert-management'
+    | '/cluster-chat'
     | '/help-center'
     | '/mcp-management'
+    | '/observability'
+    | '/service-management'
     | '/settings'
     | '/skills'
     | '/users'
+    | '/logs/chat'
+    | '/logs/operation'
     | '/settings/menus'
     | '/settings/permissions'
     | '/settings/roles'
@@ -299,11 +371,17 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/display'
     | '/_authenticated/agent-management/'
     | '/_authenticated/ai-chat/'
+    | '/_authenticated/alert-management/'
+    | '/_authenticated/cluster-chat/'
     | '/_authenticated/help-center/'
     | '/_authenticated/mcp-management/'
+    | '/_authenticated/observability/'
+    | '/_authenticated/service-management/'
     | '/_authenticated/settings/'
     | '/_authenticated/skills/'
     | '/_authenticated/users/'
+    | '/_authenticated/logs/chat/'
+    | '/_authenticated/logs/operation/'
     | '/_authenticated/settings/menus/'
     | '/_authenticated/settings/permissions/'
     | '/_authenticated/settings/roles/'
@@ -405,6 +483,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
+    '/_authenticated/service-management/': {
+      id: '/_authenticated/service-management/'
+      path: '/service-management'
+      fullPath: '/service-management'
+      preLoaderRoute: typeof AuthenticatedServiceManagementIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/observability/': {
+      id: '/_authenticated/observability/'
+      path: '/observability'
+      fullPath: '/observability'
+      preLoaderRoute: typeof AuthenticatedObservabilityIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/mcp-management/': {
       id: '/_authenticated/mcp-management/'
       path: '/mcp-management'
@@ -417,6 +509,20 @@ declare module '@tanstack/react-router' {
       path: '/help-center'
       fullPath: '/help-center'
       preLoaderRoute: typeof AuthenticatedHelpCenterIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/cluster-chat/': {
+      id: '/_authenticated/cluster-chat/'
+      path: '/cluster-chat'
+      fullPath: '/cluster-chat'
+      preLoaderRoute: typeof AuthenticatedClusterChatIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/alert-management/': {
+      id: '/_authenticated/alert-management/'
+      path: '/alert-management'
+      fullPath: '/alert-management'
+      preLoaderRoute: typeof AuthenticatedAlertManagementIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/ai-chat/': {
@@ -482,6 +588,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsMenusIndexRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
+    '/_authenticated/logs/operation/': {
+      id: '/_authenticated/logs/operation/'
+      path: '/logs/operation'
+      fullPath: '/logs/operation'
+      preLoaderRoute: typeof AuthenticatedLogsOperationIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/logs/chat/': {
+      id: '/_authenticated/logs/chat/'
+      path: '/logs/chat'
+      fullPath: '/logs/chat'
+      preLoaderRoute: typeof AuthenticatedLogsChatIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -517,10 +637,16 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
   AuthenticatedAgentManagementIndexRoute: typeof AuthenticatedAgentManagementIndexRoute
   AuthenticatedAiChatIndexRoute: typeof AuthenticatedAiChatIndexRoute
+  AuthenticatedAlertManagementIndexRoute: typeof AuthenticatedAlertManagementIndexRoute
+  AuthenticatedClusterChatIndexRoute: typeof AuthenticatedClusterChatIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
   AuthenticatedMcpManagementIndexRoute: typeof AuthenticatedMcpManagementIndexRoute
+  AuthenticatedObservabilityIndexRoute: typeof AuthenticatedObservabilityIndexRoute
+  AuthenticatedServiceManagementIndexRoute: typeof AuthenticatedServiceManagementIndexRoute
   AuthenticatedSkillsIndexRoute: typeof AuthenticatedSkillsIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
+  AuthenticatedLogsChatIndexRoute: typeof AuthenticatedLogsChatIndexRoute
+  AuthenticatedLogsOperationIndexRoute: typeof AuthenticatedLogsOperationIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -531,10 +657,18 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAgentManagementIndexRoute:
     AuthenticatedAgentManagementIndexRoute,
   AuthenticatedAiChatIndexRoute: AuthenticatedAiChatIndexRoute,
+  AuthenticatedAlertManagementIndexRoute:
+    AuthenticatedAlertManagementIndexRoute,
+  AuthenticatedClusterChatIndexRoute: AuthenticatedClusterChatIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
   AuthenticatedMcpManagementIndexRoute: AuthenticatedMcpManagementIndexRoute,
+  AuthenticatedObservabilityIndexRoute: AuthenticatedObservabilityIndexRoute,
+  AuthenticatedServiceManagementIndexRoute:
+    AuthenticatedServiceManagementIndexRoute,
   AuthenticatedSkillsIndexRoute: AuthenticatedSkillsIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
+  AuthenticatedLogsChatIndexRoute: AuthenticatedLogsChatIndexRoute,
+  AuthenticatedLogsOperationIndexRoute: AuthenticatedLogsOperationIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

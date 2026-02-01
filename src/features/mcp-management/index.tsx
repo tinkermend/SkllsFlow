@@ -1,4 +1,10 @@
 import { useState } from "react";
+import { Header } from "@/components/layout/header";
+import { Main } from "@/components/layout/main";
+import { Search } from "@/components/search";
+import { ThemeSwitch } from "@/components/theme-switch";
+import { ConfigDrawer } from "@/components/config-drawer";
+import { ProfileDropdown } from "@/components/profile-dropdown";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Plus, HelpCircle } from "lucide-react";
@@ -57,47 +63,62 @@ export default function McpManagement() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* 页面标题和操作栏 */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">MCP 管理中心</h1>
-          <p className="text-muted-foreground mt-1">
-            管理和配置 Model Context Protocol 服务
-          </p>
+    <>
+      {/* Header - 顶部导航栏 */}
+      <Header>
+        <Search />
+        <div className="ms-auto flex items-center space-x-4">
+          <ThemeSwitch />
+          <ConfigDrawer />
+          <ProfileDropdown />
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon">
-            <HelpCircle className="h-4 w-4" />
-          </Button>
-          <Button onClick={() => setCreateDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            创建/导入 MCP
-          </Button>
+      </Header>
+
+      {/* Main - 主内容区域 */}
+      <Main>
+        <div className="space-y-6">
+          {/* 页面标题和操作栏 */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">MCP 管理中心</h1>
+              <p className="text-muted-foreground mt-1">
+                管理和配置 Model Context Protocol 服务
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="icon">
+                <HelpCircle className="h-4 w-4" />
+              </Button>
+              <Button onClick={() => setCreateDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                创建/导入 MCP
+              </Button>
+            </div>
+          </div>
+
+          {/* 标签页 */}
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList>
+              <TabsTrigger value="my-mcps">我的 MCP</TabsTrigger>
+              <TabsTrigger value="marketplace">MCP 市场</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="my-mcps" className="mt-6">
+              <MyMcpsList
+                onGoToMarketplace={() => setActiveTab("marketplace")}
+                onConfigure={handleConfigure}
+                onRestart={handleRestart}
+                onAddToSession={handleAddToSession}
+                onDelete={handleDelete}
+              />
+            </TabsContent>
+
+            <TabsContent value="marketplace" className="mt-6">
+              <MarketplaceLayout onLoad={handleLoadMarketplace} />
+            </TabsContent>
+          </Tabs>
         </div>
-      </div>
-
-      {/* 标签页 */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="my-mcps">我的 MCP</TabsTrigger>
-          <TabsTrigger value="marketplace">MCP 市场</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="my-mcps" className="mt-6">
-          <MyMcpsList
-            onGoToMarketplace={() => setActiveTab("marketplace")}
-            onConfigure={handleConfigure}
-            onRestart={handleRestart}
-            onAddToSession={handleAddToSession}
-            onDelete={handleDelete}
-          />
-        </TabsContent>
-
-        <TabsContent value="marketplace" className="mt-6">
-          <MarketplaceLayout onLoad={handleLoadMarketplace} />
-        </TabsContent>
-      </Tabs>
+      </Main>
 
       {/* 对话框 */}
       <CreateMcpDialog
@@ -112,6 +133,6 @@ export default function McpManagement() {
           mcpName={selectedMcp.name}
         />
       )}
-    </div>
+    </>
   );
 }
