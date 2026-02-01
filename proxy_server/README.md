@@ -9,15 +9,15 @@ proxy_server
 编写一个 基于 go gin框架的 api服务,所有实现的api都需要进行http header X-Signature值验证,api主要实现以下目标:
 
 - 1. /api/opencode_start 启动代理服务
-  - 入参: { "chat_id": "在数据库中的chat id",port": "int类型,启动的端口号", "auth": "bool 类型,是否需要验证","auth_password":"验证密码","chat_dir","服务启动的目录"}
+  - 入参: { port": "int类型,启动的端口号", "auth": "bool 类型,是否需要验证","auth_password":"验证密码","chat_dir","服务启动的目录"}
   - 出参: { "code": "int类型,状态码","message": "string类型,提示信息"}
 
 - 2. /api/opencode_stop 停止代理服务
-  - 入参: { "chat_id": "在数据库中的chat id",port": "int类型,对外服务的端口号"}
+  - 入参: { port": "int类型,对外服务的端口号"}
   - 出参: { "code": "int类型,状态码", "message": "string类型,提示信息"}
 
 - 3. /api/opencode_delete 停止代理服务并删除对应目录
-  - 入参: { "chat_id": "在数据库中的chat id",port": "int类型,对外服务的端口号","chat_dir":"服务启动的目录"}
+  - 入参: { port": "int类型,对外服务的端口号","chat_dir":"服务启动的目录"}
   - 出参: { "code": "int类型,状态码", "message": "string类型,提示信息"}
 
 **关于认证说明**
@@ -27,14 +27,13 @@ proxy_server
 
 - 1.只接受 POST 请求 ,非POST请求忽略
 - 2.解析入参的值并进行校验: 1. port 参数是否正确,必须在1000-65535 之间 ,2. chat_dir 参数是否正确,必须是目录路径格式
-- 3. 校验通过后 先调用操作系统命令 mkdir -p  chat_dir  创建对应目录,创建成功继续下一步,创建失败 返回 code=500,message="创建目录失败"
+- 3. 校验通过后 先调用操作系统命令 mkdir -p chat_dir 创建对应目录,创建成功继续下一步,创建失败 返回 code=500,message="创建目录失败"
 - 4. 判断 auth 是否为false ,如果为false 则忽略 auth_password 参数值, 否则将 auth_password 参数值传递到下一个逻辑
-- 5. 如果 auth 为true , 先cd 到 chat_dir 目录,然后通过  OPENCODE_SERVER_PASSWORD=OpenCode@123  opencode serve --port {request 中的port值} 进行启动服务, 启动成功后返回 code=200,message="服务启动成功",否则返回 code=500,message="服务启动失败"
-
+- 5. 如果 auth 为true , 先cd 到 chat_dir 目录,然后通过 OPENCODE_SERVER_PASSWORD=OpenCode@123 opencode serve --port {request 中的port值} 进行启动服务, 启动成功后返回 code=200,message="服务启动成功",否则返回 code=500,message="服务启动失败"
 
 ### opencode_stop 接口说明
 
-- 1. 先校验参数值是否正确: 1. port 参数是否正确,必须在1000-65535 之间 
+- 1. 先校验参数值是否正确: 1. port 参数是否正确,必须在1000-65535 之间
 - 2. 根据操作系统不同调用不同的命令 获取 对应端口服务的 pid
 - 3. 根据获取到的 pid 值,调用操作系统命令停止服务
 

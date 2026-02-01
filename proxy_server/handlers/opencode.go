@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"proxy_server/models"
@@ -21,6 +22,8 @@ func StartHandler(c *gin.Context) {
 		})
 		return
 	}
+
+	fmt.Printf("StartRequest: %+v\n", req)
 
 	// 验证端口号
 	if err := utils.ValidatePort(req.Port); err != nil {
@@ -83,6 +86,8 @@ func StopHandler(c *gin.Context) {
 		return
 	}
 
+	fmt.Printf("StopRequest: %+v\n", req)
+
 	// 验证端口号
 	if err := utils.ValidatePort(req.Port); err != nil {
 		c.JSON(http.StatusBadRequest, models.Response{
@@ -130,6 +135,8 @@ func DeleteHandler(c *gin.Context) {
 		})
 		return
 	}
+
+	fmt.Printf("DeleteRequest: %+v\n", req)
 
 	// 验证端口号
 	if err := utils.ValidatePort(req.Port); err != nil {
