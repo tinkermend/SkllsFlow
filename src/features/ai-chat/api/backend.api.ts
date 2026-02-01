@@ -45,6 +45,20 @@ export const backendApi = {
     }>('/opencode/health')
     return response.data
   },
+
+  /**
+   * 准备会话目录（完整流程：获取基础目录并创建用户会话目录）
+   */
+  prepareSessionDirectory: async (accountNo: string): Promise<{
+    directory: string
+    directoryName: string
+  }> => {
+    const response = await apiClient.post<{
+      directory: string
+      directoryName: string
+    }>('/directories/prepare', { accountNo })
+    return response.data
+  },
 }
 
 // 导出 apiClient 作为 backendClient（保持向后兼容）

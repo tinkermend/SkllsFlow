@@ -12,6 +12,7 @@ import permissionsRoutes from './routes/permissions.routes.js'
 import devicesRoutes from './routes/devices.routes.js'
 import menusRoutes from './routes/menus.routes.js'
 import mcpRoutes from './routes/mcp.routes.js'
+import directoriesRoutes from './routes/directories.routes.js'
 import { openCodeService } from './services/opencode.service.js'
 import { DatabaseService } from './services/database.service.js'
 import { metricsEndpoint } from './utils/metrics.js'
@@ -39,6 +40,7 @@ app.use('/api/permissions', permissionsRoutes)
 app.use('/api/devices', devicesRoutes)
 app.use('/api/menus', menusRoutes)
 app.use('/api/mcp', mcpRoutes)
+app.use('/api/directories', directoriesRoutes)
 
 // 健康检查
 app.get('/health', async (req, res) => {

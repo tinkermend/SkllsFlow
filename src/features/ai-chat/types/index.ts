@@ -33,6 +33,7 @@ export interface Session {
 export interface CreateSessionParams {
   title?: string
   parentID?: string
+  accountNo?: string  // 用户账号，用于创建会话目录
   // [预留]
   skills?: string[]
   mcpServers?: string[]
