@@ -48,10 +48,12 @@ model User {
   // 关联关系
   userRoles           UserRole[]
   refreshTokens       RefreshToken[]
-  sessions            Session[]
   userSkills          UserSkill[]
   mcpServices         McpService[]         @relation("McpServiceCreator")
   mcpMarketplaceItems McpMarketplaceItem[] @relation("McpMarketplaceCreator")
+  proxyHosts          ProxyHost[]          @relation("ProxyHostCreator")
+  updatedProxyHosts   ProxyHost[]          @relation("ProxyHostUpdater")
+  chatServers         ChatServer[]         @relation("ChatServerCreator")
 
   @@index([status])
   @@index([userUUId])
@@ -248,36 +250,179 @@ model AuditLog {
 // ============================================
 // 会话表
 // ============================================
-/// OpenCode 会话表，存储 AI 对话会话信息
+/// 会话表，存储用户与AI的对话会话
 model Session {
   /// 主键 ID，自增
-  id             BigInt         @id @default(autoincrement())
-  /// 会话唯一标识符，对应 OpenCode session ID
-  sessionId      String         @unique @map("session_id")
+  id        BigInt   @id @default(autoincrement())
+  /// 应用层会话 ID，唯一标识符
+  sessionId String   @unique @map("session_id") @db.VarChar(100)
+  /// 聊天服务 ID，关联 chat_servers 表
+  chatId    BigInt   @map("chat_id")
   /// 会话标题
-  title          String
-  /// 用户 ID，外键关联 users 表
-  userId         BigInt         @map("user_id")
-  /// 项目 ID，默认为 global
-  projectId      String         @default("global") @map("project_id")
-  /// 会话状态（active: 活跃, delete: 已删除）
-  status         session_status @default(active)
-  /// OpenCode 服务器地址
-  opencodeServer String         @default("http://127.0.0.1:4096") @map("opencode_server")
-  /// 工作目录路径
-  directory      String?
+  title     String   @db.VarChar(200)
   /// 创建时间
-  createdAt      DateTime       @default(now()) @map("created_at")
-  /// 更新时间
-  updatedAt      DateTime       @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   // 关联关系
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chatServer ChatServer @relation(fields: [chatId], references: [id], onDelete: Restrict)
 
-  @@index([userId])
-  @@index([status])
-  @@index([updatedAt(sort: Desc)])
+  @@index([chatId], map: "idx_sessions_chat_id")
   @@map("sessions")
+  @@schema("aiops")
+}
+
+// ============================================
+// 代理主机表
+// ============================================
+/// 代理服务器主机信息表，存储可用于启动 OpenCode Server 的代理节点
+model ProxyHost {
+  /// 主键 ID，自增
+  id            BigInt               @id @default(autoincrement())
+  /// 代理服务器名称
+  name          String               @db.Text
+  /// 代理服务器描述信息
+  description   String?              @db.Text
+  /// 服务器所在区域/地理位置
+  region        String?              @db.Text
+  /// 代理服务器 IP 地址
+  host          String               @map("host") @db.VarChar(64)
+  /// 代理服务端口
+  port          Int                  @map("port")
+  /// 默认对话服务起始端口
+  beginChatPort Int                  @default(4000) @map("begin_chat_port")
+  /// 代理状态：active-可用, disabled-已禁用, maintenance-维护中
+  status        proxy_host_status    @default(active)
+  /// 创建时间
+  createdAt     DateTime             @default(now()) @map("created_at")
+  /// 创建人 ID，外键关联 users 表
+  createdBy     BigInt               @map("created_by")
+  /// 更新时间
+  updatedAt     DateTime             @default(now()) @map("updated_at")
+  /// 更新人 ID，外键关联 users 表
+  updatedBy     BigInt?              @map("updated_by")
+
+  // 关联关系
+  creator  User        @relation("ProxyHostCreator", fields: [createdBy], references: [id], onDelete: Restrict)
+  updater  User?       @relation("ProxyHostUpdater", fields: [updatedBy], references: [id], onDelete: SetNull)
+  chatServers ChatServer[]
+
+  @@index([status])
+  @@index([host])
+  @@index([region])
+  @@index([createdBy])
+  @@index([updatedBy])
+  @@map("proxy_host")
+  @@schema("aiops")
+}
+
+// ============================================
+// 聊天服务器表
+// ============================================
+/// OpenCode Server 信息表，存储启动的对话服务器实例
+model ChatServer {
+  /// 主键 ID，自增
+  id            BigInt              @id @default(autoincrement())
+  /// 对话唯一标识符（UUID）
+  chatId        String              @unique @default(uuid()) @map("chat_id") @db.Uuid
+  /// OpenCode Server 启动目录
+  chatDir       String              @map("chat_dir") @db.Text
+  /// 关联的代理服务器 ID
+  proxyId       BigInt              @map("proxy_id")
+  /// Server 监听 IP 地址
+  host          String              @db.VarChar(32)
+  /// Server 监听端口
+  port          Int
+  /// 是否启用认证
+  auth          Boolean             @default(false)
+  /// 认证密码（当 auth 为 true 时有效）
+  authPassword  String              @default("") @map("auth_password") @db.VarChar(32)
+  /// Server 状态：active-活跃, disabled-已禁用, error-错误
+  status        chat_server_status  @default(active)
+  /// 错误信息（当 status 为 error 时记录具体错误）
+  errorMessage  String?             @map("error_message") @db.Text
+  /// 创建时间
+  createdAt     DateTime            @default(now()) @map("created_at")
+  /// 创建人 ID，外键关联 users 表
+  createdBy     BigInt              @map("created_by")
+
+  // 关联关系
+  proxyHost         ProxyHost           @relation(fields: [proxyId], references: [id], onDelete: Restrict)
+  creator           User                @relation("ChatServerCreator", fields: [createdBy], references: [id], onDelete: Restrict)
+  sessions          Session[]
+  chatServerAgents  ChatServerAgent[]
+  chatServerMcps    ChatServerMcp[]
+  chatServerSkills  ChatServerSkill[]
+
+  @@unique([host, port], name: "chat_servers_host_port_unique")
+  @@index([proxyId, status], map: "idx_chat_servers_proxy_status")
+  @@index([createdBy], map: "idx_chat_servers_created_by")
+  @@map("chat_servers")
+  @@schema("aiops")
+}
+
+// ============================================
+// 聊天服务器-Agent 关联表
+// ============================================
+/// chat_servers 关联表，记录对话服务中使用的 Agent
+model ChatServerAgent {
+  /// 聊天服务器 ID，关联 chat_servers 表（使用自增主键）
+  chatServerId BigInt   @map("chat_server_id")
+  /// Agent ID，关联 agents 表
+  agentId      BigInt   @map("agent_id")
+  /// 关联创建时间
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // 关联关系
+  chatServer ChatServer @relation(fields: [chatServerId], references: [id], onDelete: Cascade)
+  agent      Agent      @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@id([chatServerId, agentId])
+  @@index([agentId], map: "idx_chat_server_agents_agent_id")
+  @@map("chat_server_agents")
+  @@schema("aiops")
+}
+
+// ============================================
+// 聊天服务器-MCP 服务关联表
+// ============================================
+/// chat_servers 关联表，记录对话服务中使用的 MCP 服务
+model ChatServerMcp {
+  /// 聊天服务器 ID，关联 chat_servers 表（使用自增主键）
+  chatServerId BigInt   @map("chat_server_id")
+  /// MCP 服务 ID，关联 mcp_services 表
+  mcpId        BigInt   @map("mcp_id")
+  /// 关联创建时间
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // 关联关系
+  chatServer ChatServer @relation(fields: [chatServerId], references: [id], onDelete: Cascade)
+  mcpService  McpService @relation(fields: [mcpId], references: [id], onDelete: Cascade)
+
+  @@id([chatServerId, mcpId])
+  @@index([mcpId], map: "idx_chat_server_mcps_mcp_id")
+  @@map("chat_server_mcps")
+  @@schema("aiops")
+}
+
+// ============================================
+// 聊天服务器-技能关联表
+// ============================================
+/// chat_servers 关联表，记录对话服务中使用的技能
+model ChatServerSkill {
+  /// 聊天服务器 ID，关联 chat_servers 表（使用自增主键）
+  chatServerId BigInt   @map("chat_server_id")
+  /// 技能 ID，关联 skills 表（使用自增主键）
+  skillId      BigInt   @map("skill_id")
+  /// 关联创建时间
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // 关联关系
+  chatServer ChatServer @relation(fields: [chatServerId], references: [id], onDelete: Cascade)
+  skill       Skill      @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([chatServerId, skillId])
+  @@index([skillId], map: "idx_chat_server_skills_skill_id")
+  @@map("chat_server_skills")
   @@schema("aiops")
 }
 
@@ -369,9 +514,18 @@ enum role_status {
   @@schema("aiops")
 }
 
-enum session_status {
-  active
-  delete
+enum proxy_host_status {
+  active // 可用
+  disabled // 已禁用
+  maintenance // 维护中
+
+  @@schema("aiops")
+}
+
+enum chat_server_status {
+  active // 活跃
+  disabled // 已禁用
+  error // 错误
 
   @@schema("aiops")
 }
@@ -439,7 +593,7 @@ model Agent {
   deletedAt         DateTime?  @map("deleted_at")
 
   // 关联关系
-  sessionAgents SessionAgent[]
+  chatServerAgents ChatServerAgent[]
 
   @@index([mode])
   @@index([disabled])
@@ -490,8 +644,8 @@ model Skill {
   updatedAt   DateTime     @updatedAt @map("updated_at")
 
   // 关联关系
-  sessionSkills SessionSkill[]
-  userSkills    UserSkill[]
+  userSkills       UserSkill[]
+  chatServerSkills ChatServerSkill[]
 
   @@index([name])
   @@index([category])
@@ -560,11 +714,11 @@ model McpService {
   // 关联关系
   category        McpCategory? @relation("McpServiceCategory", fields: [categoryId], references: [id], onDelete: SetNull)
   creator         User?        @relation("McpServiceCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
-  sessionMcps     SessionMcp[]
   tools           McpTool[]
   resources       McpResource[]
   tags            McpServiceTag[]
   marketplaceItem McpMarketplaceItem?
+  chatServerMcps  ChatServerMcp[]
 
   @@index([mcpId])
   @@index([status])
@@ -625,69 +779,6 @@ enum message_role {
   assistant // AI助手
   system // 系统
 
-  @@schema("aiops")
-}
-
-// ============================================
-// 会话-Agent 关联表
-// ============================================
-/// 会话与 Agent 的关联表，记录会话中使用的 Agent
-model SessionAgent {
-  /// 会话 ID，关联 sessions 表
-  sessionId String   @map("session_id") @db.VarChar(100)
-  /// Agent ID，关联 agents 表
-  agentId   BigInt   @map("agent_id")
-  /// 关联创建时间
-  createdAt DateTime @default(now()) @map("created_at")
-
-  // 关联关系
-  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
-
-  @@id([sessionId, agentId])
-  @@index([agentId])
-  @@map("session_agents")
-  @@schema("aiops")
-}
-
-// ============================================
-// 会话-MCP 服务关联表
-// ============================================
-/// 会话与 MCP 服务的关联表，记录会话中使用的 MCP 服务
-model SessionMcp {
-  /// 会话 ID，关联 sessions 表
-  sessionId String   @map("session_id") @db.VarChar(100)
-  /// MCP 服务 ID，关联 mcp_services 表
-  mcpId     BigInt   @map("mcp_id")
-  /// 关联创建时间
-  createdAt DateTime @default(now()) @map("created_at")
-
-  // 关联关系
-  mcpService McpService @relation(fields: [mcpId], references: [id], onDelete: Cascade)
-
-  @@id([sessionId, mcpId])
-  @@index([mcpId])
-  @@map("session_mcps")
-  @@schema("aiops")
-}
-
-// ============================================
-// 会话-技能关联表
-// ============================================
-/// 会话与技能的关联表，记录会话中使用的技能
-model SessionSkill {
-  /// 会话 ID，关联 sessions 表
-  sessionId String   @map("session_id") @db.VarChar(100)
-  /// 技能 ID，关联 skills 表
-  skillId   String   @map("skill_id") @db.VarChar(64)
-  /// 关联创建时间
-  createdAt DateTime @default(now()) @map("created_at")
-
-  // 关联关系
-  skill Skill @relation(fields: [skillId], references: [skillId], onDelete: Cascade)
-
-  @@id([sessionId, skillId])
-  @@index([skillId])
-  @@map("session_skills")
   @@schema("aiops")
 }
 

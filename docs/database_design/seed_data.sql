@@ -581,3 +581,29 @@ VALUES
         NOW()
     )
 ON CONFLICT (skill_id) DO NOTHING;
+
+
+
+INSERT INTO
+    proxy_host (
+        name,
+        description,
+        region,
+        host,
+        port,
+        begin_chat_port,
+        status,
+        created_by,
+        updated_by
+    )
+VALUES (
+        '代理服务器-01',
+        '开发环境代理节点',
+        '本地',
+        '127.0.0.1',
+        6001,
+        4000,
+        'active',
+        1,
+        1
+    );

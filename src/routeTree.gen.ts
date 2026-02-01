@@ -25,6 +25,7 @@ import { Route as AuthenticatedServiceManagementIndexRouteImport } from './route
 import { Route as AuthenticatedObservabilityIndexRouteImport } from './routes/_authenticated/observability/index'
 import { Route as AuthenticatedMcpManagementIndexRouteImport } from './routes/_authenticated/mcp-management/index'
 import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_authenticated/help-center/index'
+import { Route as AuthenticatedExternalCallsIndexRouteImport } from './routes/_authenticated/external-calls/index'
 import { Route as AuthenticatedClusterChatIndexRouteImport } from './routes/_authenticated/cluster-chat/index'
 import { Route as AuthenticatedAlertManagementIndexRouteImport } from './routes/_authenticated/alert-management/index'
 import { Route as AuthenticatedAiChatIndexRouteImport } from './routes/_authenticated/ai-chat/index'
@@ -125,6 +126,12 @@ const AuthenticatedHelpCenterIndexRoute =
     path: '/help-center/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedExternalCallsIndexRoute =
+  AuthenticatedExternalCallsIndexRouteImport.update({
+    id: '/external-calls/',
+    path: '/external-calls/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedClusterChatIndexRoute =
   AuthenticatedClusterChatIndexRouteImport.update({
     id: '/cluster-chat/',
@@ -220,6 +227,7 @@ export interface FileRoutesByFullPath {
   '/ai-chat': typeof AuthenticatedAiChatIndexRoute
   '/alert-management': typeof AuthenticatedAlertManagementIndexRoute
   '/cluster-chat': typeof AuthenticatedClusterChatIndexRoute
+  '/external-calls': typeof AuthenticatedExternalCallsIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
   '/mcp-management': typeof AuthenticatedMcpManagementIndexRoute
   '/observability': typeof AuthenticatedObservabilityIndexRoute
@@ -249,6 +257,7 @@ export interface FileRoutesByTo {
   '/ai-chat': typeof AuthenticatedAiChatIndexRoute
   '/alert-management': typeof AuthenticatedAlertManagementIndexRoute
   '/cluster-chat': typeof AuthenticatedClusterChatIndexRoute
+  '/external-calls': typeof AuthenticatedExternalCallsIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
   '/mcp-management': typeof AuthenticatedMcpManagementIndexRoute
   '/observability': typeof AuthenticatedObservabilityIndexRoute
@@ -281,6 +290,7 @@ export interface FileRoutesById {
   '/_authenticated/ai-chat/': typeof AuthenticatedAiChatIndexRoute
   '/_authenticated/alert-management/': typeof AuthenticatedAlertManagementIndexRoute
   '/_authenticated/cluster-chat/': typeof AuthenticatedClusterChatIndexRoute
+  '/_authenticated/external-calls/': typeof AuthenticatedExternalCallsIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
   '/_authenticated/mcp-management/': typeof AuthenticatedMcpManagementIndexRoute
   '/_authenticated/observability/': typeof AuthenticatedObservabilityIndexRoute
@@ -313,6 +323,7 @@ export interface FileRouteTypes {
     | '/ai-chat'
     | '/alert-management'
     | '/cluster-chat'
+    | '/external-calls'
     | '/help-center'
     | '/mcp-management'
     | '/observability'
@@ -342,6 +353,7 @@ export interface FileRouteTypes {
     | '/ai-chat'
     | '/alert-management'
     | '/cluster-chat'
+    | '/external-calls'
     | '/help-center'
     | '/mcp-management'
     | '/observability'
@@ -373,6 +385,7 @@ export interface FileRouteTypes {
     | '/_authenticated/ai-chat/'
     | '/_authenticated/alert-management/'
     | '/_authenticated/cluster-chat/'
+    | '/_authenticated/external-calls/'
     | '/_authenticated/help-center/'
     | '/_authenticated/mcp-management/'
     | '/_authenticated/observability/'
@@ -511,6 +524,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHelpCenterIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/external-calls/': {
+      id: '/_authenticated/external-calls/'
+      path: '/external-calls'
+      fullPath: '/external-calls'
+      preLoaderRoute: typeof AuthenticatedExternalCallsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/cluster-chat/': {
       id: '/_authenticated/cluster-chat/'
       path: '/cluster-chat'
@@ -639,6 +659,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAiChatIndexRoute: typeof AuthenticatedAiChatIndexRoute
   AuthenticatedAlertManagementIndexRoute: typeof AuthenticatedAlertManagementIndexRoute
   AuthenticatedClusterChatIndexRoute: typeof AuthenticatedClusterChatIndexRoute
+  AuthenticatedExternalCallsIndexRoute: typeof AuthenticatedExternalCallsIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
   AuthenticatedMcpManagementIndexRoute: typeof AuthenticatedMcpManagementIndexRoute
   AuthenticatedObservabilityIndexRoute: typeof AuthenticatedObservabilityIndexRoute
@@ -660,6 +681,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAlertManagementIndexRoute:
     AuthenticatedAlertManagementIndexRoute,
   AuthenticatedClusterChatIndexRoute: AuthenticatedClusterChatIndexRoute,
+  AuthenticatedExternalCallsIndexRoute: AuthenticatedExternalCallsIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
   AuthenticatedMcpManagementIndexRoute: AuthenticatedMcpManagementIndexRoute,
   AuthenticatedObservabilityIndexRoute: AuthenticatedObservabilityIndexRoute,

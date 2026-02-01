@@ -15,6 +15,7 @@ import {
   MessageSquare,
   FileText,
   Activity,
+  Phone,
 } from "lucide-react";
 import { type SidebarData } from "../types";
 
@@ -66,6 +67,11 @@ export const sidebarData: SidebarData = {
           title: "集群对话",
           url: "/cluster-chat",
           icon: MessageSquare,
+        },
+        {
+          title: "外部调用",
+          url: "/external-calls",
+          icon: Phone,
         },
         {
           title: "日志管理",
