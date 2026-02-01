@@ -1,3 +1,4 @@
+-- Active: 1769677791565@@127.0.0.1@5432@aiops@aiops
 -- ============================================================================
 -- chat_servers 表设计
 -- ============================================================================
@@ -6,7 +7,9 @@
 -- 创建时间：2026-02-01
 -- ============================================================================
 
-CREATE TABLE IF NOT EXISTS chat_servers (
+CREATE TYPE aiops.chat_server_status AS ENUM ('active', 'disabled', 'error');
+
+CREATE TABLE IF NOT EXISTS aiops.chat_servers (
     id BIGSERIAL PRIMARY KEY,
     chat_id UUID NOT NULL DEFAULT gen_random_uuid (),
     name VARCHAR(120) NOT NULL,

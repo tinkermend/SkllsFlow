@@ -12,6 +12,26 @@ export type ConnectionStatus =
   | 'connected'
   | 'error'
 
+// ============ ChatServer ============
+export interface ChatServer {
+  id: string
+  chatId: string
+  name: string
+  chatDir: string
+  proxyId: string
+  host: string
+  port: number
+  auth: boolean
+  status: 'active' | 'disabled' | 'error'
+  errorMessage: string | null
+  createdAt: string
+  createdBy: string
+}
+
+export interface CreateChatServerRequest {
+  name: string
+}
+
 // ============ 会话 ============
 export interface Session {
   id: string

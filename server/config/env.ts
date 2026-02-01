@@ -41,6 +41,12 @@ export const env = cleanEnv(process.env, {
 
   // OpenCode
   OPENCODE_API_URL: str({ default: 'http://localhost:4096', desc: 'OpenCode API URL' }),
+  OPENCODE_BASE_PATH: str({ desc: 'Base path for OpenCode user sessions' }),
+  OPENCODE_AUTH: bool({ default: false, desc: 'Enable OpenCode authentication' }),
+  OPENCODE_PASSWORD: str({ default: '', desc: 'OpenCode authentication password' }),
+
+  // Proxy Configuration
+  PROXY_API_SECRET: str({ desc: 'Proxy API secret key for authentication' }),
 
   // Metrics
   METRICS_SAMPLING_RATE: num({ default: 1.0, desc: 'Metrics sampling rate (0-1)' }),

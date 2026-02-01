@@ -1,16 +1,18 @@
-import { Plus, Bot } from 'lucide-react'
+import { useState } from 'react'
+import { Plus, Bot, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { PermissionGuard } from '@/components/auth/permission-guard'
-import { ServerItem } from './server-item'
-
-// TODO: 后续需要创建 use-chat-servers hook
-interface ChatServer {
-  id: string
-  name: string
-  description?: string
-  status?: 'connected' | 'disconnected' | 'connecting'
-}
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { useChatServers } from '../hooks/use-chat-servers'
 
 interface ServerSidebarProps {
   currentServerId?: string
@@ -18,23 +20,20 @@ interface ServerSidebarProps {
 }
 
 export function ServerSidebar({ currentServerId, onServerSelect }: ServerSidebarProps) {
-  // TODO: 替换为真实的 API 调用
-  const servers: ChatServer[] = []
-  const isLoading = false
+  const { chatServers, isLoading, createChatServer, deleteChatServer, isCreating } = useChatServers()
+  const [open, setOpen] = useState(false)
+  const [name, setName] = useState('')
 
   const handleCreateServer = () => {
-    // TODO: 实现创建服务逻辑
-    console.log('创建新服务')
+    if (name.trim() && name.length <= 16) {
+      createChatServer({ name: name.trim() })
+      setName('')
+      setOpen(false)
+    }
   }
 
-  const handleDeleteServer = (serverId: string) => {
-    // TODO: 实现删除服务逻辑
-    console.log('删除服务:', serverId)
-  }
-
-  const handleRenameServer = (serverId: string, newName: string) => {
-    // TODO: 实现重命名服务逻辑
-    console.log('重命名服务:', serverId, newName)
+  const handleDeleteServer = (chatId: string) => {
+    deleteChatServer(chatId)
   }
 
   return (
@@ -46,9 +45,33 @@ export function ServerSidebar({ currentServerId, onServerSelect }: ServerSidebar
           <h2 className='font-semibold'>智能服务</h2>
         </div>
         <PermissionGuard permission='chatServer:create'>
-          <Button size='icon' variant='ghost' onClick={handleCreateServer}>
-            <Plus className='size-4' />
-          </Button>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button size='icon' variant='ghost'>
+                <Plus className='size-4' />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>添加智能服务</DialogTitle>
+              </DialogHeader>
+              <div className='space-y-4'>
+                <div>
+                  <Label htmlFor='name'>服务名称</Label>
+                  <Input
+                    id='name'
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    maxLength={16}
+                    placeholder='最长16个字符'
+                  />
+                </div>
+                <Button onClick={handleCreateServer} disabled={isCreating || !name.trim()}>
+                  {isCreating ? '创建中...' : '确认'}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </PermissionGuard>
       </div>
 
@@ -59,27 +82,39 @@ export function ServerSidebar({ currentServerId, onServerSelect }: ServerSidebar
             <div className='flex items-center justify-center py-8'>
               <p className='text-sm text-muted-foreground'>加载中...</p>
             </div>
-          ) : servers.length === 0 ? (
+          ) : chatServers.length === 0 ? (
             <div className='flex flex-col items-center justify-center py-8 text-center'>
               <Bot className='mb-2 size-8 text-muted-foreground/50' />
               <p className='text-sm text-muted-foreground'>暂无智能服务</p>
               <PermissionGuard permission='chatServer:create'>
-                <Button variant='link' size='sm' onClick={handleCreateServer} className='mt-2'>
+                <Button variant='link' size='sm' onClick={() => setOpen(true)} className='mt-2'>
                   添加服务
                 </Button>
               </PermissionGuard>
             </div>
           ) : (
             <div className='space-y-1'>
-              {servers.map((server) => (
-                <ServerItem
-                  key={server.id}
-                  server={server}
-                  isActive={server.id === currentServerId}
-                  onClick={() => onServerSelect(server.id)}
-                  onDelete={() => handleDeleteServer(server.id)}
-                  onRename={(newName) => handleRenameServer(server.id, newName)}
-                />
+              {chatServers.map((server) => (
+                <div
+                  key={server.chatId}
+                  className='flex items-center justify-between rounded-md p-3 hover:bg-accent'
+                >
+                  <div className='flex-1 cursor-pointer' onClick={() => onServerSelect(server.chatId)}>
+                    <div className='font-medium'>{server.name}</div>
+                    <div className='text-xs text-muted-foreground'>
+                      {server.host}:{server.port}
+                    </div>
+                  </div>
+                  <PermissionGuard permission='chatServer:delete'>
+                    <Button
+                      size='icon'
+                      variant='ghost'
+                      onClick={() => handleDeleteServer(server.chatId)}
+                    >
+                      <Trash2 className='size-4' />
+                    </Button>
+                  </PermissionGuard>
+                </div>
               ))}
             </div>
           )}
