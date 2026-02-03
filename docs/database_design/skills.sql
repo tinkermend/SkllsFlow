@@ -12,7 +12,6 @@ CREATE TABLE aiops.skills (
     tags VARCHAR(180) [],
     status skill_status NOT NULL DEFAULT 'active',
     sort_order INTEGER NOT NULL DEFAULT 0,
-    file_path VARCHAR(255) NOT NULL,
     created_by BIGINT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_by BIGINT,
@@ -40,8 +39,6 @@ COMMENT ON COLUMN aiops.skills.tags IS '技能标签数组：PostgreSQL数组类
 COMMENT ON COLUMN aiops.skills.status IS '状态：active（启用）, disabled（禁用）';
 
 COMMENT ON COLUMN aiops.skills.sort_order IS '排序值：数字越小越靠前';
-
-COMMENT ON COLUMN aiops.skills.file_path IS '技能压缩包文件路径';
 
 COMMENT ON COLUMN aiops.skills.created_by IS '创建人ID：应用层保证引用完整性（无外键约束）';
 

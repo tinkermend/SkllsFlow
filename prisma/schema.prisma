@@ -283,33 +283,33 @@ model Session {
 /// 代理服务器主机信息表，存储可用于启动 OpenCode Server 的代理节点
 model ProxyHost {
   /// 主键 ID，自增
-  id            BigInt               @id @default(autoincrement())
+  id            BigInt            @id @default(autoincrement())
   /// 代理服务器名称
-  name          String               @db.Text
+  name          String            @db.Text
   /// 代理服务器描述信息
-  description   String?              @db.Text
+  description   String?           @db.Text
   /// 服务器所在区域/地理位置
-  region        String?              @db.Text
+  region        String?           @db.Text
   /// 代理服务器 IP 地址
-  host          String               @map("host") @db.VarChar(64)
+  host          String            @map("host") @db.VarChar(64)
   /// 代理服务端口
-  port          Int                  @map("port")
+  port          Int               @map("port")
   /// 默认对话服务起始端口
-  beginChatPort Int                  @default(4000) @map("begin_chat_port")
+  beginChatPort Int               @default(4000) @map("begin_chat_port")
   /// 代理状态：active-可用, disabled-已禁用, maintenance-维护中
-  status        proxy_host_status    @default(active)
+  status        proxy_host_status @default(active)
   /// 创建时间
-  createdAt     DateTime             @default(now()) @map("created_at")
+  createdAt     DateTime          @default(now()) @map("created_at")
   /// 创建人 ID，外键关联 users 表
-  createdBy     BigInt               @map("created_by")
+  createdBy     BigInt            @map("created_by")
   /// 更新时间
-  updatedAt     DateTime             @default(now()) @map("updated_at")
+  updatedAt     DateTime          @default(now()) @map("updated_at")
   /// 更新人 ID，外键关联 users 表
-  updatedBy     BigInt?              @map("updated_by")
+  updatedBy     BigInt?           @map("updated_by")
 
   // 关联关系
-  creator  User        @relation("ProxyHostCreator", fields: [createdBy], references: [id], onDelete: Restrict)
-  updater  User?       @relation("ProxyHostUpdater", fields: [updatedBy], references: [id], onDelete: SetNull)
+  creator     User         @relation("ProxyHostCreator", fields: [createdBy], references: [id], onDelete: Restrict)
+  updater     User?        @relation("ProxyHostUpdater", fields: [updatedBy], references: [id], onDelete: SetNull)
   chatServers ChatServer[]
 
   @@index([status])
@@ -327,39 +327,39 @@ model ProxyHost {
 /// OpenCode Server 信息表，存储启动的对话服务器实例
 model ChatServer {
   /// 主键 ID，自增
-  id            BigInt              @id @default(autoincrement())
+  id           BigInt             @id @default(autoincrement())
   /// 对话唯一标识符（UUID）
-  chatId        String              @unique @default(uuid()) @map("chat_id") @db.Uuid
+  chatId       String             @unique @default(uuid()) @map("chat_id") @db.Uuid
   /// 聊天服务器名称
-  name          String              @db.VarChar(120)
+  name         String             @db.VarChar(120)
   /// OpenCode Server 启动目录
-  chatDir       String              @map("chat_dir") @db.Text
+  chatDir      String             @map("chat_dir") @db.Text
   /// 关联的代理服务器 ID
-  proxyId       BigInt              @map("proxy_id")
+  proxyId      BigInt             @map("proxy_id")
   /// Server 监听 IP 地址
-  host          String              @db.VarChar(32)
+  host         String             @db.VarChar(32)
   /// Server 监听端口
-  port          Int
+  port         Int
   /// 是否启用认证
-  auth          Boolean             @default(false)
+  auth         Boolean            @default(false)
   /// 认证密码（当 auth 为 true 时有效）
-  authPassword  String              @default("") @map("auth_password") @db.VarChar(32)
+  authPassword String             @default("") @map("auth_password") @db.VarChar(32)
   /// Server 状态：active-活跃, disabled-已禁用, error-错误
-  status        chat_server_status  @default(active)
+  status       chat_server_status @default(active)
   /// 错误信息（当 status 为 error 时记录具体错误）
-  errorMessage  String?             @map("error_message") @db.Text
+  errorMessage String?            @map("error_message") @db.Text
   /// 创建时间
-  createdAt     DateTime            @default(now()) @map("created_at")
+  createdAt    DateTime           @default(now()) @map("created_at")
   /// 创建人 ID，外键关联 users 表
-  createdBy     BigInt              @map("created_by")
+  createdBy    BigInt             @map("created_by")
 
   // 关联关系
-  proxyHost         ProxyHost           @relation(fields: [proxyId], references: [id], onDelete: Restrict)
-  creator           User                @relation("ChatServerCreator", fields: [createdBy], references: [id], onDelete: Restrict)
-  sessions          Session[]
-  chatServerAgents  ChatServerAgent[]
-  chatServerMcps    ChatServerMcp[]
-  chatServerSkills  ChatServerSkill[]
+  proxyHost        ProxyHost         @relation(fields: [proxyId], references: [id], onDelete: Restrict)
+  creator          User              @relation("ChatServerCreator", fields: [createdBy], references: [id], onDelete: Restrict)
+  sessions         Session[]
+  chatServerAgents ChatServerAgent[]
+  chatServerMcps   ChatServerMcp[]
+  chatServerSkills ChatServerSkill[]
 
   @@unique([host, port], name: "chat_servers_host_port_unique")
   @@index([proxyId, status], map: "idx_chat_servers_proxy_status")
@@ -404,7 +404,7 @@ model ChatServerMcp {
 
   // 关联关系
   chatServer ChatServer @relation(fields: [chatServerId], references: [id], onDelete: Cascade)
-  mcpService  McpService @relation(fields: [mcpId], references: [id], onDelete: Cascade)
+  mcpService McpService @relation(fields: [mcpId], references: [id], onDelete: Cascade)
 
   @@id([chatServerId, mcpId])
   @@index([mcpId], map: "idx_chat_server_mcps_mcp_id")
@@ -426,7 +426,7 @@ model ChatServerSkill {
 
   // 关联关系
   chatServer ChatServer @relation(fields: [chatServerId], references: [id], onDelete: Cascade)
-  skill       Skill      @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  skill      Skill      @relation(fields: [skillId], references: [id], onDelete: Cascade)
 
   @@id([chatServerId, skillId])
   @@index([skillId], map: "idx_chat_server_skills_skill_id")
@@ -640,8 +640,6 @@ model Skill {
   status      skill_status @default(active)
   /// 排序值，数字越小越靠前
   sortOrder   Int          @default(0) @map("sort_order")
-  /// 技能压缩包文件路径
-  filePath    String       @map("file_path") @db.VarChar(255)
   /// 创建人 ID
   createdBy   BigInt       @map("created_by")
   /// 创建时间
@@ -654,6 +652,7 @@ model Skill {
   // 关联关系
   userSkills       UserSkill[]
   chatServerSkills ChatServerSkill[]
+  skillFiles       SkillFile[]
 
   @@index([name])
   @@index([category])
@@ -720,8 +719,8 @@ model McpService {
   createdByUserId BigInt? @map("created_by_user_id")
 
   // 关联关系
-  category        McpCategory? @relation("McpServiceCategory", fields: [categoryId], references: [id], onDelete: SetNull)
-  creator         User?        @relation("McpServiceCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  category        McpCategory?        @relation("McpServiceCategory", fields: [categoryId], references: [id], onDelete: SetNull)
+  creator         User?               @relation("McpServiceCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
   tools           McpTool[]
   resources       McpResource[]
   tags            McpServiceTag[]
@@ -991,5 +990,34 @@ model McpMarketplaceItem {
   @@index([categoryId])
   @@index([creatorUserId])
   @@map("mcp_marketplace_items")
+  @@schema("aiops")
+}
+
+// ============================================
+// 技能文件存储表
+// ============================================
+/// 技能文件存储表，存储技能上传的 ZIP 文件内容
+model SkillFile {
+  /// 主键 ID，自增
+  id        BigInt   @id @default(autoincrement())
+  /// 技能 ID，关联 skills 表
+  skillId   BigInt   @map("skill_id")
+  /// ZIP 文件内容，二进制数据
+  fileData  Bytes    @map("file_data")
+  /// ZIP 文件名称
+  fileName  String   @map("file_name") @db.VarChar(120)
+  /// ZIP 文件大小（字节）
+  fileSize  BigInt   @map("file_size")
+  /// MIME 类型
+  mimeType  String   @default("application/zip") @map("mime_type") @db.VarChar(100)
+  /// 创建时间
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // 关联关系（应用层保证引用完整性，无外键约束）
+  skill Skill @relation(fields: [skillId], references: [id], map: "skill_files_skill_id_fkey")
+
+  @@index([skillId], map: "idx_skill_files_skill_id")
+  @@index([createdAt], map: "idx_skill_files_created_at")
+  @@map("skill_files")
   @@schema("aiops")
 }
