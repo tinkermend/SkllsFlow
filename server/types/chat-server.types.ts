@@ -1,6 +1,8 @@
 import type { ChatServer } from '@prisma/client';
 import { serializeBigInt } from '../utils/bigint-serializer.js';
 
+export type ChatServerHealthStatus = 'healthy' | 'unhealthy' | 'unknown';
+
 /**
  * 创建 ChatServer 请求 DTO
  */
@@ -26,6 +28,9 @@ export interface ChatServerResponseDto {
   errorMessage: string | null;
   createdAt: string; // ISO 8601
   createdBy: string; // BigInt 序列化为 string
+  healthStatus?: ChatServerHealthStatus;
+  healthVersion?: string;
+  healthCheckedAt?: string;
 }
 
 /**

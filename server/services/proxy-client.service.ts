@@ -13,6 +13,12 @@ export interface StartOpenCodeInstanceParams {
   chatDir: string;
 }
 
+export interface StopOpenCodeInstanceParams {
+  proxyHost: string;
+  proxyPort: number;
+  openCodePort: number;
+}
+
 /**
  * 代理服务响应
  */
@@ -90,6 +96,35 @@ export class ProxyClientService {
         throw new Error('代理服务无响应，请检查服务是否正常运行');
       } else {
         // 请求配置错误
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        throw new Error(`代理服务请求失败: ${message}`);
+      }
+    }
+  }
+
+  /**
+   * 停止 OpenCode 实例
+   * 调用代理服务的 /api/opencode_stop 接口
+   */
+  async stopOpenCodeInstance(
+    params: StopOpenCodeInstanceParams
+  ): Promise<ProxyServiceResponse> {
+    const { proxyHost, proxyPort, openCodePort } = params;
+    const url = `http://${proxyHost}:${proxyPort}/api/opencode_stop`;
+
+    try {
+      const response = await this.axiosInstance.post<ProxyServiceResponse>(url, {
+        port: openCodePort,
+      });
+      return response.data;
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response: { data: ProxyServiceResponse } };
+        const data = axiosError.response.data;
+        throw new Error(data.message || '代理服务停止失败');
+      } else if (error && typeof error === 'object' && 'request' in error) {
+        throw new Error('代理服务无响应，请检查服务是否正常运行');
+      } else {
         const message = error instanceof Error ? error.message : 'Unknown error';
         throw new Error(`代理服务请求失败: ${message}`);
       }
