@@ -54,6 +54,7 @@ model User {
   proxyHosts          ProxyHost[]          @relation("ProxyHostCreator")
   updatedProxyHosts   ProxyHost[]          @relation("ProxyHostUpdater")
   chatServers         ChatServer[]         @relation("ChatServerCreator")
+  sessions            Session[]            @relation("SessionCreator")
 
   @@index([status])
   @@index([userUUId])
@@ -258,15 +259,20 @@ model Session {
   sessionId String   @unique @map("session_id") @db.VarChar(100)
   /// 聊天服务 ID，关联 chat_servers 表
   chatId    BigInt   @map("chat_id")
+  /// 会话创建人 ID，关联 users 表
+  createdBy BigInt   @map("created_by")
   /// 会话标题
   title     String   @db.VarChar(200)
   /// 创建时间
   createdAt DateTime @default(now()) @map("created_at")
 
-  // 关联关系
-  chatServer ChatServer @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  // 关联关系（无外键约束，数据一致性由应用层保证）
+  chatServer ChatServer @relation(fields: [chatId], references: [id], map: "sessions_chat_id_fkey")
+  creator    User       @relation("SessionCreator", fields: [createdBy], references: [id], map: "sessions_created_by_fkey")
 
   @@index([chatId], map: "idx_sessions_chat_id")
+  @@index([createdBy], map: "idx_sessions_created_by")
+  @@index([createdBy, chatId], map: "idx_sessions_created_by_chat_id")
   @@map("sessions")
   @@schema("aiops")
 }
