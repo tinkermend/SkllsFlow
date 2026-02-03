@@ -4,7 +4,7 @@ import { Trash2, Pencil, Check, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { usePermission } from '@/hooks/use-permission'
+import { PermissionGuard } from '@/components/auth/permission-guard'
 import type { Session } from '../types'
 
 interface SessionItemProps {
@@ -24,7 +24,6 @@ export function SessionItem({
 }: SessionItemProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editTitle, setEditTitle] = useState(session.title || '新对话')
-  const { can } = usePermission()
 
   const handleRename = () => {
     if (editTitle.trim() && editTitle !== session.title) {
@@ -100,7 +99,7 @@ export function SessionItem({
 
       {!isEditing && (
         <div className='flex shrink-0 items-center gap-1'>
-          {can('update', 'Session') && (
+          <PermissionGuard permission='session:update'>
             <Button
               variant='ghost'
               size='icon'
@@ -112,8 +111,8 @@ export function SessionItem({
             >
               <Pencil className='size-4' />
             </Button>
-          )}
-          {can('delete', 'Session') && (
+          </PermissionGuard>
+          <PermissionGuard permission='session:delete'>
             <Button
               variant='ghost'
               size='icon'
@@ -125,7 +124,7 @@ export function SessionItem({
             >
               <Trash2 className='size-4' />
             </Button>
-          )}
+          </PermissionGuard>
         </div>
       )}
     </div>
