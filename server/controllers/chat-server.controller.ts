@@ -95,6 +95,30 @@ export class ChatServerController {
   }
 
   /**
+   * 获取 ChatServer 删除统计信息
+   * GET /api/chat-servers/:chatId/delete-stats
+   */
+  async getDeleteStats(req: Request, res: Response): Promise<void> {
+    try {
+      const { chatId } = req.params;
+      const userId = req.userId;
+
+      if (!userId) {
+        res.status(401).json({
+          error: 'Unauthorized',
+          message: 'Authentication token is missing or invalid',
+        });
+        return;
+      }
+
+      const stats = await this.service.getDeleteStats(chatId, userId);
+      res.json(stats);
+    } catch (error) {
+      this.handleError(res, error);
+    }
+  }
+
+  /**
    * 处理错误并返回适当的 HTTP 状态码
    */
   private handleError(res: Response, error: unknown): void {

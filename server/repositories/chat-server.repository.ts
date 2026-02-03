@@ -117,4 +117,43 @@ export class ChatServerRepository extends BaseRepository<
       where: { chatId },
     });
   }
+
+  /**
+   * 获取 ChatServer 的删除统计信息
+   * 返回将要被级联删除的关联数据数量
+   *
+   * @param chatId - ChatServer UUID
+   * @returns 关联数据统计
+   */
+  async getDeleteStats(chatId: string): Promise<{
+    agentsCount: number;
+    mcpsCount: number;
+    skillsCount: number;
+    sessionsCount: number;
+  }> {
+    const chatServer = await this.prisma.chatServer.findUnique({
+      where: { chatId },
+      include: {
+        _count: {
+          select: {
+            chatServerAgents: true,
+            chatServerMcps: true,
+            chatServerSkills: true,
+            sessions: true,
+          },
+        },
+      },
+    });
+
+    if (!chatServer) {
+      throw new Error('ChatServer 不存在');
+    }
+
+    return {
+      agentsCount: chatServer._count.chatServerAgents,
+      mcpsCount: chatServer._count.chatServerMcps,
+      skillsCount: chatServer._count.chatServerSkills,
+      sessionsCount: chatServer._count.sessions,
+    };
+  }
 }

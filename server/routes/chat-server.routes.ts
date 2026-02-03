@@ -26,6 +26,12 @@ router.post('/', (req, res) => req.controller.create(req, res));
 router.get('/', (req, res) => req.controller.getAll(req, res));
 
 /**
+ * GET /api/chat-servers/:chatId/delete-stats
+ * 获取删除统计信息
+ */
+router.get('/:chatId/delete-stats', (req, res) => req.controller.getDeleteStats(req, res));
+
+/**
  * DELETE /api/chat-servers/:chatId
  * 删除指定的 ChatServer
  */

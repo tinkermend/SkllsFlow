@@ -264,7 +264,7 @@ model Session {
   createdAt DateTime @default(now()) @map("created_at")
 
   // 关联关系
-  chatServer ChatServer @relation(fields: [chatId], references: [id], onDelete: Restrict)
+  chatServer ChatServer @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
   @@index([chatId], map: "idx_sessions_chat_id")
   @@map("sessions")
