@@ -186,30 +186,15 @@ server/
 
 #### Chat Store (`src/stores/chat-store.ts`)
 
-管理 AI 对话的核心状态：
-
-- **OpenCode 连接**: 连接状态、连接对象
-- **会话管理**: 会话列表、当前会话
-- **消息管理**: 按会话 ID 组织的消息列表
-- **流状态**: 流式响应状态、当前流式消息 ID
+管理 AI 对话的核心状态
 
 #### Auth Store (`src/stores/auth-store.ts`)
 
-管理用户认证状态：
-
-- **认证提供商**: Clerk (用户认证和会话管理)
-- **权限控制**: CASL (基于能力的访问控制)
-- **用户状态**: 登录状态、用户信息、权限配置
-
+管理用户认证状态
 
 ### 后端服务架构
 
-Express 服务器 (`server/`) 作为 API 的代理：
-
-- **端口**: 3001（可通过 `PORT` 环境变量配置）
-- **CORS**: 允许前端 (localhost:5173) 跨域请求
-- **健康检查**: `/health`
-- **优雅关闭**: 处理 SIGINT/SIGTERM 信号
+Express 服务器 (`server/`) 作为 API 的代理
 
 #### 数据库层 (Prisma + PostgreSQL)
 
@@ -274,10 +259,6 @@ OpenCode API 文档位于 `docs/opencode_api.json`，包含：
 
 opencode 后端服务 (`server/services/opencode.service.ts`) 负责：
 
-- 管理 OpenCode 连接
-- 处理流式响应
-- 会话生命周期管理
-
 ### 5. 数据库操作规范 (Prisma)
 
 所有数据库操作遵循以下原则：
@@ -287,14 +268,13 @@ opencode 后端服务 (`server/services/opencode.service.ts`) 负责：
 - **事务支持**: 使用 `repository.transaction()` 处理多表操作
 - **错误处理**: Prisma 错误通过 `error-handler.ts` 中间件转换为合适的 HTTP 状态码
 - **指标收集**: 所有查询自动记录延迟、错误率和连接池指标
-- **重试机制**: 瞬态错误自动重试 1 次（150ms 延迟）
+- **重试机制**: 瞬态错误自动重试 1 次
 
 ### 6. BigInt 序列化规范
 
 PostgreSQL 的 `BIGINT` 类型在 Prisma 中映射为 JavaScript 的 `BigInt`，而 `JSON.stringify()` 默认不支持序列化 `BigInt`。项目提供了统一的序列化工具来处理这个问题。
 
 **核心工具**: `server/utils/bigint-serializer.ts`
-
 
 **重要特性**:
 
@@ -308,7 +288,6 @@ PostgreSQL 的 `BIGINT` 类型在 Prisma 中映射为 JavaScript 的 `BigInt`，
 - ✅ 前端类型定义中将 `id` 等 BigInt 字段定义为 `string`
 - ❌ 不要在 Repository 层序列化（保持数据层的原始类型）
 - ❌ 不要在 Controller 层序列化（应该在 Service 层统一处理）
-
 
 ## 强制规范
 
@@ -328,6 +307,16 @@ PostgreSQL 的 `BIGINT` 类型在 Prisma 中映射为 JavaScript 的 `BigInt`，
   - **强制要求**：在 `src/features/*/index.tsx` 中必须包含以下结构
   - **Header 组件**：必须包含 `Search`、`ThemeSwitch`、`ConfigDrawer`、`ProfileDropdown`
   - **Main 组件**：包裹页面的所有主要内容
+
+## 代码质量标准
+
+这是生产代码库。请遵循：
+
+- 使用 TypeScript 严格模式，禁止 any 类型
+- 每个函数都需要单元测试
+- 遵循现有的文件结构和命名约定
+- 提交前必须通过所有 lint 和类型检查
+  优先级：可维护性 > 性能 > 快速交付
 
 ### 6. 测试规范
 
