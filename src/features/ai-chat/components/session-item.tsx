@@ -1,15 +1,9 @@
 import { useState } from 'react'
 import { format } from 'date-fns'
-import { MoreHorizontal, Trash2, Pencil, Check, X } from 'lucide-react'
+import { Trash2, Pencil, Check, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { usePermission } from '@/hooks/use-permission'
 import type { Session } from '../types'
 
@@ -105,44 +99,33 @@ export function SessionItem({
       </div>
 
       {!isEditing && (
-        <div className='relative shrink-0'>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant='ghost'
-                size='icon'
-                className='size-8 group-hover/item:opacity-100 md:opacity-0 md:transition-opacity'
-                onClick={(e) => e.stopPropagation()}
-              >
-                <MoreHorizontal className='size-4' />
-              </Button>
-            </DropdownMenuTrigger>
-          <DropdownMenuContent align='end'>
-            {can('update', 'Session') && (
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setIsEditing(true)
-                }}
-              >
-                <Pencil className='mr-2 size-4' />
-                重命名
-              </DropdownMenuItem>
-            )}
-            {can('delete', 'Session') && (
-              <DropdownMenuItem
-                className='text-destructive focus:text-destructive'
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onDelete()
-                }}
-              >
-                <Trash2 className='mr-2 size-4' />
-                删除会话
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className='flex shrink-0 items-center gap-1'>
+          {can('update', 'Session') && (
+            <Button
+              variant='ghost'
+              size='icon'
+              className='size-8'
+              onClick={(e) => {
+                e.stopPropagation()
+                setIsEditing(true)
+              }}
+            >
+              <Pencil className='size-4' />
+            </Button>
+          )}
+          {can('delete', 'Session') && (
+            <Button
+              variant='ghost'
+              size='icon'
+              className='size-8 text-destructive'
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete()
+              }}
+            >
+              <Trash2 className='size-4' />
+            </Button>
+          )}
         </div>
       )}
     </div>

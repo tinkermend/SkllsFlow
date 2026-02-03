@@ -22,14 +22,28 @@ export interface ChatServer {
   host: string
   port: number
   auth: boolean
+  authPassword: string
   status: 'active' | 'disabled' | 'error'
   errorMessage: string | null
   createdAt: string
   createdBy: string
+  healthStatus?: 'healthy' | 'unhealthy' | 'unknown'
+  healthVersion?: string
+  healthCheckedAt?: string
 }
 
 export interface CreateChatServerRequest {
   name: string
+}
+
+/**
+ * ChatServer 删除统计信息
+ */
+export interface ChatServerDeleteStats {
+  agentsCount: number
+  mcpsCount: number
+  skillsCount: number
+  sessionsCount: number
 }
 
 // ============ 会话 ============

@@ -1,70 +1,76 @@
-import { useEffect, useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
+import { toast } from 'sonner'
 import { useChatStore } from '@/stores/chat-store'
-import { backendApi } from '../api/backend.api'
 import { initOpenCodeClient, destroyOpenCodeClient } from '../api/client'
 
-export function useOpenCodeInit() {
+export function useActiveServerConnection() {
   const {
-    openCodeConnection,
-    connectionStatus,
+    activeServer,
     setOpenCodeConnection,
     setConnectionStatus,
     clearOpenCodeConnection,
+    resetConversations,
+    connectionNonce,
   } = useChatStore()
 
-  const initConnection = useCallback(async () => {
+  const connectToActiveServer = useCallback(async () => {
+    if (!activeServer) {
+      destroyOpenCodeClient()
+      clearOpenCodeConnection()
+      setConnectionStatus('disconnected')
+      resetConversations()
+      return
+    }
+
+    const targetServerId = activeServer.chatId
+
     try {
       setConnectionStatus('connecting')
 
-      // 调用 start 接口，会自动启动或复用已有实例
-      const response = await backendApi.startOpenCode()
+      const conn = {
+        host: activeServer.host,
+        port: activeServer.port,
+        ...(activeServer.auth && activeServer.authPassword
+          ? { username: 'opencode', password: activeServer.authPassword }
+          : {}),
+      }
 
-      if (response.status === 'starting') {
-        // 服务启动中，1秒后重试
-        setTimeout(initConnection, 1000)
+      initOpenCodeClient(conn)
+
+      const latestServer = useChatStore.getState().activeServer
+      if (latestServer?.chatId !== targetServerId) {
+        destroyOpenCodeClient()
         return
       }
 
-      if (response.status === 'error') {
-        setConnectionStatus('error')
-        throw new Error(response.error || 'OpenCode service failed to start')
-      }
-
-      // 初始化 client
-      const conn = response.opencode
-      initOpenCodeClient(conn)
       setOpenCodeConnection(conn)
       setConnectionStatus('connected')
     } catch (error) {
+      destroyOpenCodeClient()
+      clearOpenCodeConnection()
       setConnectionStatus('error')
-      console.error('Failed to initialize OpenCode connection:', error)
-      throw error
+      resetConversations()
+      toast.error('无法连接到当前智能服务，请检查服务状态')
+      console.error('Failed to connect to ChatServer:', error)
     }
-  }, [setConnectionStatus, setOpenCodeConnection])
-
-  const disconnect = useCallback(() => {
-    destroyOpenCodeClient()
-    clearOpenCodeConnection()
-  }, [clearOpenCodeConnection])
+  }, [
+    activeServer,
+    connectionNonce,
+    clearOpenCodeConnection,
+    resetConversations,
+    setConnectionStatus,
+    setOpenCodeConnection,
+  ])
 
   useEffect(() => {
-    if (!openCodeConnection && connectionStatus === 'disconnected') {
-      initConnection().catch(() => {
-        // 错误已在 initConnection 中处理
-      })
-    }
+    connectToActiveServer().catch(() => {})
 
     return () => {
-      // 组件卸载时不清理，保持连接
+      destroyOpenCodeClient()
+      clearOpenCodeConnection()
+      setConnectionStatus('disconnected')
     }
-  }, [openCodeConnection, connectionStatus, initConnection])
+  }, [connectToActiveServer, clearOpenCodeConnection, setConnectionStatus])
 
-  return {
-    isReady: connectionStatus === 'connected',
-    isConnecting: connectionStatus === 'connecting',
-    isError: connectionStatus === 'error',
-    connectionStatus,
-    reconnect: initConnection,
-    disconnect,
-  }
+  return { activeServer }
 }

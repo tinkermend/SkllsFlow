@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMyServices } from '../../hooks/use-mcp-services';
 import { McpSearchBar } from './mcp-search-bar';
 import { McpCard } from './mcp-card';
@@ -12,6 +12,7 @@ interface MyMcpsListProps {
   onRestart?: (service: McpService) => void;
   onAddToSession?: (service: McpService) => void;
   onDelete?: (service: McpService) => void;
+  onActiveServiceChange?: (service: McpService | null) => void;
 }
 
 export function MyMcpsList({
@@ -20,15 +21,29 @@ export function MyMcpsList({
   onRestart,
   onAddToSession,
   onDelete,
+  onActiveServiceChange,
 }: MyMcpsListProps) {
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('createdAt');
+  const [activeServiceId, setActiveServiceId] = useState<string | null>(null);
 
   const { data, isLoading } = useMyServices({
     search,
     sortBy,
     sortOrder: 'desc',
   });
+
+  const services = data?.data || [];
+
+  useEffect(() => {
+    if (!activeServiceId) return;
+
+    const hasActiveService = services.some((service) => service.id === activeServiceId);
+    if (!hasActiveService) {
+      setActiveServiceId(null);
+      onActiveServiceChange?.(null);
+    }
+  }, [services, activeServiceId, onActiveServiceChange]);
 
   if (isLoading) {
     return (
@@ -48,11 +63,14 @@ export function MyMcpsList({
     );
   }
 
-  const services = data?.data || [];
-
   if (services.length === 0 && !search) {
     return <McpEmptyState onGoToMarketplace={onGoToMarketplace} />;
   }
+
+  const handleSelectService = (service: McpService) => {
+    setActiveServiceId(service.id);
+    onActiveServiceChange?.(service);
+  };
 
   return (
     <div className="space-y-4">
@@ -77,6 +95,8 @@ export function MyMcpsList({
               onRestart={onRestart}
               onAddToSession={onAddToSession}
               onDelete={onDelete}
+              isActive={service.id === activeServiceId}
+              onSelect={handleSelectService}
             />
           ))}
         </div>

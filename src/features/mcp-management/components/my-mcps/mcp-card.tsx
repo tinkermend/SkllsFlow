@@ -1,3 +1,4 @@
+import { type KeyboardEvent } from 'react';
 import { Card, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { MoreVertical, Settings, RotateCw, Trash2, Link as LinkIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { LanguageIcon } from '../shared/language-icon';
 import type { McpService, McpStatus } from '../../types';
 
@@ -17,6 +19,8 @@ interface McpCardProps {
   onRestart?: (service: McpService) => void;
   onAddToSession?: (service: McpService) => void;
   onDelete?: (service: McpService) => void;
+  isActive?: boolean;
+  onSelect?: (service: McpService) => void;
 }
 
 // 获取状态样式
@@ -58,11 +62,35 @@ export function McpCard({
   onRestart,
   onAddToSession,
   onDelete,
+  isActive = false,
+  onSelect,
 }: McpCardProps) {
   const deploymentInfo = getDeploymentInfo(service.transportType);
+  const handleSelect = () => {
+    onSelect?.(service);
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onSelect?.(service);
+    }
+  };
 
   return (
-    <Card className="hover:shadow-md transition-all duration-200 rounded-xl border-slate-200">
+    <Card
+      className={cn(
+        'transition-all duration-200 rounded-xl border-slate-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2',
+        isActive
+          ? 'bg-primary/5 border-primary/60 shadow-lg ring-1 ring-primary/25 scale-[1.01]'
+          : 'opacity-60 hover:opacity-100 hover:shadow-md hover:border-slate-300'
+      )}
+      role="button"
+      tabIndex={0}
+      aria-pressed={isActive}
+      onClick={handleSelect}
+      onKeyDown={handleKeyDown}
+    >
       <CardHeader className="p-5">
         <div className="flex items-start gap-4">
           {/* 左侧图标区域 */}
@@ -77,12 +105,17 @@ export function McpCard({
           {/* 右侧内容区域 */}
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between mb-4">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <h3 className="font-semibold text-slate-900">{service.name}</h3>
                   <span className={`px-2 py-1 ${deploymentInfo.color} text-xs rounded-full`}>
                     {deploymentInfo.text}
                   </span>
+                  {isActive && (
+                    <Badge variant="default" className="text-xs bg-primary text-primary-foreground">
+                      当前激活
+                    </Badge>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 mt-1">
                   <div className="flex items-center gap-1">

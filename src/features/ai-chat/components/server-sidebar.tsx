@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { format } from 'date-fns'
 import { Plus, Bot, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { PermissionGuard } from '@/components/auth/permission-guard'
+import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
   DialogContent,
@@ -12,17 +14,56 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { cn } from '@/lib/utils'
+import type { ChatServer } from '../types'
 import { useChatServers } from '../hooks/use-chat-servers'
+import { DeleteServerDialog } from './delete-server-dialog'
 
-interface ServerSidebarProps {
-  currentServerId?: string
-  onServerSelect: (serverId: string) => void
+export type HealthStatus = NonNullable<ChatServer['healthStatus']>
+
+const HEALTH_INDICATORS: Record<HealthStatus, { label: string; className: string }> = {
+  healthy: { label: '运行正常', className: 'bg-green-500 ring-green-500/70' },
+  unhealthy: { label: '运行异常', className: 'bg-red-500 ring-red-500/70' },
+  unknown: { label: '状态未知', className: 'bg-stone-400 ring-stone-400/60' },
 }
 
-export function ServerSidebar({ currentServerId, onServerSelect }: ServerSidebarProps) {
+export const formatDateTime = (value?: string): string => {
+  if (!value) return '--'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return '--'
+  }
+  return format(date, 'yyyy-MM-dd HH:mm')
+}
+
+export const buildHealthTooltip = (server: ChatServer): string => {
+  const status: HealthStatus = server.healthStatus ?? 'unknown'
+  const base = HEALTH_INDICATORS[status].label
+  const parts = [base]
+  if (server.healthVersion) {
+    parts.push(`版本 ${server.healthVersion}`)
+  }
+  if (server.healthCheckedAt) {
+    const checkedAt = new Date(server.healthCheckedAt)
+    if (!Number.isNaN(checkedAt.getTime())) {
+      parts.push(format(checkedAt, 'HH:mm:ss'))
+    }
+  }
+  return parts.join(' · ')
+}
+
+interface ServerSidebarProps {
+  activeServerId?: string
+  onServerSelect: (server: ChatServer | null) => void
+}
+
+export function ServerSidebar({ activeServerId, onServerSelect }: ServerSidebarProps) {
   const { chatServers, isLoading, createChatServer, deleteChatServer, isCreating } = useChatServers()
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [serverToDelete, setServerToDelete] = useState<{ chatId: string; name: string } | null>(null)
 
   const handleCreateServer = () => {
     if (name.trim() && name.length <= 16) {
@@ -32,9 +73,34 @@ export function ServerSidebar({ currentServerId, onServerSelect }: ServerSidebar
     }
   }
 
-  const handleDeleteServer = (chatId: string) => {
-    deleteChatServer(chatId)
+  const handleDeleteClick = (chatId: string, serverName: string) => {
+    setServerToDelete({ chatId, name: serverName })
+    setDeleteDialogOpen(true)
   }
+
+  const handleConfirmDelete = () => {
+    if (serverToDelete) {
+      deleteChatServer(serverToDelete.chatId)
+      setDeleteDialogOpen(false)
+      setServerToDelete(null)
+    }
+  }
+
+  const sortedChatServers = useMemo(
+    () =>
+      [...chatServers].sort((a, b) => {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      }),
+    [chatServers]
+  )
+
+  useEffect(() => {
+    if (!activeServerId) return
+    const stillExists = sortedChatServers.some((server) => server.chatId === activeServerId)
+    if (!stillExists) {
+      onServerSelect(null)
+    }
+  }, [activeServerId, onServerSelect, sortedChatServers])
 
   return (
     <div className='flex min-h-0 flex-1 flex-col'>
@@ -82,7 +148,7 @@ export function ServerSidebar({ currentServerId, onServerSelect }: ServerSidebar
             <div className='flex items-center justify-center py-8'>
               <p className='text-sm text-muted-foreground'>加载中...</p>
             </div>
-          ) : chatServers.length === 0 ? (
+          ) : sortedChatServers.length === 0 ? (
             <div className='flex flex-col items-center justify-center py-8 text-center'>
               <Bot className='mb-2 size-8 text-muted-foreground/50' />
               <p className='text-sm text-muted-foreground'>暂无智能服务</p>
@@ -94,32 +160,97 @@ export function ServerSidebar({ currentServerId, onServerSelect }: ServerSidebar
             </div>
           ) : (
             <div className='space-y-1'>
-              {chatServers.map((server) => (
-                <div
-                  key={server.chatId}
-                  className='flex items-center justify-between rounded-md p-3 hover:bg-accent'
-                >
-                  <div className='flex-1 cursor-pointer' onClick={() => onServerSelect(server.chatId)}>
-                    <div className='font-medium'>{server.name}</div>
-                    <div className='text-xs text-muted-foreground'>
-                      {server.host}:{server.port}
+              {sortedChatServers.map((server) => {
+                const status: HealthStatus = server.healthStatus ?? 'unknown'
+                const indicator = HEALTH_INDICATORS[status]
+                const tooltipText = buildHealthTooltip(server)
+                const isActive = server.chatId === activeServerId
+
+                return (
+                  <div
+                    key={server.chatId}
+                    className={cn(
+                      'flex items-center justify-between rounded-lg border p-3 transition-all',
+                      isActive
+                        ? 'bg-primary/10 text-primary ring-1 ring-primary/30 shadow-sm'
+                        : 'opacity-60 hover:opacity-100 hover:bg-accent'
+                    )}
+                    role='button'
+                    tabIndex={0}
+                    aria-pressed={isActive}
+                    onClick={() => {
+                      if (isActive) return
+                      onServerSelect(server)
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault()
+                        if (!isActive) {
+                          onServerSelect(server)
+                        }
+                      }
+                    }}
+                  >
+                    <div className='flex-1'>
+                      <div className='flex items-center gap-2 font-medium'>
+                        <span>{server.name}</span>
+                        {isActive && (
+                          <Badge variant='secondary' className='text-[11px]'>
+                            当前激活
+                          </Badge>
+                        )}
+                      </div>
+                      <div className='text-xs text-muted-foreground'>
+                        创建于 {formatDateTime(server.createdAt)}
+                      </div>
+                    </div>
+                    <div className='flex items-center gap-1'>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span
+                            className={cn(
+                              'inline-block size-2.5 rounded-full ring-1 ring-offset-1 ring-offset-background',
+                              indicator.className
+                            )}
+                            aria-label={indicator.label}
+                            role='status'
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className='text-xs leading-tight'>{tooltipText}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <PermissionGuard permission='chatServer:delete'>
+                        <Button
+                          size='icon'
+                          variant='ghost'
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            handleDeleteClick(server.chatId, server.name)
+                          }}
+                        >
+                          <Trash2 className='size-4' />
+                        </Button>
+                      </PermissionGuard>
                     </div>
                   </div>
-                  <PermissionGuard permission='chatServer:delete'>
-                    <Button
-                      size='icon'
-                      variant='ghost'
-                      onClick={() => handleDeleteServer(server.chatId)}
-                    >
-                      <Trash2 className='size-4' />
-                    </Button>
-                  </PermissionGuard>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>
       </ScrollArea>
+
+      {/* 删除确认对话框 */}
+      {serverToDelete && (
+        <DeleteServerDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          chatId={serverToDelete.chatId}
+          serverName={serverToDelete.name}
+          onConfirm={handleConfirmDelete}
+        />
+      )}
     </div>
   )
 }

@@ -11,9 +11,16 @@ export function useChatServers() {
   const queryClient = useQueryClient();
 
   // 查询所有 ChatServer
-  const { data: chatServers, isLoading, error } = useQuery({
+  const {
+    data: chatServers,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['chat-servers'],
     queryFn: chatServerApi.getAllChatServers,
+    refetchInterval: 60000,
+    refetchIntervalInBackground: true,
+    refetchOnWindowFocus: false,
   });
 
   // 创建 ChatServer mutation

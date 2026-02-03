@@ -10,13 +10,13 @@ import { ConnectionGuard } from './components/connection-guard'
 import { SessionSidebar } from './components/session-sidebar'
 import { useEventStream } from './hooks/use-event-stream'
 import { useMessages } from './hooks/use-messages'
-import { useOpenCodeInit } from './hooks/use-opencode-init'
+import { useActiveServerConnection } from './hooks/use-opencode-init'
 
 export function AiChat() {
   const { currentSessionId } = useChatStore()
 
   // 初始化连接
-  useOpenCodeInit()
+  useActiveServerConnection()
 
   // 建立 SSE 连接
   useEventStream()
@@ -39,15 +39,17 @@ export function AiChat() {
       {/* Main Content */}
       {/* 添加 fluid 属性，移除居中和最大宽度限制，使内容与菜单栏贴合 */}
       <Main fixed fluid className='flex flex-col p-0'>
-        <ConnectionGuard>
-          <div className='flex h-full'>
-            {/* Left Sidebar - Sessions */}
-            <SessionSidebar />
+        <div className='flex h-full'>
+          {/* Left Sidebar - Sessions */}
+          <SessionSidebar />
 
-            {/* Right Panel - Chat */}
-            <ChatPanel />
+          {/* Right Panel - Chat */}
+          <div className='flex flex-1'>
+            <ConnectionGuard>
+              <ChatPanel />
+            </ConnectionGuard>
           </div>
-        </ConnectionGuard>
+        </div>
       </Main>
     </>
   )

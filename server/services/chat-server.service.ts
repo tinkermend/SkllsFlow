@@ -8,6 +8,7 @@ import type { ProxyHost, ChatServer } from '@prisma/client';
 import {
   toChatServerResponseDto,
   type ChatServerResponseDto,
+  type ChatServerHealthStatus,
 } from '../types/chat-server.types.js';
 
 /**
@@ -19,13 +20,29 @@ export class ChatServerService {
   private proxyHostRepository: ProxyHostRepository;
   private userRepository: UserRepository;
   private proxyClient: ProxyClientService;
+  private readonly healthTimeoutMs = 5000;
 
-  constructor() {
-    const prisma = DatabaseService.getInstance();
-    this.chatServerRepository = new ChatServerRepository(prisma);
-    this.proxyHostRepository = new ProxyHostRepository(prisma);
-    this.userRepository = new UserRepository(prisma);
-    this.proxyClient = new ProxyClientService();
+  constructor(deps?: {
+    chatServerRepository?: ChatServerRepository;
+    proxyHostRepository?: ProxyHostRepository;
+    userRepository?: UserRepository;
+    proxyClient?: ProxyClientService;
+  }) {
+    let prismaInstance: ReturnType<typeof DatabaseService.getInstance> | null = null;
+    const ensurePrisma = () => {
+      if (!prismaInstance) {
+        prismaInstance = DatabaseService.getInstance();
+      }
+      return prismaInstance;
+    };
+
+    this.chatServerRepository =
+      deps?.chatServerRepository ?? new ChatServerRepository(ensurePrisma());
+    this.proxyHostRepository =
+      deps?.proxyHostRepository ?? new ProxyHostRepository(ensurePrisma());
+    this.userRepository =
+      deps?.userRepository ?? new UserRepository(ensurePrisma());
+    this.proxyClient = deps?.proxyClient ?? new ProxyClientService();
   }
 
   /**
@@ -122,7 +139,29 @@ export class ChatServerService {
     }
 
     const chatServers = await this.chatServerRepository.findByUserId(user.id);
-    return chatServers.map((server) => toChatServerResponseDto(server));
+    const healthResults = await Promise.allSettled(
+      chatServers.map((server) => this.checkServerHealth(server))
+    );
+
+    return chatServers.map((server, index) => {
+      const dto = toChatServerResponseDto(server);
+      const healthResult = healthResults[index];
+
+      if (healthResult.status === 'fulfilled') {
+        const { status, version, checkedAt } = healthResult.value;
+        return {
+          ...dto,
+          healthStatus: status,
+          healthVersion: version,
+          healthCheckedAt: checkedAt,
+        };
+      }
+
+      return {
+        ...dto,
+        healthStatus: 'unknown' as ChatServerHealthStatus,
+      };
+    });
   }
 
   /**
@@ -149,8 +188,76 @@ export class ChatServerService {
       throw new Error('无权删除此 ChatServer');
     }
 
-    // 删除 ChatServer
+    const proxyHost = await this.proxyHostRepository.findById(chatServer.proxyId);
+    if (!proxyHost) {
+      throw new Error('代理服务不存在');
+    }
+
+    const stopResponse = await this.proxyClient.stopOpenCodeInstance({
+      proxyHost: proxyHost.host,
+      proxyPort: proxyHost.port,
+      openCodePort: chatServer.port,
+    });
+
+    if (stopResponse.code !== 200) {
+      throw new Error(stopResponse.message || '代理服务停止失败');
+    }
+
+    // 程序级联删除：手动删除所有关联数据
+    const prisma = DatabaseService.getInstance();
+
+    // 1. 删除关联的 Sessions
+    await prisma.session.deleteMany({
+      where: { chatId: chatServer.id },
+    });
+
+    // 2. 删除关联的 Agents
+    await prisma.chatServerAgent.deleteMany({
+      where: { chatServerId: chatServer.id },
+    });
+
+    // 3. 删除关联的 Skills
+    await prisma.chatServerSkill.deleteMany({
+      where: { chatServerId: chatServer.id },
+    });
+
+    // 4. 删除关联的 MCPs
+    await prisma.chatServerMcp.deleteMany({
+      where: { chatServerId: chatServer.id },
+    });
+
+    // 5. 最后删除 ChatServer 主记录
     await this.chatServerRepository.deleteByChatId(chatId);
+  }
+
+  /**
+   * 获取 ChatServer 删除统计信息
+   * 返回将要被级联删除的关联数据数量
+   *
+   * @param chatId - ChatServer UUID
+   * @param userUuid - 用户 UUID（用于权限验证）
+   * @returns 关联数据统计
+   */
+  async getDeleteStats(chatId: string, userUuid: string) {
+    // 1. 查询 ChatServer
+    const chatServer = await this.chatServerRepository.findByChatId(chatId);
+    if (!chatServer) {
+      throw new Error('ChatServer 不存在');
+    }
+
+    // 2. 查询用户
+    const user = await this.userRepository.findByUserId(userUuid);
+    if (!user) {
+      throw new Error('用户不存在');
+    }
+
+    // 3. 验证权限：只能查询自己创建的 ChatServer
+    if (chatServer.createdBy !== user.id) {
+      throw new Error('无权访问此 ChatServer');
+    }
+
+    // 4. 获取统计信息
+    return this.chatServerRepository.getDeleteStats(chatId);
   }
 
   /**
@@ -197,5 +304,48 @@ export class ChatServerService {
       result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return result;
+  }
+
+  private async checkServerHealth(
+    server: ChatServer
+  ): Promise<{ status: ChatServerHealthStatus; version?: string; checkedAt?: string }> {
+    if (server.status !== 'active') {
+      return { status: 'unknown' };
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), this.healthTimeoutMs);
+
+    try {
+      const response = await fetch(
+        `http://${server.host}:${server.port}/global/health`,
+        { signal: controller.signal }
+      );
+      const checkedAt = new Date().toISOString();
+
+      if (!response.ok) {
+        return { status: 'unhealthy', checkedAt };
+      }
+
+      const data = await response.json() as { healthy?: boolean; version?: string };
+
+      if (data.healthy === true) {
+        return {
+          status: 'healthy',
+          version: data.version,
+          checkedAt,
+        };
+      }
+
+      return {
+        status: 'unhealthy',
+        version: data.version,
+        checkedAt,
+      };
+    } catch {
+      return { status: 'unknown' };
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 }
