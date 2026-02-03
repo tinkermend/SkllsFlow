@@ -19,6 +19,13 @@ export interface StopOpenCodeInstanceParams {
   openCodePort: number;
 }
 
+export interface DeleteOpenCodeInstanceParams {
+  proxyHost: string;
+  proxyPort: number;
+  openCodePort: number;
+  chatDir: string;
+}
+
 /**
  * 代理服务响应
  */
@@ -122,6 +129,37 @@ export class ProxyClientService {
         const axiosError = error as { response: { data: ProxyServiceResponse } };
         const data = axiosError.response.data;
         throw new Error(data.message || '代理服务停止失败');
+      } else if (error && typeof error === 'object' && 'request' in error) {
+        throw new Error('代理服务无响应，请检查服务是否正常运行');
+      } else {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        throw new Error(`代理服务请求失败: ${message}`);
+      }
+    }
+  }
+
+  /**
+   * 删除 OpenCode 实例
+   * 调用代理服务的 /api/opencode_delete 接口
+   * 停止服务进程并删除对应的工作目录
+   */
+  async deleteOpenCodeInstance(
+    params: DeleteOpenCodeInstanceParams
+  ): Promise<ProxyServiceResponse> {
+    const { proxyHost, proxyPort, openCodePort, chatDir } = params;
+    const url = `http://${proxyHost}:${proxyPort}/api/opencode_delete`;
+
+    try {
+      const response = await this.axiosInstance.post<ProxyServiceResponse>(url, {
+        port: openCodePort,
+        chat_dir: chatDir,
+      });
+      return response.data;
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response: { data: ProxyServiceResponse } };
+        const data = axiosError.response.data;
+        throw new Error(data.message || '代理服务删除失败');
       } else if (error && typeof error === 'object' && 'request' in error) {
         throw new Error('代理服务无响应，请检查服务是否正常运行');
       } else {

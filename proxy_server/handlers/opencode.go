@@ -158,14 +158,8 @@ func DeleteHandler(c *gin.Context) {
 
 	// 获取进程 PID 并停止服务
 	pid, err := utils.GetPIDByPort(req.Port)
-	if err != nil {
-		// 如果进程不存在，继续删除目录
-		c.JSON(http.StatusOK, models.Response{
-			Code:    200,
-			Message: "进程不存在，继续删除目录",
-		})
-	} else {
-		// 终止进程
+	if err == nil {
+		// 进程存在，终止进程
 		if err := utils.KillProcess(pid); err != nil {
 			c.JSON(http.StatusInternalServerError, models.Response{
 				Code:    500,
@@ -174,6 +168,7 @@ func DeleteHandler(c *gin.Context) {
 			return
 		}
 	}
+	// 如果进程不存在（err != nil），继续删除目录
 
 	// 删除目录
 	if err := os.RemoveAll(req.ChatDir); err != nil {

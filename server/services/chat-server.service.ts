@@ -193,14 +193,15 @@ export class ChatServerService {
       throw new Error('代理服务不存在');
     }
 
-    const stopResponse = await this.proxyClient.stopOpenCodeInstance({
+    const deleteResponse = await this.proxyClient.deleteOpenCodeInstance({
       proxyHost: proxyHost.host,
       proxyPort: proxyHost.port,
       openCodePort: chatServer.port,
+      chatDir: chatServer.chatDir,
     });
 
-    if (stopResponse.code !== 200) {
-      throw new Error(stopResponse.message || '代理服务停止失败');
+    if (deleteResponse.code !== 200) {
+      throw new Error(deleteResponse.message || '代理服务删除失败');
     }
 
     // 程序级联删除：手动删除所有关联数据

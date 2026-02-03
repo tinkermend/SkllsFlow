@@ -148,7 +148,8 @@ export class ChatServerController {
     // 代理服务调用失败
     if (
       errorMessage.includes('代理服务') ||
-      errorMessage.includes('启动失败')
+      errorMessage.includes('启动失败') ||
+      errorMessage.includes('删除失败')
     ) {
       res.status(503).json({
         error: 'Service Unavailable',
