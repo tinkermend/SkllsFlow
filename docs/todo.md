@@ -27,7 +27,23 @@
 - [x] 完成 "查看详情" 技能详情页面开发
 - [x] 完成 "卸载技能", "删除技能","装载技能" 弹出框设计开发
 
-## 智能对话
+- [x] 重构技能表"skills",删除file_path字段,同时更新 docs/database_design/skills.sql 中的定义 以及 prisma schema 定义
+- [x] 创建新表 "skill_files",存储技能上传的zip文件内容,表结构定义参考如下设计:
+
+id: 自增列id
+skill_id: 技能id,关联skills表
+file_data BYTEA NOT NULL,    zip文件内容,二进制类型
+file_name varchar(120) NOT NULL,    zip文件名称
+file_size bigint NOT NULL,    zip文件大小
+mime_type VARCHAR(100) DEFAULT 'application/zip', -- MIME类型
+created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+CREATE INDEX idx_tool_files_tool_id ON tool_files(tool_id);
+COMMENT ON TABLE tool_files IS '工具二进制文件存储表';
+
+将表的创建语句 生成后放在 docs/database_design/skill_files.sql 中, 同时更新prisma schema 定义, 表我自己手动执行 sql创建
+
+- [x] `change:all`  
+
 
 ## mcp管理
 
@@ -64,7 +80,7 @@
 
 2026-02-01 14:28:11
 
-- [ ] `change:all` 重构智能对话,详见[[重构智能对话]](/docs/智能对话/重构智能对话-0201.md)
+- [x] `change:all` 重构智能对话,详见[[重构智能对话]](/docs/智能对话/重构智能对话-0201.md)
 
 2026-02-02
 
@@ -77,3 +93,4 @@
       - 6.点击预览可以看到任务的执行流程展现
       - 7.点击测试运行可以测试任务的执行流程
       - 8.点击保存,将任务保存到数据库中,同时在下方的数据表格中可以展现任务条目,任务条目可以进行编辑,删除,暂停,恢复等操作
+

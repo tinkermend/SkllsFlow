@@ -351,7 +351,7 @@ export function Skills() {
                       </PermissionGuard>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4">
                       {skills.map((skill) => (
                         <SkillCard
                           key={skill.id}
@@ -370,7 +370,7 @@ export function Skills() {
                       <p className="text-muted-foreground">暂无平台技能</p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4">
                       {skills.map((skill) => (
                         <SkillCard
                           key={skill.id}
