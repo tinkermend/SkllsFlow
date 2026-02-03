@@ -104,12 +104,12 @@ export function ChatSessionList() {
           <div className='space-y-1 pb-4'>
             {sessions.map((session) => (
               <SessionItem
-                key={session.id}
+                key={session.sessionId}
                 session={session}
-                isActive={session.id === currentSessionId}
-                onClick={() => setCurrentSession(session.id)}
-                onDelete={() => handleDeleteSession(session.id)}
-                onRename={(newTitle) => handleRenameSession(session.id, newTitle)}
+                isActive={session.sessionId === currentSessionId}
+                onClick={() => setCurrentSession(session.sessionId)}
+                onDelete={() => handleDeleteSession(session.sessionId)}
+                onRename={(newTitle) => handleRenameSession(session.sessionId, newTitle)}
               />
             ))}
           </div>

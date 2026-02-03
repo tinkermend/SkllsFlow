@@ -24,6 +24,13 @@ export function SessionItem({
 }: SessionItemProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editTitle, setEditTitle] = useState(session.title || '新对话')
+  const timestamp = session.updatedAt || session.createdAt
+  const displayTime = (() => {
+    if (!timestamp) return ''
+    const date = new Date(timestamp)
+    if (Number.isNaN(date.getTime())) return ''
+    return format(date, 'MM-dd HH:mm')
+  })()
 
   const handleRename = () => {
     if (editTitle.trim() && editTitle !== session.title) {
@@ -89,9 +96,7 @@ export function SessionItem({
                 : session.title || '新对话'}
             </p>
             <p className='truncate text-xs text-muted-foreground'>
-              {session.time?.updated
-                ? format(new Date(session.time.updated), 'MM-dd HH:mm')
-                : ''}
+              {displayTime}
             </p>
           </>
         )}

@@ -36,13 +36,13 @@ export function useSessions() {
     const fetchSessions = async () => {
       setIsLoading(true)
       try {
-        const data = await sessionApi.getAll()
+        const data = await sessionApi.getAll(activeServer.id)
 
         if (cancelled) return
 
         const sortedData = [...data].sort((a, b) => {
-          const timeA = a.time?.updated || a.time?.created || 0
-          const timeB = b.time?.updated || b.time?.created || 0
+          const timeA = new Date(a.updatedAt || a.createdAt).getTime()
+          const timeB = new Date(b.updatedAt || b.createdAt).getTime()
           return timeB - timeA
         })
 
@@ -51,8 +51,8 @@ export function useSessions() {
         const { currentSessionId } = useChatStore.getState()
         if (sortedData.length === 0) {
           setCurrentSession(null)
-        } else if (!currentSessionId || !sortedData.some((s) => s.id === currentSessionId)) {
-          setCurrentSession(sortedData[0].id)
+        } else if (!currentSessionId || !sortedData.some((s) => s.sessionId === currentSessionId)) {
+          setCurrentSession(sortedData[0].sessionId)
         }
       } catch (error) {
         if (!cancelled) {
@@ -75,7 +75,7 @@ export function useSessions() {
       cancelled = true
     }
   }, [
-    activeServer?.chatId,
+    activeServer?.id,
     connectionStatus,
     setCurrentSession,
     setSessions,
@@ -106,12 +106,13 @@ export function useCreateSession() {
       const session = await sessionApi.create({
         ...params,
         accountNo,
+        chatServerId: activeServer.chatId,
       })
       return session
     },
     onSuccess: (session) => {
       addSession(session)
-      setCurrentSession(session.id)
+      setCurrentSession(session.sessionId)
     },
     onError: (error) => {
       const message = error instanceof Error ? error.message : '新建会话失败'

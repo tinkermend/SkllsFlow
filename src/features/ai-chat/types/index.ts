@@ -7,6 +7,7 @@ export interface OpenCodeConnection {
 }
 
 export type ConnectionStatus =
+  | 'idle'
   | 'disconnected'
   | 'connecting'
   | 'connected'
@@ -49,25 +50,23 @@ export interface ChatServerDeleteStats {
 // ============ 会话 ============
 export interface Session {
   id: string
-  slug: string
+  sessionId: string
   title: string
-  version: string
-  projectID: string
-  directory: string
-  parentID?: string
-  time: {
-    created: number
-    updated: number
-  }
-  // [预留] Skills/MCP 关联
-  skills?: string[]
-  mcpServers?: string[]
+  userId: string
+  projectId: string
+  status: 'active' | 'delete'
+  opencodeServer?: string
+  directory: string | null
+  chatServerId?: string
+  createdAt: string
+  updatedAt: string
 }
 
 export interface CreateSessionParams {
   title?: string
   parentID?: string
   accountNo?: string  // 用户账号，用于创建会话目录
+  chatServerId?: string // 选中的智能服务 UUID（chatId）
   // [预留]
   skills?: string[]
   mcpServers?: string[]

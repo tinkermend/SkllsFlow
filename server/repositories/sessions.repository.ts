@@ -102,13 +102,33 @@ export class SessionRepository extends BaseRepository<
    * ```
    */
   async findByUserId(userId: bigint): Promise<Session[]> {
-    return this.findAll({
+    return this.prisma.session.findMany({
       where: {
-        userId,
-        status: "active",
+        createdBy: userId,
       },
       orderBy: {
-        updatedAt: "desc",
+        createdAt: "desc",
+      },
+    });
+  }
+
+  /**
+   * Find sessions by user and chat server
+   *
+   * @param userId - User database ID
+   * @param chatId - ChatServer database ID
+   */
+  async findByUserAndChatId(
+    userId: bigint,
+    chatId: bigint
+  ): Promise<Session[]> {
+    return this.prisma.session.findMany({
+      where: {
+        createdBy: userId,
+        chatId,
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
   }
@@ -138,11 +158,12 @@ export class SessionRepository extends BaseRepository<
   ) {
     return this.findPaginated({
       where: {
-        userId,
-        status: "active",
-      },
+        chatServer: {
+          createdBy: userId,
+        },
+      } as any,
       orderBy: {
-        updatedAt: "desc",
+        createdAt: "desc",
       },
       ...options,
     });
@@ -181,29 +202,44 @@ export class SessionRepository extends BaseRepository<
    * ```
    */
   async countActiveByUser(userId: bigint): Promise<number> {
-    return this.count({
-      userId,
-      status: "active",
+    return this.prisma.session.count({
+      where: {
+        createdBy: userId,
+      },
     });
   }
 
   /**
-   * Soft delete a session by session_id (mark as DELETE)
-   * Uses BaseRepository.softDelete if we have the ID, otherwise custom logic
+   * Delete a session by session_id.
    *
    * @param sessionId - The session ID from OpenCode API
-   * @returns The updated session
-   *
-   * @example
-   * ```typescript
-   * const deleted = await repository.softDeleteBySessionId('abc123');
-   * console.log('Session soft deleted:', deleted.status === 'DELETE');
-   * ```
+   * @returns The deleted session record
    */
   async softDeleteBySessionId(sessionId: string): Promise<Session> {
+    return this.prisma.session.delete({
+      where: { sessionId },
+    });
+  }
+
+  /**
+   * Update session by session_id
+   */
+  async updateBySessionId(
+    sessionId: string,
+    data: Prisma.SessionUpdateInput
+  ): Promise<Session> {
     return this.prisma.session.update({
       where: { sessionId },
-      data: { status: "delete" },
+      data,
+    });
+  }
+
+  /**
+   * Delete session by session_id
+   */
+  async deleteBySessionId(sessionId: string): Promise<Session> {
+    return this.prisma.session.delete({
+      where: { sessionId },
     });
   }
 }

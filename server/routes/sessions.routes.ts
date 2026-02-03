@@ -33,6 +33,16 @@ router.get('/:sessionId', (req: Request, res: Response) => {
   req.controller.getById(req, res);
 });
 
+// PATCH /api/sessions/:sessionId - Update session metadata
+router.patch('/:sessionId', (req: Request, res: Response) => {
+  req.controller.update(req, res);
+});
+
+// DELETE /api/sessions/:sessionId - Delete session
+router.delete('/:sessionId', (req: Request, res: Response) => {
+  req.controller.delete(req, res);
+});
+
 export default router;
 
 // Extend Express Request type

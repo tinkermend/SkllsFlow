@@ -1,51 +1,16 @@
 import { env } from '../config/env.js';
 import { createHash } from 'node:crypto';
 
-/**
- * 获取 OpenCode 基础目录路径
- * 从 http://localhost:4096/path 获取
- */
-interface PathResponse {
-  directory: string;
-}
-
 export class DirectoriesService {
   /**
-   * 从 OpenCode 服务获取基础目录路径
+   * 从环境变量获取基础目录路径
    */
   async getBasePath(): Promise<string> {
-    try {
-      // 从环境变量获取 OpenCode API URL
-      const openCodeUrl = env.OPENCODE_API_URL;
-      if (!openCodeUrl) {
-        throw new Error('OPENCODE_API_URL 环境变量未配置');
-      }
-
-      // 解析 URL 获取 host 和 port
-      const url = new URL(openCodeUrl);
-      const pathUrl = `http://${url.hostname}:${url.port || 4096}/path`;
-
-      const response = await fetch(pathUrl, {
-        signal: AbortSignal.timeout(5000),
-      });
-
-      if (!response.ok) {
-        throw new Error(`获取目录路径失败: ${response.status} ${response.statusText}`);
-      }
-
-      const data = (await response.json()) as PathResponse;
-      if (!data.directory) {
-        throw new Error('响应中缺少 directory 字段');
-      }
-
-      return data.directory;
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('[DirectoriesService] 获取基础目录失败:', error);
-      throw new Error(
-        `无法获取基础目录路径: ${error instanceof Error ? error.message : '未知错误'}`
-      );
+    const basePath = env.OPENCODE_BASE_PATH;
+    if (!basePath) {
+      throw new Error('OPENCODE_BASE_PATH 环境变量未配置');
     }
+    return basePath;
   }
 
   /**

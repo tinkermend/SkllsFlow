@@ -54,7 +54,28 @@ export class SessionsController {
         return;
       }
 
-      const sessions = await this.service.getUserSessions(userId);
+      const chatIdParam = req.query.chatId;
+
+      if (!chatIdParam || Array.isArray(chatIdParam)) {
+        res.status(400).json({
+          error: 'chatId is required',
+          message: '请在查询参数中提供 chatId',
+        });
+        return;
+      }
+
+      let chatDbId: bigint;
+      try {
+        chatDbId = BigInt(chatIdParam);
+      } catch {
+        res.status(400).json({
+          error: 'Invalid chatId',
+          message: 'chatId 必须为数字 ID',
+        });
+        return;
+      }
+
+      const sessions = await this.service.getUserSessions(userId, chatDbId);
       res.status(200).json(sessions);
     } catch (error) {
       this.handleError(res, error);
@@ -88,6 +109,58 @@ export class SessionsController {
       }
 
       res.status(200).json(session);
+    } catch (error) {
+      this.handleError(res, error);
+    }
+  }
+
+  /**
+   * Update session metadata
+   * PATCH /api/sessions/:sessionId
+   */
+  async update(req: Request, res: Response): Promise<void> {
+    try {
+      const { sessionId } = req.params;
+      const userId = req.userId;
+
+      if (!userId) {
+        res.status(401).json({
+          error: 'Unauthorized',
+          message: 'Authentication token is missing or invalid',
+        });
+        return;
+      }
+
+      const body = req.body || {};
+      const updated = await this.service.updateSession(sessionId, userId, {
+        title: body.title,
+      });
+
+      res.status(200).json(updated);
+    } catch (error) {
+      this.handleError(res, error);
+    }
+  }
+
+  /**
+   * Delete session
+   * DELETE /api/sessions/:sessionId
+   */
+  async delete(req: Request, res: Response): Promise<void> {
+    try {
+      const { sessionId } = req.params;
+      const userId = req.userId;
+
+      if (!userId) {
+        res.status(401).json({
+          error: 'Unauthorized',
+          message: 'Authentication token is missing or invalid',
+        });
+        return;
+      }
+
+      await this.service.deleteSession(sessionId, userId);
+      res.status(204).send();
     } catch (error) {
       this.handleError(res, error);
     }

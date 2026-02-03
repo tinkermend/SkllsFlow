@@ -14,7 +14,11 @@ export const sessionApi = {
       throw new Error("accountNo 必填，请从用户信息中获取");
     }
 
-    const { accountNo, ...sessionParams } = params;
+    const { accountNo, chatServerId, ...sessionParams } = params;
+
+    if (!chatServerId) {
+      throw new Error("chatServerId 必填，请先选择智能服务");
+    }
 
     // 步骤 1: 调用后端 API 准备会话目录
     // eslint-disable-next-line no-console
@@ -61,6 +65,7 @@ export const sessionApi = {
         title: openCodeSession.title,
         projectId,
         directory: directoryPath,
+        chatServerId,
       });
 
       const backendResponse = await backendClient.post<Session>("/sessions", {
@@ -68,6 +73,7 @@ export const sessionApi = {
         title: openCodeSession.title,
         projectId,
         directory: directoryPath,
+        chatServerId,
       });
 
       // eslint-disable-next-line no-console
@@ -101,9 +107,17 @@ export const sessionApi = {
   /**
    * 获取所有会话（从数据库）
    */
-  getAll: async (): Promise<Session[]> => {
-    const openCodeClient = getOpenCodeClient();
-    const response = await openCodeClient.get<Session[]>("/session");
+  getAll: async (chatDbId: string | number | bigint): Promise<Session[]> => {
+    if (chatDbId === undefined || chatDbId === null) {
+      throw new Error("chatDbId 必填，请提供数据库中的 ChatServer ID");
+    }
+
+    const chatIdParam =
+      typeof chatDbId === "bigint" ? chatDbId.toString() : String(chatDbId);
+
+    const response = await backendClient.get<Session[]>("/sessions", {
+      params: { chatId: chatIdParam },
+    });
     return response.data;
   },
 
@@ -121,8 +135,9 @@ export const sessionApi = {
    */
   delete: async (id: string): Promise<boolean> => {
     const openCodeClient = getOpenCodeClient();
-    const response = await openCodeClient.delete<boolean>(`/session/${id}`);
-    return response.data;
+    await openCodeClient.delete<boolean>(`/session/${id}`);
+    await backendClient.delete(`/sessions/${id}`);
+    return true;
   },
 
   /**
@@ -130,10 +145,14 @@ export const sessionApi = {
    */
   update: async (id: string, params: { title?: string }): Promise<Session> => {
     const openCodeClient = getOpenCodeClient();
-    const response = await openCodeClient.patch<Session>(
+    await openCodeClient.patch(
       `/session/${id}`,
       params,
     );
-    return response.data;
+    const backendResponse = await backendClient.patch<Session>(
+      `/sessions/${id}`,
+      params,
+    );
+    return backendResponse.data;
   },
 };

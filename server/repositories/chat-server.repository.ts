@@ -107,6 +107,25 @@ export class ChatServerRepository extends BaseRepository<
   }
 
   /**
+   * 通过数据库 ID 批量查询 ChatServer
+   */
+  async findManyByIds(ids: Array<number | bigint>): Promise<ChatServer[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    const normalizedIds = ids.map((id) =>
+      typeof id === 'bigint' ? id : BigInt(id)
+    );
+    return this.prisma.chatServer.findMany({
+      where: {
+        id: {
+          in: normalizedIds,
+        },
+      },
+    });
+  }
+
+  /**
    * 通过 chatId 删除 ChatServer
    *
    * @param chatId - ChatServer UUID
