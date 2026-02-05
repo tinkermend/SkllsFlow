@@ -127,6 +127,16 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {}
 
+    if (!formData.skillId.trim()) {
+      newErrors.skillId = '请输入技能ID'
+    } else if (formData.skillId.includes(' ')) {
+      newErrors.skillId = '技能ID不能包含空格'
+    } else if (!/^[a-zA-Z0-9_\-.]+$/.test(formData.skillId)) {
+      newErrors.skillId = '技能ID只能包含英文、数字、下划线、连字符和点号'
+    } else if (formData.skillId.length > 64) {
+      newErrors.skillId = '技能ID不能超过 64 个字符'
+    }
+
     if (!formData.name.trim()) {
       newErrors.name = '请输入技能名称'
     } else if (formData.name.length > 120) {
@@ -158,7 +168,7 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
 
       // 创建技能记录
       await createSkillMutation.mutateAsync({
-        skillId: `skill_${Date.now()}`,
+        skillId: formData.skillId,
         name: formData.name,
         description: formData.description,
         icon: formData.icon,
@@ -174,6 +184,7 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
 
       // 重置表单
       setFormData({
+        skillId: '',
         name: '',
         description: '',
         icon: '🔧',
@@ -250,7 +261,24 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
                 />
               </div>
               <div className="flex-1 grid gap-5">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="skillId" className="text-xs font-medium text-muted-foreground">
+                      技能ID <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="skillId"
+                      placeholder="英文ID，如：my-skill"
+                      value={formData.skillId}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, skillId: e.target.value }))
+                      }
+                      className={`h-10 ${errors.skillId ? 'border-destructive' : ''}`}
+                    />
+                    {errors.skillId && (
+                      <p className="text-xs text-destructive">{errors.skillId}</p>
+                    )}
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="name" className="text-xs font-medium text-muted-foreground">
                       技能名称 <span className="text-destructive">*</span>
@@ -389,7 +417,7 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
                  <Label className="text-xs font-medium text-muted-foreground">启用状态</Label>
                  <div className="h-10 px-4 rounded-lg border bg-card/50 flex items-center justify-between">
                     <span className="text-sm font-medium text-muted-foreground">
-                      {formData.status === SkillStatus.ACTIVE ? '已启用 - 前台可见' : '已禁用 - 暂不可见'}
+                      {formData.status === SkillStatus.ACTIVE ? '已启用' : '已禁用'}
                     </span>
                     <Switch
                         checked={formData.status === SkillStatus.ACTIVE}
@@ -450,7 +478,7 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
                       点击或拖拽 .zip 文件至此处上传
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      支持标准技能压缩包格式，大小不超过 50MB
+                      支持标准技能压缩包格式，大小不超过 1MB
                     </p>
                   </div>
                 </div>
