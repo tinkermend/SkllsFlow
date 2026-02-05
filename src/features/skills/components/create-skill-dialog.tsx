@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { Loader2, Upload, X, FileArchive, UploadCloud } from 'lucide-react'
+import { Loader2, X, FileArchive, UploadCloud, Check, Tags, Settings, Sparkles, Box } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -32,6 +32,7 @@ interface CreateSkillDialogProps {
 }
 
 interface FormData {
+  skillId: string
   name: string
   description: string
   icon: string
@@ -56,6 +57,7 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
   const createSkillMutation = useCreateSkill()
   const uploadFileMutation = useUploadSkillFile()
   const [formData, setFormData] = useState<FormData>({
+    skillId: '',
     name: '',
     description: '',
     icon: '🔧',
@@ -76,9 +78,9 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
       return
     }
 
-    // 验证文件大小 (限制 50MB)
-    if (file.size > 50 * 1024 * 1024) {
-      setErrors((prev) => ({ ...prev, file: '文件大小不能超过 50MB' }))
+    // 验证文件大小 (限制 1MB)
+    if (file.size > 1 * 1024 * 1024) {
+      setErrors((prev) => ({ ...prev, file: '文件大小不能超过 1MB' }))
       return
     }
 
@@ -159,7 +161,7 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
         skillId: `skill_${Date.now()}`,
         name: formData.name,
         description: formData.description,
-        iconPath: formData.icon,
+        icon: formData.icon,
         category: formData.category,
         tags: formData.tags,
         status: formData.status,
@@ -215,185 +217,206 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] p-0 overflow-hidden">
-        <DialogHeader className="px-6 pt-6 pb-2">
-          <DialogTitle>新建技能</DialogTitle>
-          <DialogDescription>
-            填写基本信息并上传技能包，完成后点击"创建"按钮
-          </DialogDescription>
+      <DialogContent className="sm:max-w-[700px] p-0 overflow-hidden border-0 shadow-2xl flex flex-col max-h-[90vh]">
+        <DialogHeader className="bg-muted/10 px-8 py-6 border-b shrink-0">
+          <div className="flex items-center gap-4">
+            <div className="p-2.5 bg-primary/10 rounded-xl">
+              <Sparkles className="w-6 h-6 text-primary" />
+            </div>
+            <div className="space-y-1">
+              <DialogTitle className="text-xl font-bold tracking-tight">新建技能</DialogTitle>
+              <DialogDescription className="text-sm">
+                填写基本信息并上传技能包，配置您的专属技能环境
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
-        <div className="overflow-y-auto px-6 py-4 space-y-6 max-h-[calc(90vh-180px)]">
-          {/* 第一组：核心识别 */}
-          <div className="grid grid-cols-[80px_1fr] gap-4">
-            {/* 技能图标 */}
-            <div className="space-y-2">
-              <Label className="text-xs">图标</Label>
-              <IconPicker
-                value={formData.icon}
-                onChange={(icon) =>
-                  setFormData((prev) => ({ ...prev, icon }))
-                }
-                size="square"
-              />
+        <div className="flex-1 overflow-y-auto px-8 py-6 space-y-8 scrollbar-thin scrollbar-thumb-muted-foreground/20">
+          {/* Section 1: Identity */}
+          <div className="space-y-5">
+            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-widest">
+              <Box className="w-3.5 h-3.5" /> 基本信息
             </div>
-
-            {/* 右侧：名称 + 分类 */}
-            <div className="grid grid-cols-2 gap-3">
-              {/* 技能名称 */}
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-xs">
-                  技能名称 <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="name"
-                  placeholder="请输入技能名称"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, name: e.target.value }))
+            <div className="flex gap-6 items-start">
+              <div className="shrink-0 pt-1">
+                <IconPicker
+                  value={formData.icon}
+                  onChange={(icon) =>
+                    setFormData((prev) => ({ ...prev, icon }))
                   }
-                  className={errors.name ? 'border-destructive' : ''}
+                  size="square"
+                  className="w-[100px] h-[100px] !text-5xl shadow-sm border-2 border-dashed border-muted-foreground/20 hover:border-primary hover:bg-primary/5 transition-all rounded-xl"
                 />
-                {errors.name && (
-                  <p className="text-xs text-destructive">{errors.name}</p>
-                )}
               </div>
+              <div className="flex-1 grid gap-5">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name" className="text-xs font-medium text-muted-foreground">
+                      技能名称 <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="name"
+                      placeholder="给技能起个响亮的名字"
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, name: e.target.value }))
+                      }
+                      className={`h-10 ${errors.name ? 'border-destructive' : ''}`}
+                    />
+                    {errors.name && (
+                      <p className="text-xs text-destructive">{errors.name}</p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="category" className="text-xs font-medium text-muted-foreground">
+                      技能分类 <span className="text-destructive">*</span>
+                    </Label>
+                    <Select
+                      value={formData.category}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, category: value }))
+                      }
+                    >
+                      <SelectTrigger
+                        className={`h-10 ${errors.category ? 'border-destructive' : ''}`}
+                      >
+                        <SelectValue placeholder="选择所属分类" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CATEGORIES.map((cat) => (
+                          <SelectItem key={cat.value} value={cat.value}>
+                            {cat.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.category && (
+                      <p className="text-xs text-destructive">{errors.category}</p>
+                    )}
+                  </div>
+                </div>
 
-              {/* 技能分类 */}
-              <div className="space-y-2">
-                <Label htmlFor="category" className="text-xs">
-                  技能分类 <span className="text-destructive">*</span>
-                </Label>
-                <Select
-                  value={formData.category}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({ ...prev, category: value }))
-                  }
-                >
-                  <SelectTrigger
-                    className={errors.category ? 'border-destructive' : ''}
-                  >
-                    <SelectValue placeholder="请选择分类" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CATEGORIES.map((cat) => (
-                      <SelectItem key={cat.value} value={cat.value}>
-                        {cat.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.category && (
-                  <p className="text-xs text-destructive">{errors.category}</p>
-                )}
+                <div className="space-y-2">
+                  <Label htmlFor="description" className="text-xs font-medium text-muted-foreground">
+                    技能描述 <span className="text-destructive">*</span>
+                  </Label>
+                  <Textarea
+                    id="description"
+                    placeholder="简单描述一下这个技能的功能和用途..."
+                    value={formData.description}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, description: e.target.value }))
+                    }
+                    rows={2}
+                    className={`resize-none min-h-[60px] ${errors.description ? 'border-destructive' : ''}`}
+                  />
+                  {errors.description && (
+                    <p className="text-xs text-destructive">{errors.description}</p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
 
-          {/* 第二组：内容描述 */}
-          <div className="space-y-3">
-            {/* 技能描述 */}
-            <div className="space-y-2">
-              <Label htmlFor="description" className="text-xs">
-                技能描述 <span className="text-destructive">*</span>
-              </Label>
-              <Textarea
-                id="description"
-                placeholder="请输入技能描述"
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, description: e.target.value }))
-                }
-                rows={2}
-                className={`resize-none ${errors.description ? 'border-destructive' : ''}`}
-              />
-              {errors.description && (
-                <p className="text-xs text-destructive">{errors.description}</p>
-              )}
+          <Separator className="bg-border/60" />
+
+          {/* Section 2: Configuration */}
+          <div className="space-y-5">
+            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-widest">
+              <Tags className="w-3.5 h-3.5" /> 标签与配置
             </div>
 
-            {/* 技能标签 */}
             <div className="space-y-2">
-              <Label htmlFor="tags" className="text-xs">技能标签</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="tags"
-                  placeholder="输入后回车添加标签"
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={handleTagInputKeyDown}
-                  className="flex-1"
-                />
+              <Label className="text-xs font-medium text-muted-foreground">技能标签</Label>
+              <div className="p-3 rounded-xl border bg-card/50 shadow-sm space-y-3 transition-colors focus-within:ring-1 focus-within:ring-ring">
+                <div className="flex flex-wrap gap-2">
+                  {formData.tags.map((tag) => (
+                    <Badge
+                      key={tag}
+                      variant="secondary"
+                      className="px-2.5 py-1 gap-1.5 text-xs hover:bg-secondary/80 transition-colors pr-1"
+                    >
+                      {tag}
+                      <button
+                        type="button"
+                        className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full p-0.5 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          handleRemoveTag(tag)
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                  <input
+                    className="flex-1 bg-transparent border-none outline-none text-sm min-w-[120px] placeholder:text-muted-foreground/50 h-7"
+                    placeholder={formData.tags.length > 0 ? "继续添加..." : "输入标签后按回车添加"}
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={handleTagInputKeyDown}
+                  />
+                </div>
               </div>
               {errors.tags && (
                 <p className="text-xs text-destructive">{errors.tags}</p>
               )}
-              {formData.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {formData.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="gap-1 text-xs">
-                      {tag}
-                      <X
-                        className="h-3 w-3 cursor-pointer hover:text-destructive"
-                        onClick={() => handleRemoveTag(tag)}
-                      />
-                    </Badge>
-                  ))}
+            </div>
+
+            <div className="grid grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <Label htmlFor="sortOrder" className="text-xs font-medium text-muted-foreground">排序权重</Label>
+                <div className="relative">
+                  <Input
+                    id="sortOrder"
+                    type="number"
+                    placeholder="0"
+                    value={formData.sortOrder}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        sortOrder: parseInt(e.target.value) || 0,
+                      }))
+                    }
+                    className="h-10 font-mono"
+                  />
                 </div>
-              )}
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* 第三组：系统属性 */}
-          <div className="grid grid-cols-2 gap-4">
-            {/* 排序值 */}
-            <div className="space-y-2">
-              <Label htmlFor="sortOrder" className="text-xs">排序值</Label>
-              <Input
-                id="sortOrder"
-                type="number"
-                placeholder="数字越小越靠前"
-                value={formData.sortOrder}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    sortOrder: parseInt(e.target.value) || 0,
-                  }))
-                }
-              />
-            </div>
-
-            {/* 状态 - 改为 Switch */}
-            <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
-              <div className="space-y-0.5">
-                <Label htmlFor="status" className="text-xs font-medium">技能状态</Label>
-                <p className="text-xs text-muted-foreground">
-                  {formData.status === SkillStatus.ACTIVE ? '启用后技能可见' : '禁用后技能不可见'}
-                </p>
               </div>
-              <Switch
-                id="status"
-                checked={formData.status === SkillStatus.ACTIVE}
-                onCheckedChange={(checked) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    status: checked ? SkillStatus.ACTIVE : SkillStatus.DISABLED,
-                  }))
-                }
-              />
+
+              <div className="space-y-2">
+                 <Label className="text-xs font-medium text-muted-foreground">启用状态</Label>
+                 <div className="h-10 px-4 rounded-lg border bg-card/50 flex items-center justify-between">
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {formData.status === SkillStatus.ACTIVE ? '已启用 - 前台可见' : '已禁用 - 暂不可见'}
+                    </span>
+                    <Switch
+                        checked={formData.status === SkillStatus.ACTIVE}
+                        onCheckedChange={(checked) =>
+                        setFormData((prev) => ({
+                            ...prev,
+                            status: checked ? SkillStatus.ACTIVE : SkillStatus.DISABLED,
+                        }))
+                        }
+                    />
+                 </div>
+              </div>
             </div>
           </div>
 
-          <Separator />
+          <Separator className="bg-border/60" />
 
-          {/* 第四组：资源上传 */}
-          <div className="space-y-3">
-            <Label className="text-xs">
-              技能压缩包 <span className="text-destructive">*</span>
-            </Label>
+          {/* Section 3: File */}
+          <div className="space-y-5">
+            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-widest">
+              <Settings className="w-3.5 h-3.5" /> 资源文件
+            </div>
+
             <div className="space-y-2">
+              <Label className="text-xs font-medium text-muted-foreground">
+                技能包 (.zip) <span className="text-destructive">*</span>
+              </Label>
               {!formData.file ? (
                 <div
                   onDragOver={handleDragOver}
@@ -401,14 +424,15 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
                   onDrop={handleDrop}
                   onClick={() => document.getElementById('file')?.click()}
                   className={`
-                    relative cursor-pointer border-2 border-dashed rounded-lg p-6
-                    transition-colors duration-200
-                    flex items-center gap-4
+                    group relative cursor-pointer
+                    border-2 border-dashed rounded-xl p-8
+                    flex flex-col items-center justify-center gap-4
+                    transition-all duration-300 ease-out
                     ${isDragging
-                      ? 'border-primary bg-primary/5'
-                      : 'border-muted-foreground/25 hover:border-muted-foreground/50 bg-muted/30 hover:bg-muted/50'
+                      ? 'border-primary bg-primary/5 scale-[0.99] shadow-inner'
+                      : 'border-muted-foreground/20 hover:border-primary/50 hover:bg-muted/30'
                     }
-                    ${errors.file ? 'border-destructive' : ''}
+                    ${errors.file ? 'border-destructive/50 bg-destructive/5' : ''}
                   `}
                 >
                   <input
@@ -418,61 +442,64 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
                     onChange={handleFileChange}
                     className="hidden"
                   />
-                  <div className="p-3 rounded-full bg-background shadow-sm">
-                    <UploadCloud className="h-6 w-6 text-muted-foreground" />
+                  <div className="p-4 rounded-full bg-primary/5 text-primary group-hover:scale-110 group-hover:bg-primary/10 transition-all duration-300">
+                    <UploadCloud className="h-8 w-8" />
                   </div>
-                  <div className="flex-1 space-y-0.5">
-                    <p className="text-sm font-medium">
+                  <div className="text-center space-y-1.5">
+                    <p className="text-sm font-semibold text-foreground">
                       点击或拖拽 .zip 文件至此处上传
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      仅支持标准技能压缩包格式，大小不超过 50MB
+                      支持标准技能压缩包格式，大小不超过 50MB
                     </p>
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-between rounded-lg border border-border p-4 bg-muted/30">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-md bg-primary/10">
-                      <FileArchive className="h-5 w-5 text-primary" />
+                <div className="relative overflow-hidden rounded-xl border bg-muted/20 p-4 flex items-center gap-4 group hover:bg-muted/30 transition-colors">
+                  <div className="p-3 bg-primary/10 rounded-lg">
+                    <FileArchive className="h-6 w-6 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                         <p className="text-sm font-medium truncate">{formData.file.name}</p>
+                         <Check className="w-3.5 h-3.5 text-green-500" />
                     </div>
-                    <div>
-                      <p className="text-sm font-medium">{formData.file.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {(formData.file.size / 1024 / 1024).toFixed(2)} MB
-                      </p>
-                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {(formData.file.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
                   </div>
                   <Button
                     type="button"
                     variant="ghost"
-                    size="sm"
+                    size="icon"
                     onClick={handleRemoveFile}
-                    className="h-8 w-8 p-0"
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
                   >
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
               )}
               {errors.file && (
-                <p className="text-xs text-destructive">{errors.file}</p>
+                <p className="text-xs text-destructive animate-in slide-in-from-left-1">{errors.file}</p>
               )}
             </div>
           </div>
 
-          {/* 提交错误 */}
+          {/* Global Errors */}
           {errors.submit && (
-            <div className="rounded-md bg-destructive/10 p-3">
-              <p className="text-sm text-destructive">{errors.submit}</p>
+            <div className="rounded-lg bg-destructive/10 p-4 flex items-center gap-3 text-sm text-destructive border border-destructive/20 animate-in slide-in-from-bottom-2">
+              <X className="h-4 w-4 shrink-0" />
+              {errors.submit}
             </div>
           )}
         </div>
 
-        {/* 底部固定动作条 */}
-        <DialogFooter className="px-6 py-4 border-t bg-muted/30 gap-2">
+        {/* Footer */}
+        <DialogFooter className="px-8 py-5 border-t bg-muted/10 shrink-0 gap-3">
           <Button
             type="button"
             variant="outline"
+            className="h-10 px-6 rounded-lg border-muted-foreground/20 hover:bg-muted"
             onClick={() => onOpenChange(false)}
             disabled={createSkillMutation.isPending || uploadFileMutation.isPending}
           >
@@ -480,13 +507,14 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
           </Button>
           <Button
             type="button"
+            className="h-10 px-8 rounded-lg shadow-lg hover:shadow-primary/25 transition-all text-sm font-medium"
             onClick={handleSubmit}
             disabled={createSkillMutation.isPending || uploadFileMutation.isPending}
           >
             {(createSkillMutation.isPending || uploadFileMutation.isPending) && (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             )}
-            创建技能
+            立即创建
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -42,7 +42,12 @@ COMMENT ON TABLE tool_files IS '工具二进制文件存储表';
 
 将表的创建语句 生成后放在 docs/database_design/skill_files.sql 中, 同时更新prisma schema 定义, 表我自己手动执行 sql创建
 
-- [x] `change:all`
+- [x] `fix:all` 创建技能的技能标签只能新增,无法删除,请修复
+
+- [] `change:all`  创建技能页面基本信息中,在技能名称旁边新增技能ID, 技能ID为英文, 技能名称为中文, 技能ID和技能名称都不能为空,同时技能ID不支持中文,可以是英文与特殊符号,但不能包含空格
+
+- [] `feat:all` 我们来完成`创建技能` 前后端功能开发,主要完成如下功能:
+  -  1.
 
 
 ## mcp管理

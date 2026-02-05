@@ -24,9 +24,9 @@ COMMENT ON TABLE aiops.skills IS '技能表：存储平台可用的AI技能信�
 -- 字段注释
 COMMENT ON COLUMN aiops.skills.id IS '主键：数据库内部使用';
 
-COMMENT ON COLUMN aiops.skills.skill_id IS '技能ID：唯一标识一个技能';
+COMMENT ON COLUMN aiops.skills.skill_id IS '技能ID：唯一标识一个技能,英文描述';
 
-COMMENT ON COLUMN aiops.skills.name IS '技能名称';
+COMMENT ON COLUMN aiops.skills.name IS '技能名称,中文描述';
 
 COMMENT ON COLUMN aiops.skills.description IS '技能描述';
 
