@@ -34,6 +34,10 @@ class DatabaseService {
       });
 
       await this.instance.$connect();
+
+      // Verify database connection with actual query
+      await this.instance.$queryRaw`SELECT 1`;
+
       console.log('✅ Database connected');
     }
 

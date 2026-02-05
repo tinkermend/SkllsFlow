@@ -87,7 +87,7 @@ export class SkillsRepository extends BaseRepository<
   }
 
   /**
-   * 获取技能关联的会话列表
+   * 获取技能关联的聊天服务列表
    * @param skillId - 技能 ID
    */
   async findSkillRelatedSessions(skillId: string): Promise<Array<{
@@ -95,33 +95,36 @@ export class SkillsRepository extends BaseRepository<
     sessionTitle: string;
     createdAt: Date;
   }>> {
-    const sessionSkills = await this.prisma.sessionSkill.findMany({
+    // 查询使用该技能的用户技能记录
+    const userSkills = await this.prisma.userSkill.findMany({
       where: { skillId },
       select: {
-        sessionId: true,
+        chatId: true,
         createdAt: true,
       },
+      distinct: ['chatId'],
     });
 
-    // 获取会话详情
-    const sessionIds = sessionSkills.map(ss => ss.sessionId);
-    const sessions = await this.prisma.session.findMany({
+    // 获取聊天服务详情
+    const chatIds = userSkills.map(us => us.chatId);
+    const chatServers = await this.prisma.chatServer.findMany({
       where: {
-        sessionId: { in: sessionIds },
+        id: { in: chatIds },
       },
       select: {
-        sessionId: true,
-        title: true,
+        id: true,
+        chatId: true,
+        name: true,
       },
     });
 
-    // 合并数据
-    return sessionSkills.map(ss => {
-      const session = sessions.find(s => s.sessionId === ss.sessionId);
+    // 合并数据，返回聊天服务信息
+    return userSkills.map(us => {
+      const chatServer = chatServers.find(cs => cs.id === us.chatId);
       return {
-        sessionId: ss.sessionId,
-        sessionTitle: session?.title || '未知会话',
-        createdAt: ss.createdAt,
+        sessionId: chatServer?.chatId || '',
+        sessionTitle: chatServer?.name || '未知聊天服务',
+        createdAt: us.createdAt,
       };
     });
   }

@@ -17,7 +17,7 @@ export interface Skill {
   status: SkillStatus
   creator: string
   createdAt: string
-  sessionId: string
+  chatId: string  // 改为 chatId，关联 chat_servers 表
   tags: string[]
 }
 
@@ -30,3 +30,4 @@ export type CreateSkillRequest = Omit<Skill, 'id'>
  * 更新技能请求
  */
 export type UpdateSkillRequest = Partial<Omit<Skill, 'id'>>
+

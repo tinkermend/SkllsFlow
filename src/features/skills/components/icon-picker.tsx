@@ -10,6 +10,8 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 interface IconPickerProps {
   value: string
   onChange: (icon: string) => void
+  size?: 'default' | 'square'
+  className?: string
 }
 
 // 常用图标库 (基于 Emoji)
@@ -116,7 +118,7 @@ const ICON_CATEGORIES = {
   ],
 }
 
-export function IconPicker({ value, onChange }: IconPickerProps) {
+export function IconPicker({ value, onChange, size = 'default', className }: IconPickerProps) {
   const [open, setOpen] = useState(false)
 
   const handleSelect = (icon: string) => {
@@ -124,15 +126,25 @@ export function IconPicker({ value, onChange }: IconPickerProps) {
     setOpen(false)
   }
 
+  const isSquare = size === 'square'
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className="w-full justify-start gap-2 h-auto py-2"
+          className={`
+            ${isSquare
+              ? 'w-20 h-20 flex-col justify-center items-center gap-1 p-0'
+              : 'w-full justify-start gap-2 h-auto py-2'
+            }
+            ${className}
+          `}
         >
-          <span className="text-2xl">{value}</span>
-          <span className="text-sm text-muted-foreground">点击选择图标</span>
+          <span className={`${isSquare ? 'text-3xl' : 'text-2xl'}`}>{value}</span>
+          <span className={`text-muted-foreground ${isSquare ? 'text-[10px]' : 'text-sm'}`}>
+            {isSquare ? '选择' : '点击选择图标'}
+          </span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="start">
