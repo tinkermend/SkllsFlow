@@ -53,7 +53,7 @@ export function SkillDetailDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start justify-between gap-4 pr-8">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               {/* Logo */}
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-muted">
@@ -66,8 +66,8 @@ export function SkillDetailDialog({
                 </DialogDescription>
               </div>
             </div>
-            {/* 状态标签 */}
-            <Badge variant={config.variant} className={config.className}>
+            {/* 状态标签 - 增加右侧内边距避免与关闭按钮重叠 */}
+            <Badge variant={config.variant} className={`${config.className} mt-1`}>
               {config.label}
             </Badge>
           </div>
