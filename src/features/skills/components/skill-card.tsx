@@ -27,7 +27,6 @@ interface SkillCardProps {
   onUninstall?: (skillId: string) => void;
   onDelete?: (skillId: string) => void; // 新增：删除技能（平台技能）
   onInstall?: (skillId: string) => void; // 新增：装载技能（平台技能）
-  onToggleStatus?: (skillId: string, currentStatus: SkillStatus) => void; // 新增：切换状态（平台技能）
 }
 
 export function SkillCard({
@@ -37,7 +36,6 @@ export function SkillCard({
   onUninstall,
   onDelete,
   onInstall,
-  onToggleStatus,
 }: SkillCardProps) {
   const { can } = usePermission();
 
@@ -50,11 +48,6 @@ export function SkillCard({
       variant: "default" as const,
       className:
         "bg-green-500/10 text-green-600 hover:bg-green-500/20 shadow-none border-0",
-    },
-    [SkillStatus.DISABLED]: {
-      label: "已禁用",
-      variant: "secondary" as const,
-      className: "bg-gray-100 text-gray-500 hover:bg-gray-200 border-0",
     },
   };
 
@@ -74,36 +67,34 @@ export function SkillCard({
   return (
     <Card className={cardClassName}>
       {/* Header: Logo + 名称 + 状态 */}
-      <CardHeader className="px-4 pt-3 pb-2">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3 flex-1 min-w-0">
-            {/* Logo */}
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-              <IconComponent className="h-5 w-5" />
-            </div>
-            {/* 名称 */}
-            <div className="space-y-1 pt-0.5 min-w-0">
-              <CardTitle className="text-base font-bold leading-tight truncate">
-                {skill.name}
-              </CardTitle>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="truncate max-w-[80px] inline-block rounded-full bg-muted px-1.5 py-0.5">
-                  {skill.category}
-                </span>
-                <span className="shrink-0 h-1 w-1 rounded-full bg-muted-foreground/30" />
-                <span className="shrink-0">
-                  {new Date(skill.createdAt).toLocaleDateString()}
-                </span>
-              </div>
+      <CardHeader className="px-4 pt-3 pb-2 relative">
+        {/* 状态标签 - 绝对定位在右上角 */}
+        <Badge
+          variant={config.variant}
+          className={`${config.className} absolute top-3 right-4`}
+        >
+          {config.label}
+        </Badge>
+        <div className="flex items-start gap-3 pr-16">
+          {/* Logo */}
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+            <IconComponent className="h-5 w-5" />
+          </div>
+          {/* 名称 */}
+          <div className="space-y-1 pt-0.5 min-w-0 flex-1">
+            <CardTitle className="text-base font-bold leading-tight truncate">
+              {skill.name}
+            </CardTitle>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="truncate max-w-[108px] inline-block rounded-full bg-muted px-1.5 py-0.5">
+                {skill.skillId}
+              </span>
+              <span className="shrink-0 h-1 w-1 rounded-full bg-muted-foreground/30" />
+              <span className="shrink-0">
+                {new Date(skill.createdAt).toLocaleDateString()}
+              </span>
             </div>
           </div>
-          {/* 状态标签 */}
-          <Badge
-            variant={config.variant}
-            className={`${config.className} mr-6`}
-          >
-            {config.label}
-          </Badge>
         </div>
       </CardHeader>
 
@@ -172,17 +163,6 @@ export function SkillCard({
                 )
               ) : (
                 <>
-                  {can("update", "Skill") && (
-                    <DropdownMenuItem
-                      onClick={() =>
-                        onToggleStatus?.(skill.skillId, skill.status)
-                      }
-                    >
-                      {skill.status === SkillStatus.DISABLED
-                        ? "启用技能"
-                        : "禁用技能"}
-                    </DropdownMenuItem>
-                  )}
                   {can("delete", "Skill") && (
                     <DropdownMenuItem
                       onClick={() => onDelete?.(skill.skillId)}
@@ -191,14 +171,13 @@ export function SkillCard({
                       删除技能
                     </DropdownMenuItem>
                   )}
-                  {can("install", "Skill") &&
-                    skill.status !== SkillStatus.DISABLED && (
-                      <DropdownMenuItem
-                        onClick={() => onInstall?.(skill.skillId)}
-                      >
-                        装载技能
-                      </DropdownMenuItem>
-                    )}
+                  {can("install", "Skill") && (
+                    <DropdownMenuItem
+                      onClick={() => onInstall?.(skill.skillId)}
+                    >
+                      装载技能
+                    </DropdownMenuItem>
+                  )}
                 </>
               )}
             </DropdownMenuContent>
