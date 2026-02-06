@@ -42,12 +42,40 @@ export const skillsApi = {
   },
 
   /**
-   * 创建技能
+   * 创建技能（包含文件上传）
    */
-  async createSkill(data: Omit<Skill, 'id'>): Promise<Skill> {
+  async createSkill(data: {
+    skillId: string
+    name: string
+    description: string
+    icon: string
+    category: string
+    tags: string[]
+    status: string
+    sortOrder: number
+    file: File
+  }): Promise<Skill> {
+    const formData = new FormData()
+
+    // 添加所有字段
+    formData.append('skillId', data.skillId)
+    formData.append('name', data.name)
+    formData.append('description', data.description)
+    formData.append('icon', data.icon)
+    formData.append('category', data.category)
+    formData.append('tags', JSON.stringify(data.tags))
+    formData.append('status', data.status)
+    formData.append('sortOrder', data.sortOrder.toString())
+    formData.append('file', data.file)
+
     const response = await apiClient.post<Skill>(
       API_ENDPOINTS.skills.create,
-      data
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
     )
     return response.data
   },

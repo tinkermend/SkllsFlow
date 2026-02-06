@@ -77,4 +77,59 @@ export class SkillsService {
       createdAt: session.createdAt.toISOString(),
     }));
   }
+
+  /**
+   * 创建技能并保存文件（事务操作）
+   */
+  async createSkillWithFile(
+    skillData: {
+      skillId: string;
+      name: string;
+      description: string | null;
+      icon: string | null;
+      category: string;
+      tags: string[];
+      status: 'active' | 'disabled';
+      sortOrder: number;
+    },
+    fileData: {
+      fileBuffer: Buffer;
+      fileName: string;
+      fileSize: number;
+      mimeType: string;
+    },
+    userUuid: string
+  ): Promise<SerializableSkill> {
+    // 1. 验证 skillId 唯一性
+    const existingSkill = await this.repository.findBySkillId(skillData.skillId);
+    if (existingSkill) {
+      throw new Error('技能ID已存在');
+    }
+
+    // 2. 通过 UUID 查询用户 BigInt ID
+    const prisma = DatabaseService.getInstance();
+    const user = await prisma.user.findUnique({
+      where: { userUUId: userUuid },
+      select: { id: true },
+    });
+
+    if (!user) {
+      throw new Error('用户不存在');
+    }
+
+    // 3. 构建完整的 skillData（添加 createdBy）
+    const completeSkillData = {
+      ...skillData,
+      createdBy: user.id,
+    };
+
+    // 4. 调用 Repository 创建技能和文件
+    const skill = await this.repository.createSkillWithFile(
+      completeSkillData,
+      fileData
+    );
+
+    // 5. 返回序列化后的技能对象
+    return this.convertToSerializable(skill);
+  }
 }

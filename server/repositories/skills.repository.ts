@@ -87,6 +87,42 @@ export class SkillsRepository extends BaseRepository<
   }
 
   /**
+   * 创建技能并保存文件（使用事务）
+   * @param skillData - 技能数据
+   * @param fileData - 文件数据
+   */
+  async createSkillWithFile(
+    skillData: Prisma.SkillCreateInput,
+    fileData: {
+      fileBuffer: Buffer;
+      fileName: string;
+      fileSize: number;
+      mimeType: string;
+    }
+  ): Promise<Skill> {
+    return this.prisma.$transaction(async (tx) => {
+      // 1. 创建 skill 记录
+      const skill = await tx.skill.create({
+        data: skillData,
+      });
+
+      // 2. 创建 skillFile 记录
+      await tx.skillFile.create({
+        data: {
+          skillId: skill.id,
+          fileData: fileData.fileBuffer,
+          fileName: fileData.fileName,
+          fileSize: BigInt(fileData.fileSize),
+          mimeType: fileData.mimeType,
+        },
+      });
+
+      // 3. 返回 skill 对象
+      return skill;
+    });
+  }
+
+  /**
    * 获取技能关联的聊天服务列表
    * @param skillId - 技能 ID
    */

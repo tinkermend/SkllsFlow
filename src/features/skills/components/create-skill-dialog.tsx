@@ -22,7 +22,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
-import { useCreateSkill, useUploadSkillFile } from '../hooks/use-skills'
+import { useCreateSkill } from '../hooks/use-skills'
 import { SkillStatus } from '../types'
 import { IconPicker } from './icon-picker'
 
@@ -55,7 +55,6 @@ const CATEGORIES = [
 
 export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps) {
   const createSkillMutation = useCreateSkill()
-  const uploadFileMutation = useUploadSkillFile()
   const [formData, setFormData] = useState<FormData>({
     skillId: '',
     name: '',
@@ -163,10 +162,7 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
     if (!validateForm()) return
 
     try {
-      // 先上传文件获取路径
-      const { filePath } = await uploadFileMutation.mutateAsync(formData.file!)
-
-      // 创建技能记录
+      // 直接创建技能（包含文件）
       await createSkillMutation.mutateAsync({
         skillId: formData.skillId,
         name: formData.name,
@@ -176,10 +172,7 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
         tags: formData.tags,
         status: formData.status,
         sortOrder: formData.sortOrder,
-        filePath,
-        createdBy: 1, // TODO: 从认证状态获取当前用户 ID
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        file: formData.file!,
       })
 
       // 重置表单
@@ -529,7 +522,7 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
             variant="outline"
             className="h-10 px-6 rounded-lg border-muted-foreground/20 hover:bg-muted"
             onClick={() => onOpenChange(false)}
-            disabled={createSkillMutation.isPending || uploadFileMutation.isPending}
+            disabled={createSkillMutation.isPending}
           >
             取消
           </Button>
@@ -537,9 +530,9 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
             type="button"
             className="h-10 px-8 rounded-lg shadow-lg hover:shadow-primary/25 transition-all text-sm font-medium"
             onClick={handleSubmit}
-            disabled={createSkillMutation.isPending || uploadFileMutation.isPending}
+            disabled={createSkillMutation.isPending}
           >
-            {(createSkillMutation.isPending || uploadFileMutation.isPending) && (
+            {createSkillMutation.isPending && (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             )}
             立即创建
