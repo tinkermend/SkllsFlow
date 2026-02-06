@@ -28,8 +28,6 @@ export interface Skill {
   status: SkillStatus
   /** 排序值：数字越小越靠前 */
   sortOrder: number
-  /** 技能压缩包文件路径 */
-  filePath: string
   /** 创建人ID */
   createdBy: number
   /** 创建时间 */
@@ -38,6 +36,8 @@ export interface Skill {
   updatedBy?: number | null
   /** 更新时间 */
   updatedAt: string
+  /** 创建者用户名 */
+  creatorName?: string | null
   /** 关联会话 ID（前端使用，非数据库字段） */
   sessionId?: string
 }
@@ -51,6 +51,22 @@ export interface SessionSkill {
   /** 会话标题 */
   sessionTitle: string
   /** 关联创建时间 */
+  createdAt: string
+}
+
+/**
+ * 技能文件信息
+ */
+export interface SkillFile {
+  /** 文件ID */
+  id: string
+  /** 文件名称 */
+  fileName: string
+  /** 文件大小（字节） */
+  fileSize: string
+  /** MIME 类型 */
+  mimeType: string
+  /** 创建时间 */
   createdAt: string
 }
 

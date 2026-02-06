@@ -1,4 +1,6 @@
+import { useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -7,13 +9,17 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
-import { SkillStatus, type Skill, type SessionSkill } from '../types'
+import { Download } from 'lucide-react'
+import { parseIcon } from '@/lib/icon-parser'
+import { skillsApi } from '../api/skills.api'
+import { SkillStatus, type Skill, type SessionSkill, type SkillFile } from '../types'
 
 interface SkillDetailDialogProps {
   skill: Skill | null
   open: boolean
   onOpenChange: (open: boolean) => void
   relatedSessions?: SessionSkill[]
+  skillFiles?: SkillFile[]
 }
 
 export function SkillDetailDialog({
@@ -21,8 +27,12 @@ export function SkillDetailDialog({
   open,
   onOpenChange,
   relatedSessions = [],
+  skillFiles = [],
 }: SkillDetailDialogProps) {
   if (!skill) return null
+
+  // 解析图标字符串为 React 组件
+  const IconComponent = useMemo(() => parseIcon(skill.icon), [skill.icon])
 
   const statusConfig = {
     [SkillStatus.ACTIVE]: {
@@ -46,8 +56,8 @@ export function SkillDetailDialog({
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               {/* Logo */}
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-muted text-3xl">
-                {skill.iconPath}
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-muted">
+                <IconComponent className="h-6 w-6" />
               </div>
               <div className="flex-1 min-w-0">
                 <DialogTitle className="text-xl">{skill.name}</DialogTitle>
@@ -103,14 +113,57 @@ export function SkillDetailDialog({
 
           <Separator />
 
+          {/* 创建者信息 */}
           <div>
-            <h3 className="text-sm font-semibold mb-2">文件路径</h3>
-            <p className="text-sm text-muted-foreground font-mono break-all">
-              {skill.filePath}
+            <h3 className="text-sm font-semibold mb-2">创建者</h3>
+            <p className="text-sm text-muted-foreground">
+              {skill.creatorName || '未知用户'}
             </p>
           </div>
 
           <Separator />
+
+          {/* 技能文件 */}
+          {skillFiles && skillFiles.length > 0 && (
+            <>
+              <div>
+                <h3 className="text-sm font-semibold mb-3">技能文件 ({skillFiles.length})</h3>
+                <div className="space-y-2">
+                  {skillFiles.map((file) => (
+                    <div
+                      key={file.id}
+                      className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex-1 min-w-0 mr-3">
+                        <p className="text-sm font-medium truncate">{file.fileName}</p>
+                        <div className="flex items-center gap-3 mt-1">
+                          <span className="text-xs text-muted-foreground">
+                            {(Number(file.fileSize) / 1024 / 1024).toFixed(2)} MB
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(file.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          const url = skillsApi.downloadSkillFile(skill.skillId, file.id)
+                          window.open(url, '_blank')
+                        }}
+                      >
+                        <Download className="h-4 w-4 mr-1" />
+                        下载
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <Separator />
+            </>
+          )}
+
 
           <div className="grid grid-cols-2 gap-4">
             <div>

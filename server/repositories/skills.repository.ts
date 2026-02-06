@@ -1,4 +1,4 @@
-import { PrismaClient, type Prisma, type Skill } from '@prisma/client';
+import { PrismaClient, type Prisma, type Skill, type SkillFile } from '@prisma/client';
 import { BaseRepository } from './base.repository';
 
 /**
@@ -30,6 +30,23 @@ export class SkillsRepository extends BaseRepository<
    */
   async findAllPlatformSkills(): Promise<Skill[]> {
     return this.prisma.skill.findMany({
+      orderBy: [
+        { sortOrder: 'asc' },
+        { createdAt: 'desc' },
+      ],
+    });
+  }
+
+  /**
+   * 获取所有平台技能（包含创建者信息）
+   */
+  async findAllPlatformSkillsWithCreator(): Promise<Array<Skill & { creator: { username: string | null } }>> {
+    return this.prisma.skill.findMany({
+      include: {
+        creator: {
+          select: { username: true },
+        },
+      },
       orderBy: [
         { sortOrder: 'asc' },
         { createdAt: 'desc' },
@@ -76,6 +93,40 @@ export class SkillsRepository extends BaseRepository<
       where: { userId: user.id },
       include: {
         skill: true,
+      },
+      orderBy: [
+        { sortOrder: 'asc' },
+        { createdAt: 'desc' },
+      ],
+    });
+
+    return userSkills.map(us => us.skill);
+  }
+
+  /**
+   * 获取用户的技能列表（通过 UUID，包含创建者信息）
+   * @param userUuid - 用户 UUID
+   */
+  async findUserSkillsByUuidWithCreator(userUuid: string): Promise<Array<Skill & { creator: { username: string | null } }>> {
+    const user = await this.prisma.user.findUnique({
+      where: { userUUId: userUuid },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return [];
+    }
+
+    const userSkills = await this.prisma.userSkill.findMany({
+      where: { userId: user.id },
+      include: {
+        skill: {
+          include: {
+            creator: {
+              select: { username: true },
+            },
+          },
+        },
       },
       orderBy: [
         { sortOrder: 'asc' },
@@ -162,6 +213,27 @@ export class SkillsRepository extends BaseRepository<
         sessionTitle: chatServer?.name || '未知聊天服务',
         createdAt: us.createdAt,
       };
+    });
+  }
+
+  /**
+   * 获取技能文件列表
+   * @param skillId - 技能内部 ID (BigInt)
+   */
+  async findSkillFiles(skillId: bigint): Promise<SkillFile[]> {
+    return this.prisma.skillFile.findMany({
+      where: { skillId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
+   * 获取单个技能文件
+   * @param fileId - 文件 ID (BigInt)
+   */
+  async findSkillFileById(fileId: bigint): Promise<SkillFile | null> {
+    return this.prisma.skillFile.findUnique({
+      where: { id: fileId },
     });
   }
 }

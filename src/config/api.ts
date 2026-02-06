@@ -33,6 +33,8 @@ export const API_ENDPOINTS = {
     delete: (id: string) => `/skills/${id}`,
     upload: "/skills/upload",
     relatedSessions: (id: string) => `/skills/${id}/sessions`,
+    files: (skillId: string) => `/skills/${skillId}/files`,
+    downloadFile: (skillId: string, fileId: string) => `/skills/${skillId}/files/${fileId}/download`,
   },
 
   // 用户管理

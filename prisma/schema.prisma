@@ -55,6 +55,7 @@ model User {
   updatedProxyHosts   ProxyHost[]          @relation("ProxyHostUpdater")
   chatServers         ChatServer[]         @relation("ChatServerCreator")
   sessions            Session[]            @relation("SessionCreator")
+  createdSkills       Skill[]              @relation("SkillCreator")
 
   @@index([status])
   @@index([userUUId])
@@ -651,6 +652,7 @@ model Skill {
   updatedAt   DateTime     @updatedAt @map("updated_at")
 
   // 关联关系
+  creator          User                @relation("SkillCreator", fields: [createdBy], references: [id], onDelete: Restrict)
   userSkills       UserSkill[]
   chatServerSkills ChatServerSkill[]
   skillFiles       SkillFile[]

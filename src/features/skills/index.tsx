@@ -19,12 +19,13 @@ import { DeleteSkillDialog } from './components/delete-skill-dialog'
 import { CreateSkillDialog } from './components/create-skill-dialog'
 import { useSkills, useMySkills, useDeleteSkill, useUpdateSkill } from './hooks/use-skills'
 import { skillsApi } from './api/skills.api'
-import { type SkillTab, type Skill, type SessionSkill, SkillStatus } from './types'
+import { type SkillTab, type Skill, type SessionSkill, type SkillFile, SkillStatus } from './types'
 
 export function Skills() {
   const [activeTab, setActiveTab] = useState<SkillTab>('my-skills')
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null)
   const [relatedSessions, setRelatedSessions] = useState<SessionSkill[]>([])
+  const [skillFiles, setSkillFiles] = useState<SkillFile[]>([])
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false)
   const [isInstallDialogOpen, setIsInstallDialogOpen] = useState(false)
   const [isUninstallDialogOpen, setIsUninstallDialogOpen] = useState(false)
@@ -78,6 +79,15 @@ export function Skills() {
       } else {
         // 平台技能不显示关联会话
         setRelatedSessions([])
+      }
+
+      // 获取技能文件列表
+      try {
+        const files = await skillsApi.getSkillFiles(skillId)
+        setSkillFiles(files)
+      } catch (error) {
+        console.error('获取技能文件失败:', error)
+        setSkillFiles([])
       }
 
       setIsDetailDialogOpen(true)
@@ -398,6 +408,7 @@ export function Skills() {
         open={isDetailDialogOpen}
         onOpenChange={setIsDetailDialogOpen}
         relatedSessions={relatedSessions}
+        skillFiles={skillFiles}
       />
 
       {/* 装载技能对话框 */}

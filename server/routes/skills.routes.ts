@@ -35,6 +35,16 @@ router.get('/:skillId/sessions', (req: Request, res: Response) => {
   req.skillsController.getSkillRelatedSessions(req, res);
 });
 
+// GET /api/skills/:skillId/files - Get skill files list
+router.get('/:skillId/files', (req: Request, res: Response) => {
+  req.skillsController.getSkillFiles(req, res);
+});
+
+// GET /api/skills/:skillId/files/:fileId/download - Download skill file
+router.get('/:skillId/files/:fileId/download', (req: Request, res: Response) => {
+  req.skillsController.downloadSkillFile(req, res);
+});
+
 // GET /api/skills - Get all platform skills
 router.get('/', (req: Request, res: Response) => {
   req.skillsController.getAllPlatformSkills(req, res);

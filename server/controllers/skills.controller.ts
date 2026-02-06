@@ -173,6 +173,74 @@ export class SkillsController {
   }
 
   /**
+   * 获取技能文件列表
+   * GET /api/skills/:skillId/files
+   */
+  async getSkillFiles(req: Request, res: Response): Promise<void> {
+    try {
+      const { skillId } = req.params;
+
+      if (!skillId) {
+        res.status(400).json({
+          error: 'Bad Request',
+          message: 'skillId is required',
+        });
+        return;
+      }
+
+      const files = await this.service.getSkillFiles(skillId);
+      res.status(200).json(files);
+    } catch (error) {
+      if (error instanceof Error && error.message === '技能不存在') {
+        res.status(404).json({
+          error: 'Not Found',
+          message: error.message,
+        });
+        return;
+      }
+      this.handleError(res, error);
+    }
+  }
+
+  /**
+   * 下载技能文件
+   * GET /api/skills/:skillId/files/:fileId/download
+   */
+  async downloadSkillFile(req: Request, res: Response): Promise<void> {
+    try {
+      const { skillId, fileId } = req.params;
+
+      if (!skillId || !fileId) {
+        res.status(400).json({
+          error: 'Bad Request',
+          message: 'skillId and fileId are required',
+        });
+        return;
+      }
+
+      const fileData = await this.service.getSkillFileData(skillId, fileId);
+
+      if (!fileData) {
+        res.status(404).json({
+          error: 'Not Found',
+          message: '文件不存在',
+        });
+        return;
+      }
+
+      // 设置响应头
+      res.setHeader('Content-Type', fileData.mimeType);
+      res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileData.fileName)}"`);
+      res.setHeader('Content-Length', fileData.fileData.length);
+
+      // 发送文件数据
+      res.send(fileData.fileData);
+    } catch (error) {
+      this.handleError(res, error);
+    }
+  }
+
+  /**
    * 处理错误并返回适当的 HTTP 状态码
    */
   private handleError(res: Response, error: any): void {
