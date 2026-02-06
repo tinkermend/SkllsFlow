@@ -1,6 +1,8 @@
 import { DatabaseService } from './database.service.js';
 import { SkillsRepository } from '../repositories/skills.repository.js';
 import { type Skill } from '@prisma/client';
+import { serializeBigInt } from '../utils/bigint-serializer.js';
+import type { SkillFileInfo, SerializableSkillWithCreator } from '../types/skill.types.js';
 
 /**
  * 可序列化的技能类型（BigInt 转换为 number）
@@ -37,11 +39,24 @@ export class SkillsService {
   }
 
   /**
-   * 获取所有平台技能
+   * 将包含创建者信息的 Skill 对象转换为可序列化格式
    */
-  async getAllPlatformSkills(): Promise<SerializableSkill[]> {
-    const skills = await this.repository.findAllPlatformSkills();
-    return skills.map(skill => this.convertToSerializable(skill));
+  private convertToSerializableWithCreator(
+    skill: Skill & { creator: { username: string | null } | null }
+  ): SerializableSkillWithCreator {
+    const baseSkill = this.convertToSerializable(skill);
+    return {
+      ...baseSkill,
+      creatorName: skill.creator?.username ?? null,
+    };
+  }
+
+  /**
+   * 获取所有平台技能（包含创建者信息）
+   */
+  async getAllPlatformSkills(): Promise<SerializableSkillWithCreator[]> {
+    const skills = await this.repository.findAllPlatformSkillsWithCreator();
+    return skills.map(skill => this.convertToSerializableWithCreator(skill));
   }
 
   /**
@@ -53,11 +68,11 @@ export class SkillsService {
   }
 
   /**
-   * 获取用户的技能列表（通过 UUID）
+   * 获取用户的技能列表（通过 UUID，包含创建者信息）
    */
-  async getUserSkillsByUuid(userUuid: string): Promise<SerializableSkill[]> {
-    const skills = await this.repository.findUserSkillsByUuid(userUuid);
-    return skills.map(skill => this.convertToSerializable(skill));
+  async getUserSkillsByUuid(userUuid: string): Promise<SerializableSkillWithCreator[]> {
+    const skills = await this.repository.findUserSkillsByUuidWithCreator(userUuid);
+    return skills.map(skill => this.convertToSerializableWithCreator(skill));
   }
 
   /**
@@ -131,5 +146,50 @@ export class SkillsService {
 
     // 5. 返回序列化后的技能对象
     return this.convertToSerializable(skill);
+  }
+
+  /**
+   * 获取技能文件列表
+   */
+  async getSkillFiles(skillId: string): Promise<SkillFileInfo[]> {
+    const skill = await this.repository.findBySkillId(skillId);
+    if (!skill) {
+      throw new Error('技能不存在');
+    }
+
+    const files = await this.repository.findSkillFiles(skill.id);
+
+    return files.map(file => serializeBigInt({
+      id: file.id,
+      fileName: file.fileName,
+      fileSize: file.fileSize,
+      mimeType: file.mimeType,
+      createdAt: file.createdAt.toISOString(),
+    })) as SkillFileInfo[];
+  }
+
+  /**
+   * 获取技能文件数据（用于下载）
+   */
+  async getSkillFileData(skillId: string, fileId: string): Promise<{
+    fileData: Buffer;
+    fileName: string;
+    mimeType: string;
+  } | null> {
+    const skill = await this.repository.findBySkillId(skillId);
+    if (!skill) {
+      return null;
+    }
+
+    const file = await this.repository.findSkillFileById(BigInt(fileId));
+    if (!file || file.skillId !== skill.id) {
+      return null;
+    }
+
+    return {
+      fileData: file.fileData,
+      fileName: file.fileName,
+      mimeType: file.mimeType,
+    };
   }
 }

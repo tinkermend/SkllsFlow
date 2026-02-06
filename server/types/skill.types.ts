@@ -31,3 +31,33 @@ export type CreateSkillRequest = Omit<Skill, 'id'>
  */
 export type UpdateSkillRequest = Partial<Omit<Skill, 'id'>>
 
+/**
+ * 技能文件信息
+ */
+export interface SkillFileInfo {
+  id: string;
+  fileName: string;
+  fileSize: string; // BigInt 序列化为 string
+  mimeType: string;
+  createdAt: string;
+}
+
+/**
+ * 可序列化的技能类型（包含创建者信息）
+ */
+export interface SerializableSkillWithCreator {
+  id: number;
+  skillId: string;
+  name: string;
+  description: string | null;
+  icon: string | null;
+  category: string;
+  tags: string[];
+  status: 'active' | 'disabled';
+  sortOrder: number;
+  createdBy: number;
+  createdAt: string;
+  updatedBy: number | null;
+  updatedAt: string;
+  creatorName: string | null; // 从 users 表关联
+}

@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { apiClient } from '@/lib/api-client'
-import { API_ENDPOINTS } from '@/config/api'
-import type { Skill, SessionSkill } from '../types'
+import { API_ENDPOINTS, getApiUrl } from '@/config/api'
+import type { Skill, SessionSkill, SkillFile } from '../types'
 
 /**
  * Skills API
@@ -125,5 +125,22 @@ export const skillsApi = {
       API_ENDPOINTS.skills.relatedSessions(skillId)
     )
     return response.data
+  },
+
+  /**
+   * 获取技能文件列表
+   */
+  async getSkillFiles(skillId: string): Promise<SkillFile[]> {
+    const response = await apiClient.get<SkillFile[]>(
+      API_ENDPOINTS.skills.files(skillId)
+    )
+    return response.data
+  },
+
+  /**
+   * 获取文件下载 URL
+   */
+  downloadSkillFile(skillId: string, fileId: string): string {
+    return getApiUrl(API_ENDPOINTS.skills.downloadFile(skillId, fileId))
   },
 }
