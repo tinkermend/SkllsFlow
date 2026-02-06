@@ -77,8 +77,10 @@ export class ChatServerController {
   async getActive(req: Request, res: Response): Promise<void> {
     try {
       const userId = req.userId;
+      console.log('[DEBUG] getActive - req.userId:', userId);
 
       if (!userId) {
+        console.log('[DEBUG] getActive - userId 为空，返回 401');
         res.status(401).json({
           error: 'Unauthorized',
           message: 'Authentication token is missing or invalid',
@@ -86,9 +88,13 @@ export class ChatServerController {
         return;
       }
 
+      console.log('[DEBUG] getActive - 调用 service.getActiveChatServers');
       const chatServers = await this.service.getActiveChatServers(userId);
+      console.log('[DEBUG] getActive - 返回结果:', chatServers.length, '个服务');
+
       res.status(200).json(chatServers);
     } catch (error) {
+      console.error('[DEBUG] getActive - 发生错误:', error);
       this.handleError(res, error);
     }
   }

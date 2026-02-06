@@ -117,8 +117,19 @@ export function useUploadSkillFile() {
 export function useActiveChatServers() {
   return useQuery({
     queryKey: ['chat-servers', 'active'],
-    queryFn: () => skillsApi.getActiveChatServers(),
-  })
+    queryFn: async () => {
+      try {
+        console.log('[DEBUG] useActiveChatServers - 调用 API');
+        const servers = await skillsApi.getActiveChatServers();
+        console.log('[DEBUG] useActiveChatServers - 获取到服务:', servers.length, servers);
+        return servers;
+      } catch (error) {
+        console.error('[DEBUG] useActiveChatServers - 获取服务失败:', error);
+        throw error;
+      }
+    },
+    retry: 1,
+  });
 }
 
 /**

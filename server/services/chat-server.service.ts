@@ -172,19 +172,30 @@ export class ChatServerService {
    * @returns 活跃的 ChatServer 列表（仅包含基本信息）
    */
   async getActiveChatServers(userUuid: string): Promise<ChatServerResponseDto[]> {
+    console.log('[DEBUG] getActiveChatServers - userUuid:', userUuid);
+
     // 通过 UUID 查找用户，获取数据库 ID
     const user = await this.userRepository.findByUserId(userUuid);
+    console.log('[DEBUG] getActiveChatServers - user found:', user ? `id=${user.id}, userUuid=${user.userUuid}, accountNo=${user.accountNo}` : 'null');
+
     if (!user) {
+      console.error('[DEBUG] getActiveChatServers - 用户不存在，userUuid:', userUuid);
       throw new Error('用户不存在');
     }
 
     // 查询用户的所有 ChatServer
     const chatServers = await this.chatServerRepository.findByUserId(user.id);
+    console.log('[DEBUG] getActiveChatServers - chatServers count:', chatServers.length);
+    console.log('[DEBUG] getActiveChatServers - chatServers:', chatServers.map(s => ({ id: s.id.toString(), chatId: s.chatId, name: s.name, status: s.status })));
 
     // 过滤出活跃状态的服务器并转换为 DTO
-    return chatServers
+    const activeServers = chatServers
       .filter((server) => server.status === 'active')
       .map((server) => toChatServerResponseDto(server));
+
+    console.log('[DEBUG] getActiveChatServers - activeServers count:', activeServers.length);
+
+    return activeServers;
   }
 
   /**
