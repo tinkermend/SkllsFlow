@@ -59,9 +59,7 @@ export class ChatServerRepository extends BaseRepository<
    * ```
    */
   async findByUserId(userId: bigint): Promise<ChatServer[]> {
-    console.log('[DEBUG] findByUserId - userId:', userId.toString());
-
-    const servers = this.findAll({
+    return this.findAll({
       where: {
         createdBy: userId,
         status: 'active',
@@ -70,12 +68,6 @@ export class ChatServerRepository extends BaseRepository<
         createdAt: 'desc',
       },
     });
-
-    const result = await servers;
-    console.log('[DEBUG] findByUserId - result count:', result.length);
-    console.log('[DEBUG] findByUserId - result:', result.map(s => ({ id: s.id.toString(), chatId: s.chatId, name: s.name, status: s.status, createdBy: s.createdBy.toString() })));
-
-    return result;
   }
 
   /**

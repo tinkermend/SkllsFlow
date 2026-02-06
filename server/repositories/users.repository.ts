@@ -35,19 +35,9 @@ export class UserRepository extends BaseRepository<
    * 通过 userId (UUID) 查找用户
    */
   async findByUserId(userId: string): Promise<User | null> {
-    console.log('[DEBUG] findByUserId - 查询用户，userId:', userId);
-
-    const user = await this.prisma.user.findUnique({
+    return this.prisma.user.findUnique({
       where: { userUUId: userId },
     });
-
-    if (user) {
-      console.log('[DEBUG] findByUserId - 找到用户:', { id: user.id.toString(), userUUId: user.userUUId, accountNo: user.accountNo, email: user.email });
-    } else {
-      console.log('[DEBUG] findByUserId - 未找到用户，userId:', userId);
-    }
-
-    return user;
   }
 
   /**
