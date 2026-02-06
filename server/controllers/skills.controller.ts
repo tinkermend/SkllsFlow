@@ -241,6 +241,83 @@ export class SkillsController {
   }
 
   /**
+   * 装载技能到 ChatServer
+   * POST /api/skills/:skillId/load
+   */
+  async loadSkillToChatServer(req: Request, res: Response): Promise<void> {
+    try {
+      const { skillId } = req.params;
+      const { chatServerId } = req.body;
+      const userUuid = req.userId;
+
+      // 验证参数
+      if (!skillId) {
+        res.status(400).json({
+          error: 'Bad Request',
+          message: 'skillId is required',
+        });
+        return;
+      }
+
+      if (!chatServerId) {
+        res.status(400).json({
+          error: 'Bad Request',
+          message: 'chatServerId is required',
+        });
+        return;
+      }
+
+      if (!userUuid) {
+        res.status(401).json({
+          error: 'Unauthorized',
+          message: 'Authentication token is missing or invalid',
+        });
+        return;
+      }
+
+      // 调用 Service 层装载技能
+      await this.service.loadSkillToChatServer(skillId, chatServerId, userUuid);
+
+      res.status(200).json({
+        message: '技能装载成功',
+      });
+    } catch (error) {
+      // 处理特定错误
+      if (error instanceof Error) {
+        if (error.message.includes('不存在')) {
+          res.status(404).json({
+            error: 'Not Found',
+            message: error.message,
+          });
+          return;
+        }
+        if (error.message.includes('未激活')) {
+          res.status(400).json({
+            error: 'Bad Request',
+            message: error.message,
+          });
+          return;
+        }
+        if (error.message.includes('无权')) {
+          res.status(403).json({
+            error: 'Forbidden',
+            message: error.message,
+          });
+          return;
+        }
+        if (error.message.includes('技能装载失败') || error.message.includes('代理服务')) {
+          res.status(502).json({
+            error: 'Bad Gateway',
+            message: error.message,
+          });
+          return;
+        }
+      }
+      this.handleError(res, error);
+    }
+  }
+
+  /**
    * 处理错误并返回适当的 HTTP 状态码
    */
   private handleError(res: Response, error: any): void {

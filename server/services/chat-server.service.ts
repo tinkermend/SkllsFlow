@@ -165,6 +165,29 @@ export class ChatServerService {
   }
 
   /**
+   * 获取用户的所有活跃 ChatServer
+   * 用于技能装载时选择目标服务器
+   *
+   * @param userUuid - 用户 UUID
+   * @returns 活跃的 ChatServer 列表（仅包含基本信息）
+   */
+  async getActiveChatServers(userUuid: string): Promise<ChatServerResponseDto[]> {
+    // 通过 UUID 查找用户，获取数据库 ID
+    const user = await this.userRepository.findByUserId(userUuid);
+    if (!user) {
+      throw new Error('用户不存在');
+    }
+
+    // 查询用户的所有 ChatServer
+    const chatServers = await this.chatServerRepository.findByUserId(user.id);
+
+    // 过滤出活跃状态的服务器并转换为 DTO
+    return chatServers
+      .filter((server) => server.status === 'active')
+      .map((server) => toChatServerResponseDto(server));
+  }
+
+  /**
    * 删除 ChatServer
    *
    * @param chatId - ChatServer UUID

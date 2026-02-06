@@ -1,4 +1,5 @@
 import axios, { type AxiosInstance } from 'axios';
+import * as FormData from 'form-data';
 import { env } from '../config/env.js';
 
 /**
@@ -24,6 +25,15 @@ export interface DeleteOpenCodeInstanceParams {
   proxyPort: number;
   openCodePort: number;
   chatDir: string;
+}
+
+export interface LoadSkillParams {
+  proxyHost: string;
+  proxyPort: number;
+  openCodePort: number;
+  chatDir: string;
+  skillFileBuffer: Buffer;
+  fileName: string;
 }
 
 /**
@@ -165,6 +175,70 @@ export class ProxyClientService {
       } else {
         const message = error instanceof Error ? error.message : 'Unknown error';
         throw new Error(`代理服务请求失败: ${message}`);
+      }
+    }
+  }
+
+  /**
+   * 装载技能到 OpenCode 实例
+   * 调用代理服务的 /api/load_skill 接口
+   *
+   * @param params - 装载参数
+   * @returns 代理服务响应
+   * @throws Error 如果请求失败或返回非 200 状态码
+   *
+   * @example
+   * ```typescript
+   * const response = await proxyClient.loadSkill({
+   *   proxyHost: '192.168.1.100',
+   *   proxyPort: 4096,
+   *   openCodePort: 5000,
+   *   chatDir: '/opt/opencode/user123abc',
+   *   skillFileBuffer: Buffer.from(...),
+   *   fileName: 'my-skill.zip',
+   * });
+   *
+   * if (response.code === 200) {
+   *   console.log('Skill loaded successfully');
+   * }
+   * ```
+   */
+  async loadSkill(params: LoadSkillParams): Promise<ProxyServiceResponse> {
+    const { proxyHost, proxyPort, openCodePort, chatDir, skillFileBuffer, fileName } =
+      params;
+
+    const url = `http://${proxyHost}:${proxyPort}/api/load_skill`;
+
+    try {
+      // 创建 FormData 对象
+      const formData = new FormData();
+      formData.append('port', openCodePort.toString());
+      formData.append('chat_dir', chatDir);
+      formData.append('skill_file', skillFileBuffer, {
+        filename: fileName,
+        contentType: 'application/zip',
+      });
+
+      // 发送请求，使用 60 秒超时（技能包可能较大）
+      const response = await axios.post<ProxyServiceResponse>(url, formData, {
+        headers: {
+          ...formData.getHeaders(),
+          'X-Signature': env.PROXY_API_SECRET,
+        },
+        timeout: 60000, // 60 秒
+      });
+
+      return response.data;
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response: { data: ProxyServiceResponse } };
+        const data = axiosError.response.data;
+        throw new Error(data.message || '技能装载失败');
+      } else if (error && typeof error === 'object' && 'request' in error) {
+        throw new Error('代理服务无响应，请检查服务是否正常运行');
+      } else {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        throw new Error(`技能装载请求失败: ${message}`);
       }
     }
   }

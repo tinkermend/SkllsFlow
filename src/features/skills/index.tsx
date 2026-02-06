@@ -17,7 +17,7 @@ import { UninstallSkillDialog } from './components/uninstall-skill-dialog'
 import { DisableSkillDialog } from './components/disable-skill-dialog'
 import { DeleteSkillDialog } from './components/delete-skill-dialog'
 import { CreateSkillDialog } from './components/create-skill-dialog'
-import { useSkills, useMySkills, useDeleteSkill, useUpdateSkill } from './hooks/use-skills'
+import { useSkills, useMySkills, useDeleteSkill, useUpdateSkill, useActiveChatServers, useLoadSkill } from './hooks/use-skills'
 import { skillsApi } from './api/skills.api'
 import { type SkillTab, type Skill, type SessionSkill, type SkillFile, SkillStatus } from './types'
 
@@ -55,12 +55,11 @@ export function Skills() {
   // 更新技能状态
   const updateSkillMutation = useUpdateSkill()
 
-  // Mock 会话数据（后续替换为真实 API）
-  const mockSessions = [
-    { id: 'session-1', name: '会话 1 - 代码分析' },
-    { id: 'session-2', name: '会话 2 - 数据处理' },
-    { id: 'session-3', name: '会话 3 - 文档生成' },
-  ]
+  // 获取活跃的 ChatServer 列表
+  const { data: chatServers = [] } = useActiveChatServers()
+
+  // 装载技能
+  const loadSkillMutation = useLoadSkill()
 
   const handleViewDetails = async (skillId: string) => {
     const skill = skills.find((s) => s.skillId === skillId)
@@ -191,17 +190,19 @@ export function Skills() {
     setIsInstallDialogOpen(true)
   }
 
-  const handleInstallConfirm = async (sessionId: string) => {
+  const handleInstallConfirm = async (chatServerId: string) => {
     if (!skillToInstall) return
 
     try {
-      // TODO: 调用装载技能 API
-      console.log('装载技能:', skillToInstall, '到会话:', sessionId)
-      alert(`技能已成功装载到会话: ${sessionId}`)
+      await loadSkillMutation.mutateAsync({
+        skillId: skillToInstall,
+        chatServerId,
+      })
+      toast.success('技能装载成功')
       setIsInstallDialogOpen(false)
       setSkillToInstall(null)
     } catch (error) {
-      alert(`装载失败: ${error instanceof Error ? error.message : '未知错误'}`)
+      toast.error(`装载失败: ${error instanceof Error ? error.message : '未知错误'}`)
     }
   }
 
@@ -416,7 +417,8 @@ export function Skills() {
         open={isInstallDialogOpen}
         onOpenChange={setIsInstallDialogOpen}
         onConfirm={handleInstallConfirm}
-        sessions={mockSessions}
+        chatServers={chatServers}
+        isLoading={loadSkillMutation.isPending}
       />
 
       {/* 卸载技能对话框 */}

@@ -3,6 +3,9 @@ import { SkillsRepository } from '../repositories/skills.repository.js';
 import { type Skill } from '@prisma/client';
 import { serializeBigInt } from '../utils/bigint-serializer.js';
 import type { SkillFileInfo, SerializableSkillWithCreator } from '../types/skill.types.js';
+import { ProxyClientService } from './proxy-client.service.js';
+import { ChatServerRepository } from '../repositories/chat-server.repository.js';
+import { UserRepository } from '../repositories/users.repository.js';
 
 /**
  * 可序列化的技能类型（BigInt 转换为 number）
@@ -19,10 +22,16 @@ export interface SerializableSkill extends Omit<Skill, 'id' | 'createdBy' | 'upd
  */
 export class SkillsService {
   private repository: SkillsRepository;
+  private chatServerRepository: ChatServerRepository;
+  private userRepository: UserRepository;
+  private proxyClient: ProxyClientService;
 
   constructor() {
     const prisma = DatabaseService.getInstance();
     this.repository = new SkillsRepository(prisma);
+    this.chatServerRepository = new ChatServerRepository(prisma);
+    this.userRepository = new UserRepository(prisma);
+    this.proxyClient = new ProxyClientService();
   }
 
   /**
@@ -191,5 +200,83 @@ export class SkillsService {
       fileName: file.fileName,
       mimeType: file.mimeType,
     };
+  }
+
+  /**
+   * 装载技能到 ChatServer
+   *
+   * @param skillId - 技能 ID（字符串）
+   * @param chatServerId - ChatServer ID（字符串）
+   * @param userUuid - 用户 UUID（用于权限验证）
+   */
+  async loadSkillToChatServer(
+    skillId: string,
+    chatServerId: string,
+    userUuid: string
+  ): Promise<void> {
+    // 1. 查询技能
+    const skill = await this.repository.findBySkillId(skillId);
+    if (!skill) {
+      throw new Error('技能不存在');
+    }
+
+    // 2. 查询技能文件（获取最新的文件）
+    const prisma = DatabaseService.getInstance();
+    const skillFile = await prisma.skillFile.findFirst({
+      where: { skillId: skill.id },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!skillFile) {
+      throw new Error('技能文件不存在');
+    }
+
+    // 3. 查询用户
+    const user = await this.userRepository.findByUserId(userUuid);
+    if (!user) {
+      throw new Error('用户不存在');
+    }
+
+    // 4. 查询 ChatServer（包含关联的 ProxyHost）
+    const chatServer = await prisma.chatServer.findUnique({
+      where: { id: BigInt(chatServerId) },
+      include: {
+        proxyHost: true,
+      },
+    });
+
+    if (!chatServer) {
+      throw new Error('服务不存在');
+    }
+
+    // 5. 验证 ChatServer 状态
+    if (chatServer.status !== 'active') {
+      throw new Error('服务未激活，无法装载技能');
+    }
+
+    // 6. 验证权限：只能装载到自己创建的 ChatServer
+    if (chatServer.createdBy !== user.id) {
+      throw new Error('无权操作此服务');
+    }
+
+    // 7. 验证 ProxyHost 存在
+    if (!chatServer.proxyHost) {
+      throw new Error('代理服务器配置错误');
+    }
+
+    // 8. 调用 ProxyClientService 装载技能
+    try {
+      await this.proxyClient.loadSkill({
+        proxyHost: chatServer.proxyHost.host,
+        proxyPort: chatServer.proxyHost.port,
+        openCodePort: chatServer.port,
+        chatDir: chatServer.chatDir,
+        skillFileBuffer: skillFile.fileData,
+        fileName: skillFile.fileName,
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`技能装载失败: ${errorMessage}`);
+    }
   }
 }

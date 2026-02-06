@@ -17,17 +17,13 @@ import {
 } from '@/components/ui/select'
 import { AlertCircle } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-
-interface Session {
-  id: string
-  name: string
-}
+import type { ChatServer } from '../types'
 
 interface InstallSkillDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onConfirm: (sessionId: string) => void
-  sessions: Session[]
+  onConfirm: (chatServerId: string) => void
+  chatServers: ChatServer[]
   isLoading?: boolean
 }
 
@@ -35,21 +31,21 @@ export function InstallSkillDialog({
   open,
   onOpenChange,
   onConfirm,
-  sessions,
+  chatServers,
   isLoading = false,
 }: InstallSkillDialogProps) {
-  const [selectedSessionId, setSelectedSessionId] = useState<string>('')
+  const [selectedChatServerId, setSelectedChatServerId] = useState<string>('')
 
   const handleConfirm = () => {
-    if (selectedSessionId) {
-      onConfirm(selectedSessionId)
-      setSelectedSessionId('')
+    if (selectedChatServerId) {
+      onConfirm(selectedChatServerId)
+      setSelectedChatServerId('')
     }
   }
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
-      setSelectedSessionId('')
+      setSelectedChatServerId('')
     }
     onOpenChange(open)
   }
@@ -60,32 +56,32 @@ export function InstallSkillDialog({
         <DialogHeader>
           <DialogTitle>装载技能</DialogTitle>
           <DialogDescription>
-            选择要装载此技能的会话，装载后可在"我的技能"中查看
+            选择要装载此技能的服务，装载后技能将部署到该服务器
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          {sessions.length === 0 ? (
+          {chatServers.length === 0 ? (
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                您还没有创建任何会话，请先创建会话后再装载技能
+                您还没有创建任何服务，请先创建服务后再装载技能
               </AlertDescription>
             </Alert>
           ) : (
             <div className="space-y-2">
-              <label className="text-sm font-medium">选择会话</label>
+              <label className="text-sm font-medium">选择服务</label>
               <Select
-                value={selectedSessionId}
-                onValueChange={setSelectedSessionId}
+                value={selectedChatServerId}
+                onValueChange={setSelectedChatServerId}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="请选择会话" />
+                  <SelectValue placeholder="请选择服务" />
                 </SelectTrigger>
                 <SelectContent>
-                  {sessions.map((session) => (
-                    <SelectItem key={session.id} value={session.id}>
-                      {session.name}
+                  {chatServers.map((server) => (
+                    <SelectItem key={server.id} value={server.id}>
+                      {server.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -104,7 +100,7 @@ export function InstallSkillDialog({
           </Button>
           <Button
             onClick={handleConfirm}
-            disabled={!selectedSessionId || sessions.length === 0 || isLoading}
+            disabled={!selectedChatServerId || chatServers.length === 0 || isLoading}
           >
             {isLoading ? '装载中...' : '确认装载'}
           </Button>

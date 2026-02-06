@@ -71,6 +71,29 @@ export class ChatServerController {
   }
 
   /**
+   * 获取用户的所有活跃 ChatServer
+   * GET /api/chat-servers/active
+   */
+  async getActive(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.userId;
+
+      if (!userId) {
+        res.status(401).json({
+          error: 'Unauthorized',
+          message: 'Authentication token is missing or invalid',
+        });
+        return;
+      }
+
+      const chatServers = await this.service.getActiveChatServers(userId);
+      res.status(200).json(chatServers);
+    } catch (error) {
+      this.handleError(res, error);
+    }
+  }
+
+  /**
    * 删除 ChatServer
    * DELETE /api/chat-servers/:chatId
    */

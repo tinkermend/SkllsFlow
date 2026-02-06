@@ -100,3 +100,28 @@ export function useUploadSkillFile() {
     mutationFn: (file: File) => skillsApi.uploadSkillFile(file),
   })
 }
+
+/**
+ * 获取活跃的 ChatServer 列表
+ */
+export function useActiveChatServers() {
+  return useQuery({
+    queryKey: ['chat-servers', 'active'],
+    queryFn: () => skillsApi.getActiveChatServers(),
+  })
+}
+
+/**
+ * 装载技能到 ChatServer
+ */
+export function useLoadSkill() {
+  return useMutation({
+    mutationFn: ({
+      skillId,
+      chatServerId,
+    }: {
+      skillId: string
+      chatServerId: string
+    }) => skillsApi.loadSkillToChatServer(skillId, chatServerId),
+  })
+}

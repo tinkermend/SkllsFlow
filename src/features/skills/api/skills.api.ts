@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { apiClient } from '@/lib/api-client'
 import { API_ENDPOINTS, getApiUrl } from '@/config/api'
-import type { Skill, SessionSkill, SkillFile } from '../types'
+import type { Skill, SessionSkill, SkillFile, ChatServer } from '../types'
 
 /**
  * Skills API
@@ -142,5 +142,27 @@ export const skillsApi = {
    */
   downloadSkillFile(skillId: string, fileId: string): string {
     return getApiUrl(API_ENDPOINTS.skills.downloadFile(skillId, fileId))
+  },
+
+  /**
+   * 装载技能到 ChatServer
+   */
+  async loadSkillToChatServer(
+    skillId: string,
+    chatServerId: string
+  ): Promise<{ message: string }> {
+    const response = await apiClient.post<{ message: string }>(
+      `/api/skills/${skillId}/load`,
+      { chatServerId }
+    )
+    return response.data
+  },
+
+  /**
+   * 获取活跃的 ChatServer 列表
+   */
+  async getActiveChatServers(): Promise<ChatServer[]> {
+    const response = await apiClient.get<ChatServer[]>('/api/chat-servers/active')
+    return response.data
   },
 }

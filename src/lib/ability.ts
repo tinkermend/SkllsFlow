@@ -44,7 +44,11 @@ export function defineAbilityFor(permissions: string[]): AppAbility {
 
     const caslAction = actionMap[action] || (action as Actions)
 
-    can(caslAction, resource as Subjects)
+    // 将 resource 首字母大写以匹配 Subjects 类型
+    // 例如：skill -> Skill, user -> User
+    const capitalizedResource = resource.charAt(0).toUpperCase() + resource.slice(1)
+
+    can(caslAction, capitalizedResource as Subjects)
   })
 
   return build()

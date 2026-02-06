@@ -74,3 +74,23 @@ export interface SkillFile {
  * 技能标签页类型
  */
 export type SkillTab = 'my-skills' | 'platform-skills'
+
+/**
+ * ChatServer 类型（用于技能装载）
+ */
+export interface ChatServer {
+  /** ChatServer ID */
+  id: string
+  /** Chat UUID */
+  chatId: string
+  /** 服务名称 */
+  name: string
+  /** 聊天目录路径 */
+  chatDir: string
+  /** 主机地址 */
+  host: string
+  /** 端口号 */
+  port: number
+  /** 状态 */
+  status: string
+}

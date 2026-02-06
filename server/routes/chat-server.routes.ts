@@ -26,6 +26,12 @@ router.post('/', (req, res) => req.controller.create(req, res));
 router.get('/', (req, res) => req.controller.getAll(req, res));
 
 /**
+ * GET /api/chat-servers/active
+ * 获取用户的所有活跃 ChatServer
+ */
+router.get('/active', (req, res) => req.controller.getActive(req, res));
+
+/**
  * GET /api/chat-servers/:chatId/delete-stats
  * 获取删除统计信息
  */

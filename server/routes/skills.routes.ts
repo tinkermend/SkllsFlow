@@ -45,6 +45,11 @@ router.get('/:skillId/files/:fileId/download', (req: Request, res: Response) => 
   req.skillsController.downloadSkillFile(req, res);
 });
 
+// POST /api/skills/:skillId/load - Load skill to chat server (requires auth)
+router.post('/:skillId/load', jwtAuthMiddleware, (req: Request, res: Response) => {
+  req.skillsController.loadSkillToChatServer(req, res);
+});
+
 // GET /api/skills - Get all platform skills
 router.get('/', (req: Request, res: Response) => {
   req.skillsController.getAllPlatformSkills(req, res);
