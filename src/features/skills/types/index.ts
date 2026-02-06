@@ -94,3 +94,21 @@ export interface ChatServer {
   /** 状态 */
   status: string
 }
+
+/**
+ * 技能装载的服务器信息
+ */
+export interface LoadedServer {
+  /** ChatServer ID */
+  chatServerId: string
+  /** 服务名称 */
+  chatServerName: string
+  /** 聊天目录路径 */
+  chatDir: string
+  /** 代理主机地址 */
+  proxyHost: string
+  /** 代理端口 */
+  proxyPort: number
+  /** OpenCode 端口 */
+  openCodePort: number
+}

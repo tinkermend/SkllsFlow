@@ -45,9 +45,19 @@ router.get('/:skillId/files/:fileId/download', (req: Request, res: Response) => 
   req.skillsController.downloadSkillFile(req, res);
 });
 
+// GET /api/skills/:skillId/loaded-servers - Get skill loaded servers
+router.get('/:skillId/loaded-servers', (req: Request, res: Response) => {
+  req.skillsController.getSkillLoadedServers(req, res);
+});
+
 // POST /api/skills/:skillId/load - Load skill to chat server (requires auth)
 router.post('/:skillId/load', jwtAuthMiddleware, (req: Request, res: Response) => {
   req.skillsController.loadSkillToChatServer(req, res);
+});
+
+// DELETE /api/skills/:skillId - Delete skill (requires auth)
+router.delete('/:skillId', jwtAuthMiddleware, (req: Request, res: Response) => {
+  req.skillsController.deleteSkill(req, res);
 });
 
 // GET /api/skills - Get all platform skills

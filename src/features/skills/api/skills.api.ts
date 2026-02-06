@@ -128,6 +128,23 @@ export const skillsApi = {
   },
 
   /**
+   * 获取技能装载的服务器列表
+   */
+  async getSkillLoadedServers(skillId: string): Promise<Array<{
+    chatServerId: string
+    chatServerName: string
+    chatDir: string
+    proxyHost: string
+    proxyPort: number
+    openCodePort: number
+  }>> {
+    const response = await apiClient.get(
+      API_ENDPOINTS.skills.loadedServers(skillId)
+    )
+    return response.data
+  },
+
+  /**
    * 获取技能文件列表
    */
   async getSkillFiles(skillId: string): Promise<SkillFile[]> {

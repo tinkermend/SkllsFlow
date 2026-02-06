@@ -19,7 +19,7 @@ import { DeleteSkillDialog } from './components/delete-skill-dialog'
 import { CreateSkillDialog } from './components/create-skill-dialog'
 import { useSkills, useMySkills, useDeleteSkill, useUpdateSkill, useActiveChatServers, useLoadSkill } from './hooks/use-skills'
 import { skillsApi } from './api/skills.api'
-import { type SkillTab, type Skill, type SessionSkill, type SkillFile, SkillStatus } from './types'
+import { type SkillTab, type Skill, type SessionSkill, type SkillFile, type LoadedServer, SkillStatus } from './types'
 
 export function Skills() {
   const [activeTab, setActiveTab] = useState<SkillTab>('my-skills')
@@ -38,7 +38,12 @@ export function Skills() {
   const [skillToDisable, setSkillToDisable] = useState<Skill | null>(null)
   const [disableRelatedSessions, setDisableRelatedSessions] = useState<SessionSkill[]>([])
   const [skillToDelete, setSkillToDelete] = useState<Skill | null>(null)
-  const [deleteRelatedSessions, setDeleteRelatedSessions] = useState<SessionSkill[]>([])
+  const [deleteLoadedServers, setDeleteLoadedServers] = useState<LoadedServer[]>([])
+  const [deleteUnloadProgress, setDeleteUnloadProgress] = useState<{
+    current: number
+    total: number
+    serverName: string
+  } | null>(null)
 
   // 获取技能列表（根据 activeTab 决定调用哪个 API）
   const { data: platformSkills = [], isLoading: isPlatformLoading, error: platformError } = useSkills()
@@ -140,16 +145,16 @@ export function Skills() {
 
     setSkillToDelete(skill)
 
-    // 获取关联会话数据
+    // 获取装载的服务器列表
     try {
-      const sessions = await skillsApi.getSkillRelatedSessions(skillId)
-      setDeleteRelatedSessions(sessions)
+      const servers = await skillsApi.getSkillLoadedServers(skillId)
+      setDeleteLoadedServers(servers)
 
       // 打开删除确认对话框
       setIsDeleteDialogOpen(true)
     } catch (error) {
-      console.error('获取关联会话失败:', error)
-      setDeleteRelatedSessions([])
+      console.error('获取装载服务器失败:', error)
+      setDeleteLoadedServers([])
       setIsDeleteDialogOpen(true)
     }
   }
@@ -157,22 +162,31 @@ export function Skills() {
   const handleDeleteConfirm = async () => {
     if (!skillToDelete) return
 
-    // 如果有关联会话，不允许删除
-    if (deleteRelatedSessions.length > 0) {
-      toast.error('该技能存在关联会话，无法删除。请先解除关联后再删除。')
-      setIsDeleteDialogOpen(false)
-      setSkillToDelete(null)
-      setDeleteRelatedSessions([])
-      return
-    }
-
     try {
+      // 如果有装载的服务器，模拟卸载进度
+      if (deleteLoadedServers.length > 0) {
+        for (let i = 0; i < deleteLoadedServers.length; i++) {
+          const server = deleteLoadedServers[i]
+          setDeleteUnloadProgress({
+            current: i + 1,
+            total: deleteLoadedServers.length,
+            serverName: server.chatServerName,
+          })
+          // 等待一小段时间以显示进度（实际卸载在后端进行）
+          await new Promise(resolve => setTimeout(resolve, 500))
+        }
+      }
+
+      // 调用删除 API
       await deleteSkillMutation.mutateAsync(skillToDelete.skillId)
+
       setIsDeleteDialogOpen(false)
       setSkillToDelete(null)
-      setDeleteRelatedSessions([])
+      setDeleteLoadedServers([])
+      setDeleteUnloadProgress(null)
       toast.success('技能删除成功')
     } catch (error) {
+      setDeleteUnloadProgress(null)
       toast.error(`删除失败: ${error instanceof Error ? error.message : '未知错误'}`)
     }
   }
@@ -180,7 +194,8 @@ export function Skills() {
   const handleDeleteDialogOpenChange = (open: boolean) => {
     if (!open) {
       setSkillToDelete(null)
-      setDeleteRelatedSessions([])
+      setDeleteLoadedServers([])
+      setDeleteUnloadProgress(null)
     }
     setIsDeleteDialogOpen(open)
   }
@@ -447,8 +462,9 @@ export function Skills() {
         onOpenChange={handleDeleteDialogOpenChange}
         onConfirm={handleDeleteConfirm}
         skillName={skillToDelete?.name || ''}
-        relatedSessions={deleteRelatedSessions}
+        loadedServers={deleteLoadedServers}
         isLoading={deleteSkillMutation.isPending}
+        unloadProgress={deleteUnloadProgress}
       />
 
       {/* 创建技能对话框 */}

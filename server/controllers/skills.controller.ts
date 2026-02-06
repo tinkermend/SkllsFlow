@@ -241,6 +241,79 @@ export class SkillsController {
   }
 
   /**
+   * 获取技能装载信息
+   * GET /api/skills/:skillId/loaded-servers
+   */
+  async getSkillLoadedServers(req: Request, res: Response): Promise<void> {
+    try {
+      const { skillId } = req.params;
+
+      if (!skillId) {
+        res.status(400).json({
+          error: 'Bad Request',
+          message: 'skillId is required',
+        });
+        return;
+      }
+
+      const servers = await this.service.getSkillLoadedServers(skillId);
+      res.status(200).json(servers);
+    } catch (error) {
+      if (error instanceof Error && error.message === '技能不存在') {
+        res.status(404).json({
+          error: 'Not Found',
+          message: error.message,
+        });
+        return;
+      }
+      this.handleError(res, error);
+    }
+  }
+
+  /**
+   * 删除技能
+   * DELETE /api/skills/:skillId
+   */
+  async deleteSkill(req: Request, res: Response): Promise<void> {
+    try {
+      const { skillId } = req.params;
+
+      if (!skillId) {
+        res.status(400).json({
+          error: 'Bad Request',
+          message: 'skillId is required',
+        });
+        return;
+      }
+
+      // 删除技能（包含卸载逻辑）
+      await this.service.deleteSkill(skillId);
+
+      res.status(200).json({
+        message: '技能删除成功',
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === '技能不存在') {
+          res.status(404).json({
+            error: 'Not Found',
+            message: error.message,
+          });
+          return;
+        }
+        if (error.message.includes('卸载技能失败')) {
+          res.status(502).json({
+            error: 'Bad Gateway',
+            message: error.message,
+          });
+          return;
+        }
+      }
+      this.handleError(res, error);
+    }
+  }
+
+  /**
    * 装载技能到 ChatServer
    * POST /api/skills/:skillId/load
    */

@@ -236,4 +236,89 @@ export class SkillsRepository extends BaseRepository<
       where: { id: fileId },
     });
   }
+
+  /**
+   * 获取技能的装载信息（哪些 ChatServer 装载了该技能）
+   * @param skillId - 技能 ID（字符串）
+   */
+  async findSkillLoadedServers(skillId: string): Promise<Array<{
+    chatServerId: bigint;
+    chatServerName: string;
+    chatDir: string;
+    proxyHost: string;
+    proxyPort: number;
+    openCodePort: number;
+  }>> {
+    const userSkills = await this.prisma.userSkill.findMany({
+      where: { skillId },
+      include: {
+        chatServer: {
+          include: {
+            proxyHost: true,
+          },
+        },
+      },
+      distinct: ['chatId'],
+    });
+
+    return userSkills.map(us => ({
+      chatServerId: us.chatServer.id,
+      chatServerName: us.chatServer.name,
+      chatDir: us.chatServer.chatDir,
+      proxyHost: us.chatServer.proxyHost.host,
+      proxyPort: us.chatServer.proxyHost.port,
+      openCodePort: us.chatServer.port,
+    }));
+  }
+
+  /**
+   * 删除技能及其关联数据（事务操作）
+   * @param skillId - 技能 ID（字符串）
+   */
+  async deleteSkillWithRelations(skillId: string): Promise<void> {
+    const skill = await this.findBySkillId(skillId);
+    if (!skill) {
+      throw new Error('技能不存在');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      // 1. 删除 user_skills 表中的关联记录（如果有）
+      await tx.userSkill.deleteMany({
+        where: { skillId },
+      });
+
+      // 2. 删除 skill_files 表中的文件记录
+      await tx.skillFile.deleteMany({
+        where: { skillId: skill.id },
+      });
+
+      // 3. 删除 skills 表中的技能记录
+      await tx.skill.delete({
+        where: { id: skill.id },
+      });
+    });
+  }
+
+  /**
+   * 仅删除技能记录（不删除关联数据）
+   * @param skillId - 技能 ID（字符串）
+   */
+  async deleteSkillOnly(skillId: string): Promise<void> {
+    const skill = await this.findBySkillId(skillId);
+    if (!skill) {
+      throw new Error('技能不存在');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      // 1. 删除 skill_files 表中的文件记录
+      await tx.skillFile.deleteMany({
+        where: { skillId: skill.id },
+      });
+
+      // 2. 删除 skills 表中的技能记录
+      await tx.skill.delete({
+        where: { id: skill.id },
+      });
+    });
+  }
 }

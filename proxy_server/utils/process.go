@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
@@ -105,4 +107,40 @@ func StartOpenCodeService(port int, chatDir string, auth bool, password string) 
 	}
 
 	return nil
+}
+
+// IsOpenCodeProcess 检查进程是否为 OpenCode
+func IsOpenCodeProcess(pid int) (bool, error) {
+	var cmd *exec.Cmd
+
+	switch runtime.GOOS {
+	case "darwin", "linux":
+		cmd = exec.Command("ps", "-p", strconv.Itoa(pid), "-o", "comm=")
+	case "windows":
+		cmd = exec.Command("wmic", "process", "where", fmt.Sprintf("ProcessId=%d", pid), "get", "CommandLine")
+	default:
+		return false, fmt.Errorf("不支持的操作系统: %s", runtime.GOOS)
+	}
+
+	output, err := cmd.Output()
+	if err != nil {
+		return false, fmt.Errorf("获取进程信息失败: %w", err)
+	}
+
+	scanner := bufio.NewScanner(bytes.NewReader(output))
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" {
+			continue
+		}
+		if strings.Contains(strings.ToLower(line), "opencode") {
+			return true, nil
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return false, fmt.Errorf("解析进程信息失败: %w", err)
+	}
+
+	return false, nil
 }

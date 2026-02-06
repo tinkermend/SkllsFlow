@@ -1,5 +1,5 @@
 - [x] `fix:` 智能对话,thinks 过程没有在对话页面输出出来,opencode api请参考 @docs/openapi.json 实现将思考过程也显示在对话页面,并默认自动折叠,prompt-kit提供了reasoning组件
-- [ ] `fix:` 默认 opencode serve 启动路径定义, opencode 默认启动路径为: /Users/wangpei/src/singe/SkllsFlow/user_session/{登录用户名称}, 如果没有登录用户名称的目录则自动创建
+- [x] `fix:` 默认 opencode serve 启动路径定义, opencode 默认启动路径为: /Users/wangpei/src/singe/SkllsFlow/user_session/{登录用户名称}, 如果没有登录用户名称的目录则自动创建
 - [x] `feat:` 智能对话 对话列表只显示最近的10个session,当前因为会话过多导致新建会话按钮被淹没了
 - [x] `feat:` 基于 opencode api @docs/openapi.json 实现会话的删除,会话名称修改, 会话名称修改接口为: PATCH /session/:id, 会话的删除接口为: DELETE /session/:id
 - [x] `feat:` 实现对话调用的中止功能,参见opencode api @docs/openapi.json 中的 /session/:id/abort
@@ -30,29 +30,88 @@
 - [x] 重构技能表"skills",删除file_path字段,同时更新 docs/database_design/skills.sql 中的定义 以及 prisma schema 定义
 - [x] 创建新表 "skill_files",存储技能上传的zip文件内容,表结构定义参考如下设计:
 
-id: 自增列id
-skill_id: 技能id,关联skills表
-file_data BYTEA NOT NULL,    zip文件内容,二进制类型
-file_name varchar(120) NOT NULL,    zip文件名称
-file_size bigint NOT NULL,    zip文件大小
-mime_type VARCHAR(100) DEFAULT 'application/zip', -- MIME类型
-created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-CREATE INDEX idx_tool_files_tool_id ON tool_files(tool_id);
-COMMENT ON TABLE tool_files IS '工具二进制文件存储表';
+```
+      id: 自增列id
+      skill_id: 技能id,关联skills表
+      file_data BYTEA NOT NULL,    zip文件内容,二进制类型
+      file_name varchar(120) NOT NULL,    zip文件名称
+      file_size bigint NOT NULL,    zip文件大小
+      mime_type VARCHAR(100) DEFAULT 'application/zip', -- MIME类型
+      created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+      CREATE INDEX idx_tool_files_tool_id ON tool_files(tool_id);
+      COMMENT ON TABLE tool_files IS '工具二进制文件存储表';
+```
 
 将表的创建语句 生成后放在 docs/database_design/skill_files.sql 中, 同时更新prisma schema 定义, 表我自己手动执行 sql创建
 
 - [x] `fix:all` 创建技能的技能标签只能新增,无法删除,请修复
 
-- [] `change:all`  创建技能页面基本信息中,在技能名称旁边新增技能ID, 技能ID为英文, 技能名称为中文, 技能ID和技能名称都不能为空,同时技能ID不支持中文,可以是英文与特殊符号,但不能包含空格
+- [x] `change:all` 创建技能页面基本信息中,在技能名称旁边新增技能ID, 技能ID为英文, 技能名称为中文, 技能ID和技能名称都不能为空,同时技能ID不支持中文,可以是英文与特殊符号,但不能包含空格
 
-- [] `feat:all` 我们来完成`创建技能` 前后端功能开发,主要完成如下功能:
-  -  1.创建技能,点击立即创建调用的后端接口开发
-  -  2. 后端接口调用成功后,将技能信息保存到数据库 `skills` 表中
-  -  3. 技能包文件只支持zip 文件, 将上传的技能包zip文件保存到数据库 `skill_files` 表中
+`2026-02-06 14:54:50`
 
+- [x] `feat:all` 我们来完成`创建技能` 前后端功能开发,主要完成如下功能:
+  - 1.创建技能,点击立即创建调用的后端接口开发
+  - 2.  后端接口调用成功后,将技能信息保存到数据库 `skills` 表中
+  - 3.  技能包文件只支持zip 文件, 将上传的技能包zip文件保存到数据库 `skill_files` 表中
+
+- [x] `feat:front` 技能管理->平台技能-> 点击技能卡片中的 `查看详情` 弹出页面需要做如下优化:
+  - 1.技能所属图标没有正常展示,请将创建技能中的图标保存格式与查看详情展现对应
+  - 2.删除文件路径, 改为展现`skill_files`表中关联的 skill 文件, 同时支持文件下载
+  - 3.新增技能创建用户显示,对应 `skills`表中的 created_by,由于`created_by`存储的是用户ID还需要关联`users` 表才能展现用户名称
+  - 4.根据`查看详情` 所展现的数据,进行UI/UX布局和样式优化
+
+- [x] `feat:all` 技能管理->平台技能-> 技能卡片 做如下功能变更:
+  - 1. 点击 `...` 新增 `装载技能`,`删除技能` 选项
+  - 2. `装载技能` 点击后实现逻辑如下:
+    - 2.1 点击装载技能后,弹出选择装载的服务列表,服务列表查询`chat_servers` 根据用户id作为过滤条件,同时status=active 数据,页面服务列表展示 `name` 字段数据
+    - 2.2 选择服务后点击`确定` 调用nodejs 后端, nodejs 后端再调用`proxy_server`的 `/api/load_skill` 接口进行技能包的部署
+    - 2.3 调用 proxy_server 的 `/api/load_skill` 请直接参考以下`load_skill` 接口的实现
+    - 2.4 注意调用 proxy_server 必须传递-H "X-Signature: c3ea4f55ad494aaf2b0a38e0c271e6ec" ,这个值为.env 中的PROXY_API_SECRET 变量
+  - 3.`删除技能` 前后端实现逻辑:
+    - 3.1 点击`删除技能` 需要检查 `user_skills` 表中是否已经存在装载的技能,如果存在,则点击`删除技能`的弹框展现当前该技能被装载的情况,提示用户是否继续删除该技能,如果用户点击确定删除该技能则进行删除技能的下一步操作
+    - 3.2 这里需要注意,如果有多个服务调用了该技能,则需要循环调用 `proxy_server` 中的 `/api/unload_skill` 一个一个进行技能卸载,确保所有调用该技能的服务都卸载完成后,再进行技能的删除操作,每卸载一个在前端页面展示卸载进度
+    - 3.3 全部卸载完成后再执行删除 `skills`,`user_skills`,`skill_files` 表中对应技能数据
+
+## proxy_server
+
+`2026-02-06 14:54:33`
+
+- [x] `feat` proxy_server 新增接口`/api/load_skill` 前端`装载技能` 点击后调用后端 nodejs 服务,nodejs服务再调用这个`load_skill`接口传过来的技能zip压缩文件与文件放置目录信息
+  - `requests` 入参信息如下:
+    {
+    "port": "对应端口服务",
+    "chat_dir": "放置的根目录"
+    "skill_file": 技能文件,zip压缩包
+    }
+  - `response` 出参信息如下:
+    {
+    "code": "200为正常,其他都为错误",
+    "message": "api调用结果返回信息,中文描述"
+    }
+  - `load_skill`基本流程: 接收参数和文件, 先检查 chat_dir 目录是否存在,不存在直接返回错误,再检查对应`port`是否存在`opencode`服务进程,不存在返回无opencode对应服务进程错误,如果前面两步都正常,则在 `chat_dir`目录下创建`.opencode/skills/` 目录并将 `zip` 压缩文件解压到 `.opencode/skills/`目录下,最后检查 解锁压后的目录下是否有`SKILL.md` 文件,如果没有`SKILL.md`文件则返回`message`内容为 该技能包存在问题无法正常使用,并将解压的目录进行删除.
+
+- [x] `feat` proxy_server 新增接口`/api/unload_skill` 前端`删除技能` 点击后调用后端 nodejs 服务,nodejs服务再调用这个`unload_skill`接口传过来的技能信息
+  - `requests` 入参信息如下:
+    {
+    "port": "对应端口服务",
+    "chat_dir": "放置的根目录"
+    "skill_name": 技能名称,对应`skill_files`表中的`file_name`字段
+    }
+  - `response` 出参信息如下:
+    {
+    "code": "200为正常,其他都为错误",
+    "message": "api调用结果返回信息,中文描述"
+    }
+  - `unload_skill`基本流程: 接收参数, 先检查对应`port`是否存在`opencode` 服务进程,不存在则返回`服务未启动,请先启动对话服务再执行删除` ,然后检查`chat_dir` 是否存在,存在后再检查`.opencode/skills/` 目录下是否存在`skill_name` 对应的目录,如果存在则删除,如果不存在则返回当前skill 已经卸载
+
+
+---------
 
 ## mcp管理
+
+
+-------
 
 ## other
 
@@ -65,7 +124,6 @@ COMMENT ON TABLE tool_files IS '工具二进制文件存储表';
 
 2026-01-31 20:57:08
 
-
 - [x] `feat:all` 构建智能会话->新建会话的实现逻辑:
   - 1.每次新建会话先从 http://{OPENCODE_API_URL}/path 接口通过 GET 方法获取到json 数据,解析json数据获取`directory`的变量值,然后再生成一个以用户名(users.account_no 值)为开头+ hash 8位值的目录名称,例如 `admin-5f7a640a`, 如果调用这个http://{OPENCODE_API_URL}/path接口失败则前端直接返回新建会话失败,请检查后端服务是否正常运行.
   - 2.基于获取的 directory/用户名+hash值 生成的名称,调用 后端api服务(需要构建这个创建目录的api服务)在服务器中创建该目录,如果目录存在则使用该目录作为会话目录,如果目录创建失败则返回错误信息给前端,前端根据错误返回给用户
@@ -76,10 +134,8 @@ COMMENT ON TABLE tool_files IS '工具二进制文件存储表';
 - [x] `change:backend` 在 .env 定义nodejs后端服务器ip 变量,端口变量复用PORT变量但看是不是需要更改这个变量名称以便分辨是nodejs 后端服务的端口,默认为 `127.0.0.1`,后续生产环境 前后端可能不在一台服务器上,定义变量后,根据变量的值确定前端调用后端的接口地址
 
 - [x] 当前设计需要做出重大变更, opencode 必须采用多 server 方式构建 ,智能对话中 创建每个会话都需要一个单独的opencode server, 那么 技能库, mcp,agent 都需要做出更改,装载是装载到对应的server中,而不是装载到一个server中, 同时需要一个后台服务检查opencode server 健康状态,对于超过多长时间没有访问的opencode 必须停止,如果容器化还必须使用 nodejs 来管理这个opencode server,假设容器挂了, 重新启动, 点击某个对话 server 还需要查询db 获取这个server 所有装载的 mcp 和技能进行自动装载
- 
 
-- [x] `feat:all` 当前项目增加 "服务管理", "可观测性","告警管理","集群对话" 菜单放在技能管理下方,只实现菜单项的增加不实现具体页面代码,点击菜单展现一个 "该功能正在开发中，敬请期待！" 空白页面
-      - 新增"日志管理"菜单,同时增加 在"日志管理"菜单下增加子菜单 "操作日志" ,"对话日志", 同样的只新增菜单,不做具体功能实现
+- [x] `feat:all` 当前项目增加 "服务管理", "可观测性","告警管理","集群对话" 菜单放在技能管理下方,只实现菜单项的增加不实现具体页面代码,点击菜单展现一个 "该功能正在开发中，敬请期待！" 空白页面 - 新增"日志管理"菜单,同时增加 在"日志管理"菜单下增加子菜单 "操作日志" ,"对话日志", 同样的只新增菜单,不做具体功能实现
 
 - [x] `fix:front` 当前"MCP管理" 和 "技能管理" 菜单页面都有一个巨大的bug , "仪表盘","智能对话","用户管理","菜单管理","角色管理" 页面都保持的很好, Header 组件都在, 而 "MCP管理" 和 "技能管理" 却丢失了Header 组件,不管构建哪个页面,顶部的 搜索, 设置,主题变更 这些不应该丢失, 请检查代码,为保证后续页面开发保持,请检查问题修复后 写一条宪法记录到 CLAUDE.md
 
@@ -91,23 +147,16 @@ COMMENT ON TABLE tool_files IS '工具二进制文件存储表';
 
 2026-02-02
 
-- [ ] `feat:all` 新增任务中心, 用户可以通过在任务中心基于AI能力+技能库+mcp 创建短期或长期任务,构建任务的编排逻辑如下: 
-      - 1.用户首先定义任务名称,以及任务描述
-      - 2.用户选择使用 mcp 还是使用 技能库, 如果选择mcp 则列出mcp工具列表,用户选择某个工具如果需要入参则自动生成入参表单,用户填写入参后点击保存 ,如果选择技能库则列出技能列表,用户选择具体技能
-      - 3.自然语言描述判定逻辑,例如: 如果分析的结果存在3个以上错误
-      - 4.定义判定逻辑达到触发的下一步流程: 可以选择 邮件通知,微信通知,站内通知
-      - 5.定义任务的执行周期,例如: 每天执行一次,每周执行一次,每月执行一次,同时扩展 以下选项：立即执行一次：用户在保存前通常想测试一下。•执行超时设置：AI 任务可能会卡住，需要设置超时时间（如 5 分钟）。•重试机制：是否自动重试？
-      - 6.点击预览可以看到任务的执行流程展现
-      - 7.点击测试运行可以测试任务的执行流程
-      - 8.点击保存,将任务保存到数据库中,同时在下方的数据表格中可以展现任务条目,任务条目可以进行编辑,删除,暂停,恢复等操作
+- [ ] `feat:all` 新增任务中心, 用户可以通过在任务中心基于AI能力+技能库+mcp 创建短期或长期任务,构建任务的编排逻辑如下: - 1.用户首先定义任务名称,以及任务描述 - 2.用户选择使用 mcp 还是使用 技能库, 如果选择mcp 则列出mcp工具列表,用户选择某个工具如果需要入参则自动生成入参表单,用户填写入参后点击保存 ,如果选择技能库则列出技能列表,用户选择具体技能 - 3.自然语言描述判定逻辑,例如: 如果分析的结果存在3个以上错误 - 4.定义判定逻辑达到触发的下一步流程: 可以选择 邮件通知,微信通知,站内通知 - 5.定义任务的执行周期,例如: 每天执行一次,每周执行一次,每月执行一次,同时扩展 以下选项：立即执行一次：用户在保存前通常想测试一下。•执行超时设置：AI 任务可能会卡住，需要设置超时时间（如 5 分钟）。•重试机制：是否自动重试？- 6.点击预览可以看到任务的执行流程展现 - 7.点击测试运行可以测试任务的执行流程 - 8.点击保存,将任务保存到数据库中,同时在下方的数据表格中可以展现任务条目,任务条目可以进行编辑,删除,暂停,恢复等操作
 
-
-
--------------
+---
 
 2026-02-05 15:46:01
 
-- [ ] `change:all` 更改表`user_skill`为`user_skills`, 同时更改表中 `session_id` 字段为  `chat_id` , `chat_id` 为 `chat_servers` 表的`id` 字段, 更改完成后 同步更新 docs/database_design/user_skill.sql 文件 将文件名称也改为 user_skills, 同时更新 prisma schema 文件关联定义,  记住: `user_skills` 表的 chat_id 不与 `chat_servers` 表的id 做主外键关联, 由程序保证一致性
+- [x] `change:all` 更改表`user_skill`为`user_skills`, 同时更改表中 `session_id` 字段为 `chat_id` , `chat_id` 为 `chat_servers` 表的`id` 字段, 更改完成后 同步更新 docs/database_design/user_skill.sql 文件 将文件名称也改为 user_skills, 同时更新 prisma schema 文件关联定义, 记住: `user_skills` 表的 chat_id 不与 `chat_servers` 表的id 做主外键关联, 由程序保证一致性
 
 
-- [] 
+
+2026-02-06 15:45:34
+
+- []  `技能管理` 当前 平台技能->装载技能 判断是否存在服务存在问题,根据当前登录的用户id 获取 `chat_servers` 表中的 `created_by` 是有对应服务的,但是页面显示 您还没有创建任何服务

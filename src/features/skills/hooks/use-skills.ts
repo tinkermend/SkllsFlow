@@ -52,7 +52,17 @@ export function useCreateSkill() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (data: Omit<Skill, 'id'>) => skillsApi.createSkill(data),
+    mutationFn: (data: {
+      skillId: string
+      name: string
+      description: string
+      icon: string
+      category: string
+      tags: string[]
+      status: string
+      sortOrder: number
+      file: File
+    }) => skillsApi.createSkill(data),
     onSuccess: () => {
       // 刷新技能列表
       queryClient.invalidateQueries({ queryKey: skillsKeys.lists() })
