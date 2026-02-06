@@ -118,16 +118,6 @@ export const skillsApi = {
   },
 
   /**
-   * 获取技能关联的会话列表
-   */
-  async getSkillRelatedSessions(skillId: string): Promise<SessionSkill[]> {
-    const response = await apiClient.get<SessionSkill[]>(
-      API_ENDPOINTS.skills.relatedSessions(skillId)
-    )
-    return response.data
-  },
-
-  /**
    * 获取技能装载的服务器列表
    */
   async getSkillLoadedServers(skillId: string): Promise<Array<{
@@ -169,7 +159,7 @@ export const skillsApi = {
     chatServerId: string
   ): Promise<{ message: string }> {
     const response = await apiClient.post<{ message: string }>(
-      `/api/skills/${skillId}/load`,
+      `/skills/${skillId}/load`,
       { chatServerId }
     )
     return response.data
@@ -179,7 +169,7 @@ export const skillsApi = {
    * 获取活跃的 ChatServer 列表
    */
   async getActiveChatServers(): Promise<ChatServer[]> {
-    const response = await apiClient.get<ChatServer[]>('/api/chat-servers/active')
+    const response = await apiClient.get<ChatServer[]>('/chat-servers/active')
     return response.data
   },
 }
