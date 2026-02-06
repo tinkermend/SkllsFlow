@@ -35,6 +35,8 @@ func main() {
 		api.POST("/opencode_start", handlers.StartHandler)
 		api.POST("/opencode_stop", handlers.StopHandler)
 		api.POST("/opencode_delete", handlers.DeleteHandler)
+		api.POST("/load_skill", handlers.LoadSkillHandler)
+		api.POST("/unload_skill", handlers.UnloadSkillHandler)
 	}
 
 	// 启动服务器
