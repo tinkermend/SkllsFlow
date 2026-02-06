@@ -1,5 +1,5 @@
 import axios, { type AxiosInstance } from 'axios';
-import * as FormData from 'form-data';
+import FormData from 'form-data';
 import { env } from '../config/env.js';
 
 /**
@@ -34,6 +34,14 @@ export interface LoadSkillParams {
   chatDir: string;
   skillFileBuffer: Buffer;
   fileName: string;
+}
+
+export interface UnloadSkillParams {
+  proxyHost: string;
+  proxyPort: number;
+  openCodePort: number;
+  chatDir: string;
+  skillId: string;
 }
 
 /**
@@ -239,6 +247,40 @@ export class ProxyClientService {
       } else {
         const message = error instanceof Error ? error.message : 'Unknown error';
         throw new Error(`技能装载请求失败: ${message}`);
+      }
+    }
+  }
+
+  /**
+   * 卸载技能从 OpenCode 实例
+   * 调用代理服务的 /api/unload_skill 接口
+   *
+   * @param params - 卸载参数
+   * @returns 代理服务响应
+   * @throws Error 如果请求失败或返回非 200 状态码
+   */
+  async unloadSkill(params: UnloadSkillParams): Promise<ProxyServiceResponse> {
+    const { proxyHost, proxyPort, openCodePort, chatDir, skillId } = params;
+    const url = `http://${proxyHost}:${proxyPort}/api/unload_skill`;
+
+    try {
+      const response = await this.axiosInstance.post<ProxyServiceResponse>(url, {
+        port: openCodePort,
+        chat_dir: chatDir,
+        skill_id: skillId,
+      });
+
+      return response.data;
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response: { data: ProxyServiceResponse } };
+        const data = axiosError.response.data;
+        throw new Error(data.message || '技能卸载失败');
+      } else if (error && typeof error === 'object' && 'request' in error) {
+        throw new Error('代理服务无响应，请检查服务是否正常运行');
+      } else {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        throw new Error(`技能卸载请求失败: ${message}`);
       }
     }
   }

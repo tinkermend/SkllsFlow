@@ -278,5 +278,97 @@ export class SkillsService {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       throw new Error(`技能装载失败: ${errorMessage}`);
     }
+
+    // 9. 记录 / 更新用户技能关联，确保后续查询和删除流程可见已装载的技能
+    await prisma.userSkill.upsert({
+      where: {
+        uk_user_skills_chat: {
+          userId: user.id,
+          skillId: skill.skillId,
+          chatId: chatServer.id,
+        },
+      },
+      update: {},
+      create: {
+        userId: user.id,
+        skillId: skill.skillId,
+        chatId: chatServer.id,
+        sortOrder: 0,
+      },
+    });
+  }
+
+  /**
+   * 获取技能的装载信息
+   * @param skillId - 技能 ID（字符串）
+   */
+  async getSkillLoadedServers(skillId: string): Promise<Array<{
+    chatServerId: string;
+    chatServerName: string;
+    chatDir: string;
+    proxyHost: string;
+    proxyPort: number;
+    openCodePort: number;
+  }>> {
+    const servers = await this.repository.findSkillLoadedServers(skillId);
+    return servers.map(server => ({
+      chatServerId: server.chatServerId.toString(),
+      chatServerName: server.chatServerName,
+      chatDir: server.chatDir,
+      proxyHost: server.proxyHost,
+      proxyPort: server.proxyPort,
+      openCodePort: server.openCodePort,
+    }));
+  }
+
+  /**
+   * 删除技能（包含卸载和数据清理）
+   * @param skillId - 技能 ID（字符串）
+   * @param onProgress - 进度回调函数
+   */
+  async deleteSkill(
+    skillId: string,
+    onProgress?: (current: number, total: number, serverName: string) => void
+  ): Promise<void> {
+    // 1. 检查技能是否存在
+    const skill = await this.repository.findBySkillId(skillId);
+    if (!skill) {
+      throw new Error('技能不存在');
+    }
+
+    // 2. 获取装载该技能的服务列表
+    const loadedServers = await this.repository.findSkillLoadedServers(skillId);
+
+    // 3. 如果有装载的服务，逐个卸载
+    if (loadedServers.length > 0) {
+      for (let i = 0; i < loadedServers.length; i++) {
+        const server = loadedServers[i];
+
+        // 调用进度回调
+        if (onProgress) {
+          onProgress(i + 1, loadedServers.length, server.chatServerName);
+        }
+
+        // 调用 ProxyClientService 卸载技能
+        try {
+          await this.proxyClient.unloadSkill({
+            proxyHost: server.proxyHost,
+            proxyPort: server.proxyPort,
+            openCodePort: server.openCodePort,
+            chatDir: server.chatDir,
+            skillId: skillId,
+          });
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          throw new Error(`从服务 "${server.chatServerName}" 卸载技能失败: ${errorMessage}`);
+        }
+      }
+
+      // 4. 删除数据库记录（skills, user_skills, skill_files）
+      await this.repository.deleteSkillWithRelations(skillId);
+    } else {
+      // 5. 如果没有装载的服务，只删除 skills 和 skill_files 表
+      await this.repository.deleteSkillOnly(skillId);
+    }
   }
 }
