@@ -40,11 +40,6 @@ export function SkillDetailDialog({
       variant: 'default' as const,
       className: 'bg-green-500 hover:bg-green-600',
     },
-    [SkillStatus.DISABLED]: {
-      label: '已禁用',
-      variant: 'secondary' as const,
-      className: 'bg-gray-400 hover:bg-gray-500',
-    },
   }
 
   const config = statusConfig[skill.status]

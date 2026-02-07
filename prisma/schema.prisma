@@ -652,7 +652,7 @@ model Skill {
   updatedAt   DateTime     @updatedAt @map("updated_at")
 
   // 关联关系
-  creator          User                @relation("SkillCreator", fields: [createdBy], references: [id], onDelete: Restrict)
+  creator          User              @relation("SkillCreator", fields: [createdBy], references: [id], onDelete: Restrict)
   userSkills       UserSkill[]
   chatServerSkills ChatServerSkill[]
   skillFiles       SkillFile[]
@@ -811,8 +811,8 @@ model UserSkill {
   createdAt DateTime @default(now()) @map("created_at")
 
   // 关联关系（无外键约束，数据一致性由应用层保证）
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  skill Skill @relation(fields: [skillId], references: [skillId], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill      Skill      @relation(fields: [skillId], references: [skillId], onDelete: Cascade)
   // chatServer 关联不使用外键约束，仅用于 Prisma 查询
   chatServer ChatServer @relation(fields: [chatId], references: [id])
 

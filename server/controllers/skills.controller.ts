@@ -50,29 +50,6 @@ export class SkillsController {
   }
 
   /**
-   * 获取技能关联的会话列表
-   * GET /api/skills/:skillId/sessions
-   */
-  async getSkillRelatedSessions(req: Request, res: Response): Promise<void> {
-    try {
-      const { skillId } = req.params;
-
-      if (!skillId) {
-        res.status(400).json({
-          error: 'Bad Request',
-          message: 'skillId is required',
-        });
-        return;
-      }
-
-      const sessions = await this.service.getSkillRelatedSessions(skillId);
-      res.status(200).json(sessions);
-    } catch (error) {
-      this.handleError(res, error);
-    }
-  }
-
-  /**
    * 创建技能（包含文件上传）
    * POST /api/skills
    */

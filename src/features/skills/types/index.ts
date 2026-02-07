@@ -3,7 +3,6 @@
  */
 export enum SkillStatus {
   ACTIVE = 'active',
-  DISABLED = 'disabled',
 }
 
 /**
@@ -24,7 +23,7 @@ export interface Skill {
   category: string
   /** 技能标签数组 */
   tags: string[]
-  /** 状态：active（启用）, disabled（禁用） */
+  /** 状态：active（启用） */
   status: SkillStatus
   /** 排序值：数字越小越靠前 */
   sortOrder: number

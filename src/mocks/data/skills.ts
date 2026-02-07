@@ -5,12 +5,11 @@
  * 1. 添加新技能：在 mockSkills 数组中添加新对象
  * 2. 修改字段：直接修改对应的字段值
  * 3. 确保 skillId 唯一
- * 4. status 必须是 'active' | 'disabled'（匹配数据库枚举）
+ * 4. status 必须是 'active'（匹配数据库枚举）
  */
 
 export enum SkillStatus {
   ACTIVE = 'active',
-  DISABLED = 'disabled',
 }
 
 export interface Skill {
@@ -28,7 +27,7 @@ export interface Skill {
   category: string
   /** 技能标签数组 */
   tags: string[]
-  /** 状态：active（启用）, disabled（禁用） */
+  /** 状态：active（启用） */
   status: SkillStatus
   /** 排序值：数字越小越靠前 */
   sortOrder: number
@@ -99,7 +98,7 @@ export const mockSkills: Skill[] = [
     iconPath: '☸️',
     category: 'devops',
     tags: ['kubernetes', '监控', 'devops'],
-    status: SkillStatus.DISABLED,
+    status: SkillStatus.ACTIVE,
     sortOrder: 3,
     filePath: '/skills/k8s-monitoring.zip',
     createdBy: 1003,
@@ -131,7 +130,7 @@ export const mockSkills: Skill[] = [
     iconPath: '📊',
     category: 'monitoring',
     tags: ['日志', '分析', '故障排查'],
-    status: SkillStatus.DISABLED,
+    status: SkillStatus.ACTIVE,
     sortOrder: 5,
     filePath: '/skills/log-analyzer.zip',
     createdBy: 1005,
@@ -181,7 +180,7 @@ export const mockSkills: Skill[] = [
     iconPath: '🌟',
     category: 'test',
     tags: ['special-chars', '特殊字符', 'emoji-🎨', 'test_case'],
-    status: SkillStatus.DISABLED,
+    status: SkillStatus.ACTIVE,
     sortOrder: 8,
     filePath: '/skills/special-chars-test.zip',
     createdBy: 9999,

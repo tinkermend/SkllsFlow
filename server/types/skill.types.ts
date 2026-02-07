@@ -3,7 +3,6 @@
  */
 export enum SkillStatus {
   ONLINE = 'online',
-  DISABLED = 'disabled',
 }
 
 /**
@@ -53,7 +52,7 @@ export interface SerializableSkillWithCreator {
   icon: string | null;
   category: string;
   tags: string[];
-  status: 'active' | 'disabled';
+  status: 'active';
   sortOrder: number;
   createdBy: number;
   createdAt: string;

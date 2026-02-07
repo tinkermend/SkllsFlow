@@ -405,24 +405,6 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
                   />
                 </div>
               </div>
-
-              <div className="space-y-2">
-                 <Label className="text-xs font-medium text-muted-foreground">启用状态</Label>
-                 <div className="h-10 px-4 rounded-lg border bg-card/50 flex items-center justify-between">
-                    <span className="text-sm font-medium text-muted-foreground">
-                      {formData.status === SkillStatus.ACTIVE ? '已启用' : '已禁用'}
-                    </span>
-                    <Switch
-                        checked={formData.status === SkillStatus.ACTIVE}
-                        onCheckedChange={(checked) =>
-                        setFormData((prev) => ({
-                            ...prev,
-                            status: checked ? SkillStatus.ACTIVE : SkillStatus.DISABLED,
-                        }))
-                        }
-                    />
-                 </div>
-              </div>
             </div>
           </div>
 

@@ -30,11 +30,6 @@ router.get('/my-skills', jwtAuthMiddleware, (req: Request, res: Response) => {
   req.skillsController.getMySkills(req, res);
 });
 
-// GET /api/skills/:skillId/sessions - Get skill related sessions
-router.get('/:skillId/sessions', (req: Request, res: Response) => {
-  req.skillsController.getSkillRelatedSessions(req, res);
-});
-
 // GET /api/skills/:skillId/files - Get skill files list
 router.get('/:skillId/files', (req: Request, res: Response) => {
   req.skillsController.getSkillFiles(req, res);

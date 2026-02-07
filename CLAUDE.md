@@ -218,6 +218,8 @@ Express 服务器 (`server/`) 作为 API 的代理
 
 前端通过 Vite 代理 `/api` 请求到后端服务器（见 `vite.config.ts`）
 
+- After implementing changes, run these verifications before saying 'done': 1) For database: prisma format && prisma validate, 2) For backend: npm run type-check, 3) For API: test endpoint with curl or show me the test command. Only commit after all pass.
+
 ## 重要约定
 
 ### 1. 路径别名

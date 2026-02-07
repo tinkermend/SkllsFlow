@@ -32,7 +32,6 @@ export const API_ENDPOINTS = {
     update: (id: string) => `/skills/${id}`,
     delete: (id: string) => `/skills/${id}`,
     upload: "/skills/upload",
-    relatedSessions: (id: string) => `/skills/${id}/sessions`,
     loadedServers: (id: string) => `/skills/${id}/loaded-servers`,
     files: (skillId: string) => `/skills/${skillId}/files`,
     downloadFile: (skillId: string, fileId: string) => `/skills/${skillId}/files/${fileId}/download`,

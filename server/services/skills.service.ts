@@ -85,24 +85,6 @@ export class SkillsService {
   }
 
   /**
-   * 获取技能关联的会话列表
-   */
-  async getSkillRelatedSessions(skillId: string): Promise<Array<{
-    sessionId: string;
-    sessionTitle: string;
-    createdAt: string;
-  }>> {
-    const sessions = await this.repository.findSkillRelatedSessions(skillId);
-
-    // 转换日期格式为 ISO 字符串
-    return sessions.map(session => ({
-      sessionId: session.sessionId,
-      sessionTitle: session.sessionTitle,
-      createdAt: session.createdAt.toISOString(),
-    }));
-  }
-
-  /**
    * 创建技能并保存文件（事务操作）
    */
   async createSkillWithFile(

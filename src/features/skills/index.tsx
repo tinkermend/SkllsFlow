@@ -14,7 +14,6 @@ import { SkillCard } from './components/skill-card'
 import { SkillDetailDialog } from './components/skill-detail-dialog'
 import { InstallSkillDialog } from './components/install-skill-dialog'
 import { UninstallSkillDialog } from './components/uninstall-skill-dialog'
-import { DisableSkillDialog } from './components/disable-skill-dialog'
 import { DeleteSkillDialog } from './components/delete-skill-dialog'
 import { CreateSkillDialog } from './components/create-skill-dialog'
 import { useSkills, useMySkills, useDeleteSkill, useUpdateSkill, useActiveChatServers, useLoadSkill } from './hooks/use-skills'
@@ -29,14 +28,11 @@ export function Skills() {
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false)
   const [isInstallDialogOpen, setIsInstallDialogOpen] = useState(false)
   const [isUninstallDialogOpen, setIsUninstallDialogOpen] = useState(false)
-  const [isDisableDialogOpen, setIsDisableDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [skillToInstall, setSkillToInstall] = useState<string | null>(null)
   const [skillToUninstall, setSkillToUninstall] = useState<Skill | null>(null)
   const [uninstallRelatedSessions, setUninstallRelatedSessions] = useState<SessionSkill[]>([])
-  const [skillToDisable, setSkillToDisable] = useState<Skill | null>(null)
-  const [disableRelatedSessions, setDisableRelatedSessions] = useState<SessionSkill[]>([])
   const [skillToDelete, setSkillToDelete] = useState<Skill | null>(null)
   const [deleteLoadedServers, setDeleteLoadedServers] = useState<LoadedServer[]>([])
   const [deleteUnloadProgress, setDeleteUnloadProgress] = useState<{
@@ -221,78 +217,6 @@ export function Skills() {
     }
   }
 
-  const handleToggleStatus = async (skillId: string, currentStatus: SkillStatus) => {
-    const skill = skills.find((s) => s.skillId === skillId)
-    if (!skill) return
-
-    // 如果是禁用操作，需要检查关联会话
-    if (currentStatus === SkillStatus.ACTIVE) {
-      setSkillToDisable(skill)
-
-      // 获取关联会话数据
-      try {
-        const sessions = await skillsApi.getSkillRelatedSessions(skillId)
-        setDisableRelatedSessions(sessions)
-
-        // 如果有关联会话，打开确认对话框
-        if (sessions.length > 0) {
-          setIsDisableDialogOpen(true)
-          return
-        }
-
-        // 没有关联会话，直接禁用
-        await performDisable(skillId)
-      } catch (error) {
-        console.error('获取关联会话失败:', error)
-        // 出错时也直接禁用
-        await performDisable(skillId)
-      }
-    } else {
-      // 启用操作，直接执行
-      await performEnable(skillId)
-    }
-  }
-
-  const performDisable = async (skillId: string) => {
-    try {
-      await updateSkillMutation.mutateAsync({
-        id: skillId,
-        data: { status: SkillStatus.DISABLED },
-      })
-      toast.success('技能已禁用')
-      setSkillToDisable(null)
-      setDisableRelatedSessions([])
-    } catch (error) {
-      toast.error(`操作失败: ${error instanceof Error ? error.message : '未知错误'}`)
-    }
-  }
-
-  const performEnable = async (skillId: string) => {
-    try {
-      await updateSkillMutation.mutateAsync({
-        id: skillId,
-        data: { status: SkillStatus.ACTIVE },
-      })
-      toast.success('技能已启用')
-    } catch (error) {
-      toast.error(`操作失败: ${error instanceof Error ? error.message : '未知错误'}`)
-    }
-  }
-
-  const handleDisableConfirm = async () => {
-    if (!skillToDisable) return
-    await performDisable(skillToDisable.skillId)
-    setIsDisableDialogOpen(false)
-  }
-
-  const handleDisableDialogOpenChange = (open: boolean) => {
-    if (!open) {
-      setSkillToDisable(null)
-      setDisableRelatedSessions([])
-    }
-    setIsDisableDialogOpen(open)
-  }
-
   const handleCreateSkill = () => {
     setIsCreateDialogOpen(true)
   }
@@ -405,7 +329,6 @@ export function Skills() {
                           onViewDetails={handleViewDetails}
                           onDelete={handleDelete}
                           onInstall={handleInstall}
-                          onToggleStatus={handleToggleStatus}
                         />
                       ))}
                     </div>
@@ -444,16 +367,6 @@ export function Skills() {
         skillName={skillToUninstall?.name || ''}
         relatedSessions={uninstallRelatedSessions}
         isLoading={deleteSkillMutation.isPending}
-      />
-
-      {/* 禁用技能对话框 */}
-      <DisableSkillDialog
-        open={isDisableDialogOpen}
-        onOpenChange={handleDisableDialogOpenChange}
-        onConfirm={handleDisableConfirm}
-        skillName={skillToDisable?.name || ''}
-        relatedSessions={disableRelatedSessions}
-        isLoading={updateSkillMutation.isPending}
       />
 
       {/* 删除技能对话框 */}
