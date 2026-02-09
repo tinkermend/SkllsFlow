@@ -4,6 +4,7 @@ import { useChatStore } from '@/stores/chat-store'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { PermissionGuard } from '@/components/auth/permission-guard'
+import { useChatServers } from '../hooks/use-chat-servers'
 import {
   useSessions,
   useCreateSession,
@@ -15,13 +16,18 @@ import { SessionItem } from './session-item'
 
 export function ChatSessionList() {
   const { activeServer, currentSessionId, setCurrentSession } = useChatStore()
+  const { chatServers } = useChatServers()
   const { data: sessions = [], isLoading } = useSessions()
   const createSession = useCreateSession()
   const deleteSession = useDeleteSession()
   const updateSession = useUpdateSession()
+  const matchedServer = activeServer
+    ? chatServers.find((server) => server.chatId === activeServer.chatId)
+    : undefined
+  const isServiceUnavailable = matchedServer?.healthStatus === 'unhealthy'
 
   const handleCreateSession = () => {
-    if (!activeServer) return
+    if (!activeServer || isServiceUnavailable) return
     if (sessions.length >= MAX_SESSIONS_PER_SERVICE) {
       toast.error('每个服务最多 3 个会话')
       return
@@ -33,12 +39,12 @@ export function ChatSessionList() {
   }
 
   const handleDeleteSession = (sessionId: string) => {
-    if (!activeServer) return
+    if (!activeServer || isServiceUnavailable) return
     deleteSession.mutate(sessionId)
   }
 
   const handleRenameSession = (sessionId: string, newTitle: string) => {
-    if (!activeServer) return
+    if (!activeServer || isServiceUnavailable) return
     updateSession.mutate({ sessionId, title: newTitle })
   }
 
@@ -57,7 +63,11 @@ export function ChatSessionList() {
                 size='icon'
                 variant='ghost'
                 onClick={handleCreateSession}
-                disabled={createSession.isPending || sessions.length >= MAX_SESSIONS_PER_SERVICE}
+                disabled={
+                  createSession.isPending ||
+                  sessions.length >= MAX_SESSIONS_PER_SERVICE ||
+                  isServiceUnavailable
+                }
               >
                 <Plus className='size-4' />
               </Button>
@@ -94,6 +104,7 @@ export function ChatSessionList() {
                   size='sm'
                   onClick={handleCreateSession}
                   className='mt-2'
+                  disabled={isServiceUnavailable}
                 >
                   创建新对话
                 </Button>
@@ -107,6 +118,7 @@ export function ChatSessionList() {
                 key={session.sessionId}
                 session={session}
                 isActive={session.sessionId === currentSessionId}
+                disabled={isServiceUnavailable}
                 onClick={() => setCurrentSession(session.sessionId)}
                 onDelete={() => handleDeleteSession(session.sessionId)}
                 onRename={(newTitle) => handleRenameSession(session.sessionId, newTitle)}

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { Trash2, Pencil, Check, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -10,6 +10,7 @@ import type { Session } from '../types'
 interface SessionItemProps {
   session: Session
   isActive: boolean
+  disabled?: boolean
   onClick: () => void
   onDelete: () => void
   onRename: (newTitle: string) => void
@@ -18,6 +19,7 @@ interface SessionItemProps {
 export function SessionItem({
   session,
   isActive,
+  disabled = false,
   onClick,
   onDelete,
   onRename,
@@ -52,13 +54,26 @@ export function SessionItem({
     }
   }
 
+  useEffect(() => {
+    if (!disabled) return
+    if (isEditing) {
+      setEditTitle(session.title || '新对话')
+      setIsEditing(false)
+    }
+  }, [disabled, isEditing, session.title])
+
   return (
     <div
       className={cn(
-        'group/item flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 transition-colors',
-        isActive ? 'bg-primary/10 text-primary' : 'hover:bg-muted'
+        'group/item flex items-center justify-between rounded-lg px-3 py-2 transition-colors',
+        disabled
+          ? 'cursor-not-allowed opacity-60 text-muted-foreground'
+          : isActive
+            ? 'cursor-pointer bg-primary/10 text-primary'
+            : 'cursor-pointer hover:bg-muted'
       )}
-      onClick={isEditing ? undefined : onClick}
+      onClick={disabled || isEditing ? undefined : onClick}
+      aria-disabled={disabled}
     >
       <div className='min-w-0 flex-1 overflow-hidden'>
         {isEditing ? (
@@ -102,7 +117,7 @@ export function SessionItem({
         )}
       </div>
 
-      {!isEditing && (
+      {!isEditing && !disabled && (
         <div className='flex shrink-0 items-center gap-1'>
           <PermissionGuard permission='session:update'>
             <Button

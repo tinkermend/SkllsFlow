@@ -13,7 +13,6 @@ export function useSessions() {
     sessions,
     setSessions,
     setCurrentSession,
-    connectionStatus,
     activeServer,
   } = useChatStore()
   const [isLoading, setIsLoading] = useState(false)
@@ -23,11 +22,6 @@ export function useSessions() {
       setIsLoading(false)
       setSessions([])
       setCurrentSession(null)
-      return
-    }
-
-    if (connectionStatus !== 'connected') {
-      setIsLoading(true)
       return
     }
 
@@ -76,7 +70,6 @@ export function useSessions() {
     }
   }, [
     activeServer?.id,
-    connectionStatus,
     setCurrentSession,
     setSessions,
   ])
