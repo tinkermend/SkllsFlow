@@ -1,4 +1,4 @@
-import { Card, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Download, CheckCircle } from 'lucide-react';
@@ -12,6 +12,9 @@ interface MarketplaceCardProps {
 }
 
 export function MarketplaceCard({ item, onLoad, onViewDetail }: MarketplaceCardProps) {
+  const visibleTags = item.tags.slice(0, 3);
+  const hiddenTagCount = Math.max(item.tags.length - 3, 0);
+
   // 获取语言图标类名（用于渐变背景）
   const getLanguageIconClass = (language?: string) => {
     const classes: Record<string, string> = {
@@ -25,18 +28,12 @@ export function MarketplaceCard({ item, onLoad, onViewDetail }: MarketplaceCardP
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow rounded-xl border-slate-200">
-      <CardHeader className="p-4 relative">
-        {/* 右上角：下载次数（绝对定位） */}
-        <div className="absolute top-4 right-4 flex items-center gap-1 text-xs text-slate-500">
-          <Download className="h-3.5 w-3.5" />
-          <span className="font-medium">{item.installationCount}</span>
-        </div>
-
-        {/* 顶部行：图标 + 名称 */}
-        <div className="flex items-center gap-3 mb-2 pr-16">
-          {/* 左侧图标区域 */}
-          <div className={`w-14 h-14 bg-gradient-to-br ${getLanguageIconClass(item.language)} rounded-xl flex items-center justify-center text-2xl flex-shrink-0`}>
+    <Card className="flex h-full flex-col gap-0 rounded-xl border-slate-200 py-0 transition-shadow hover:shadow-md">
+      <CardHeader className="flex flex-row items-start justify-between gap-3 p-4 pb-3">
+        <div className="flex min-w-0 flex-1 items-start gap-3">
+          <div
+            className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-xl ${getLanguageIconClass(item.language)}`}
+          >
             {item.icon ? (
               <span>{item.icon}</span>
             ) : (
@@ -44,69 +41,68 @@ export function MarketplaceCard({ item, onLoad, onViewDetail }: MarketplaceCardP
             )}
           </div>
 
-          {/* 名称和验证 */}
-          <div className="flex-1 min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-slate-900 text-base truncate">{item.name}</h3>
+              <h3 className="truncate text-base font-semibold text-slate-900">{item.name}</h3>
               {item.isVerified && (
-                <CheckCircle className="h-4 w-4 text-blue-500 flex-shrink-0" title="已验证" />
+                <CheckCircle className="h-4 w-4 flex-shrink-0 text-blue-500" title="已验证" />
               )}
             </div>
+            <p className="mt-1 truncate text-xs text-slate-500">
+              创建者: <span className="text-slate-700">{item.creatorUsername}</span>
+            </p>
           </div>
         </div>
 
-        {/* 描述 */}
-        <p className="text-sm text-slate-600 mb-1.5 line-clamp-2 min-h-[2.5rem]">
+        <Badge variant="secondary" className="flex shrink-0 items-center gap-1 text-xs font-medium">
+          <Download className="h-3.5 w-3.5" />
+          <span>{item.installationCount}</span>
+        </Badge>
+      </CardHeader>
+
+      <CardContent className="flex flex-1 flex-col px-4 pb-3 pt-0">
+        <p className="line-clamp-2 min-h-[2.5rem] text-sm leading-5 text-slate-600">
           {item.description || '暂无描述'}
         </p>
 
-        {/* 创建者信息 */}
-        <p className="text-xs text-slate-500 mb-3">
-          创建者: <span className="text-slate-700">{item.creatorUsername}</span>
-        </p>
-
-        {/* 底部行：标签和分类 + 操作按钮 */}
-        <div className="flex items-center justify-between gap-3">
-          {/* 左侧：标签和分类 */}
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            {item.tags && item.tags.length > 0 && (
-              <div className="flex items-center gap-1 flex-wrap">
-                {item.tags.slice(0, 3).map((tag) => (
-                  <Badge key={tag} variant="secondary" className="text-xs px-2 py-1">
-                    {tag}
-                  </Badge>
-                ))}
-                {item.tags.length > 3 && (
-                  <Badge variant="secondary" className="text-xs px-2 py-1">
-                    +{item.tags.length - 3}
-                  </Badge>
-                )}
-              </div>
-            )}
-
-            <Badge variant="outline" className="text-xs px-2 py-1 flex-shrink-0">
+        <div className="mt-3 h-12 overflow-hidden">
+          <div className="flex flex-wrap gap-1.5">
+            <Badge variant="secondary" className="px-2 py-0.5 text-xs">
               {item.categoryName}
             </Badge>
-          </div>
 
-          {/* 右下角：操作按钮 */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <Button
-              onClick={() => onLoad?.(item)}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors h-9"
-            >
-              装载
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => onViewDetail?.(item)}
-              className="px-4 py-2 text-xs font-medium rounded-lg h-9"
-            >
-              详情
-            </Button>
+            {visibleTags.map((tag) => (
+              <Badge key={tag} variant="secondary" className="px-2 py-0.5 text-xs">
+                {tag}
+              </Badge>
+            ))}
+
+            {hiddenTagCount > 0 && (
+              <Badge variant="secondary" className="px-2 py-0.5 text-xs">
+                +{hiddenTagCount}
+              </Badge>
+            )}
           </div>
         </div>
-      </CardHeader>
+      </CardContent>
+
+      <CardFooter className="mt-auto justify-end gap-2 border-t border-slate-100 px-4 pb-4 pt-3">
+        <Button
+          size="sm"
+          onClick={() => onLoad?.(item)}
+          className="min-w-[68px] bg-blue-600 text-white hover:bg-blue-700"
+        >
+          装载
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => onViewDetail?.(item)}
+          className="min-w-[68px]"
+        >
+          详情
+        </Button>
+      </CardFooter>
     </Card>
   );
 }
