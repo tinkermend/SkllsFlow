@@ -76,8 +76,9 @@ export function useAuth() {
         'redirect'
       )
       navigate({ to: redirect || '/' })
-    } catch (error: any) {
-      const message = error.response?.data?.error || error.response?.data?.message || '登录失败，请重试'
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string; message?: string } } }
+      const message = err.response?.data?.error || err.response?.data?.message || '登录失败，请重试'
       toast.error(message)
       throw error
     }
@@ -89,8 +90,8 @@ export function useAuth() {
   const logout = async () => {
     try {
       await apiClient.post('/auth/logout')
-    } catch (error) {
-      console.error('Logout error:', error)
+    } catch {
+      // 登出失败也继续重置状态
     } finally {
       auth.reset()
       navigate({ to: '/sign-in' })

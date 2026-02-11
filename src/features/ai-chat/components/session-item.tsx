@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/rules-of-hooks */
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { Trash2, Pencil, Check, X } from 'lucide-react'

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -40,7 +41,7 @@ const formSchema = z.object({
   path: z.string().optional(),
   icon: z.string().optional(),
   parentId: z.string().optional(),
-  sort: z.coerce.number().min(0, '排序必须大于等于0'),
+  sort: z.number().min(0, '排序必须大于等于0'),
   type: z.enum(['menu', 'button']),
   permission: z.string().optional(),
   isVisible: z.boolean(),
@@ -48,7 +49,18 @@ const formSchema = z.object({
   status: z.enum(['active', 'disabled']),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+interface FormValues {
+  name: string;
+  path?: string;
+  icon?: string;
+  parentId?: string;
+  sort: number;
+  type: 'menu' | 'button';
+  permission?: string;
+  isVisible: boolean;
+  isExternal: boolean;
+  status: 'active' | 'disabled';
+}
 
 export function MenuFormDialog() {
   const { selectedMenu, isFormOpen, setIsFormOpen } = useMenusContext();

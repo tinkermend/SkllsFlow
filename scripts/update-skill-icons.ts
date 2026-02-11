@@ -1,17 +1,9 @@
+ 
 /**
  * 更新技能表中的图标字段
  * 将 "lucide:code-2" 格式转换为 "CodeXml" 格式
  */
 import { DatabaseService } from '../server/services/database.service.js';
-
-// 图标名称映射表
-const ICON_MAPPING: Record<string, string> = {
-  'lucide:code-2': 'Code2',
-  'lucide:bar-chart-3': 'BarChart3',
-  'lucide:bar-chart-2': 'BarChart2',
-  'lucide:bar-chart': 'BarChart',
-  // 添加更多映射...
-};
 
 async function updateSkillIcons() {
   await DatabaseService.connect();

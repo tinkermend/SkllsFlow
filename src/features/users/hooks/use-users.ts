@@ -1,11 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { usersApi, type GetUsersParams } from '@/lib/api/users';
+import { usersApi, type GetUsersParams, type GetUsersResponse } from '@/lib/api/users';
 
 export function useUsers(params: GetUsersParams) {
-  return useQuery({
+  return useQuery<GetUsersResponse>({
     queryKey: ['users', params],
     queryFn: () => usersApi.getUsers(params).then(res => res.data),
-    keepPreviousData: true,
+    placeholderData: (previousData) => previousData,
   });
 }
 
@@ -32,7 +32,7 @@ export function useUpdateUser() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) =>
+    mutationFn: ({ id, data }: { id: string; data: { username?: string; avatar?: string; status?: 'active' | 'disabled'; password?: string } }) =>
       usersApi.updateUser(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });

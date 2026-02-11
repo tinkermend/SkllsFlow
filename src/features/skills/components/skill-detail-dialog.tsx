@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -9,7 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
-import { Download } from 'lucide-react'
+import { Download, Package } from 'lucide-react'
 import { parseIcon } from '@/lib/icon-parser'
 import { skillsApi } from '../api/skills.api'
 import { SkillStatus, type Skill, type SessionSkill, type SkillFile } from '../types'
@@ -31,8 +30,9 @@ export function SkillDetailDialog({
 }: SkillDetailDialogProps) {
   if (!skill) return null
 
-  // 解析图标字符串为 React 组件
-  const IconComponent = useMemo(() => parseIcon(skill.icon), [skill.icon])
+  // 解析图标字符串为 React 组件（使用默认图标作为后备）
+  const DefaultIcon = Package
+  const IconComponent = skill.icon ? parseIcon(skill.icon) : DefaultIcon
 
   const statusConfig = {
     [SkillStatus.ACTIVE]: {

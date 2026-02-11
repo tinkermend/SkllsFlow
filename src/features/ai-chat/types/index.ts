@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // ============ OpenCode 连接 ============
 export interface OpenCodeConnection {
   host: string

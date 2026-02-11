@@ -30,8 +30,9 @@ export function useChatServers() {
       queryClient.invalidateQueries({ queryKey: ['chat-servers'] });
       toast.success('服务启动成功');
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.message || '创建失败';
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      const message = err.response?.data?.message || '创建失败';
       toast.error(message);
     },
   });
@@ -43,7 +44,7 @@ export function useChatServers() {
       queryClient.invalidateQueries({ queryKey: ['chat-servers'] });
       toast.success('服务已删除');
     },
-    onError: (error: any) => {
+    onError: () => {
       toast.error('删除失败');
     },
   });

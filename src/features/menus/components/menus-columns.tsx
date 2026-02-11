@@ -54,7 +54,7 @@ export const menusColumns: ColumnDef<MenuRow>[] = [
         </Badge>
       );
     },
-    filterFn: (row, id, value) => {
+    filterFn: (row, _id, value) => {
       const state = row.original.isVisible ? 'visible' : 'hidden';
       return value.includes(state);
     },

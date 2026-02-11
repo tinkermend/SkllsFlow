@@ -19,7 +19,7 @@ export function parseIcon(iconString: string | null | undefined): LucideIcon {
   }
 
   // 直接从 lucide-react 中查找对应的图标组件
-  const IconComponent = (LucideIcons as Record<string, LucideIcon>)[iconString]
+  const IconComponent = (LucideIcons as unknown as Record<string, LucideIcon>)[iconString]
 
   return IconComponent || defaultIcon
 }

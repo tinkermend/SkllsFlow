@@ -45,7 +45,7 @@ export function MarketplaceCard({ item, onLoad, onViewDetail }: MarketplaceCardP
             <div className="flex items-center gap-2">
               <h3 className="truncate text-base font-semibold text-slate-900">{item.name}</h3>
               {item.isVerified && (
-                <CheckCircle className="h-4 w-4 flex-shrink-0 text-blue-500" title="已验证" />
+                <CheckCircle className="h-4 w-4 flex-shrink-0 text-blue-500" />
               )}
             </div>
             <p className="mt-1 truncate text-xs text-slate-500">

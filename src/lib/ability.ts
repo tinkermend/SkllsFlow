@@ -17,6 +17,7 @@ export type Subjects =
   | 'Skill'
   | 'Mcp'
   | 'Agent'
+  | 'ChatServer'
   | 'all'
 
 export type AppAbility = Ability<[Actions, Subjects]>

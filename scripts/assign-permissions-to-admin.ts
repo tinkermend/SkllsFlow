@@ -1,3 +1,5 @@
+ 
+ 
 import { DatabaseService } from '../server/services/database.service.js';
 
 async function assignPermissionsToAdmin() {

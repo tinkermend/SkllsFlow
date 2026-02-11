@@ -1,5 +1,4 @@
-import { useMemo } from "react";
-import { MoreVertical } from "lucide-react";
+import { MoreVertical, Package } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,8 +38,8 @@ export function SkillCard({
 }: SkillCardProps) {
   const { can } = usePermission();
 
-  // 解析图标字符串为 React 组件
-  const IconComponent = useMemo(() => parseIcon(skill.icon), [skill.icon]);
+  // 解析图标字符串为 React 组件（使用默认图标作为后备）
+  const IconComponent = skill.icon ? parseIcon(skill.icon) : Package;
 
   const statusConfig = {
     [SkillStatus.ACTIVE]: {

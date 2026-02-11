@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const menuSchema = z.object({
+const baseMenuSchema = z.object({
   id: z.union([z.string(), z.bigint()]).transform((val) => String(val)),
   name: z.string(),
   path: z.string().nullable(),
@@ -16,9 +16,12 @@ export const menuSchema = z.object({
   status: z.enum(['active', 'disabled']),
   createdAt: z.string(),
   updatedAt: z.string(),
+});
+
+export type Menu = z.infer<typeof baseMenuSchema> & { children?: Menu[] };
+
+export const menuSchema: z.ZodType<Menu> = baseMenuSchema.extend({
   children: z.array(z.lazy(() => menuSchema)).optional(),
 });
 
 export const menuListSchema = z.array(menuSchema);
-
-export type Menu = z.infer<typeof menuSchema>;

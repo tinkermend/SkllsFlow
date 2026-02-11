@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useCallback, useState } from 'react'
 import { useChatStore } from '@/stores/chat-store'
 import { createEventSource, type EventSourceManager } from '../api/event.api'

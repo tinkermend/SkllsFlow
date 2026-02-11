@@ -44,18 +44,18 @@ export class DirectoriesService {
       const fs = await import('node:fs/promises');
       await fs.mkdir(fullPath, { recursive: true });
 
-      // eslint-disable-next-line no-console
+       
       console.log('[DirectoriesService] 目录创建成功:', fullPath);
       return fullPath;
     } catch (error) {
       // 如果目录已存在，直接返回路径
       if ((error as NodeJS.ErrnoException).code === 'EEXIST') {
-        // eslint-disable-next-line no-console
+         
         console.log('[DirectoriesService] 目录已存在:', fullPath);
         return fullPath;
       }
 
-      // eslint-disable-next-line no-console
+       
       console.error('[DirectoriesService] 创建目录失败:', error);
       throw new Error(
         `创建目录失败: ${error instanceof Error ? error.message : '未知错误'}`

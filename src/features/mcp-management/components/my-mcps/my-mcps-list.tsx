@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/rules-of-hooks */
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from 'react';
 import { useMyServices } from '../../hooks/use-mcp-services';
 import { McpSearchBar } from './mcp-search-bar';

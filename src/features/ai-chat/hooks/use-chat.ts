@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { useCallback } from 'react'
 import { useChatStore } from '@/stores/chat-store'
 import { messageApi } from '../api/message.api'

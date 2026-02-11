@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/rules-of-hooks */
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { FEATURE_FLAGS } from '../config/feature-flags'

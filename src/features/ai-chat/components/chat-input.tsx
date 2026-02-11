@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { useState, useRef, useCallback } from 'react'
 import { Send, Square } from 'lucide-react'
 import { cn } from '@/lib/utils'

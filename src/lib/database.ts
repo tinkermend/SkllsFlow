@@ -1,4 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { PrismaClient, type Prisma } from "@prisma/client";
 
 const prisma = new PrismaClient({
   // Connection Pool Configuration (FR-024)
@@ -65,7 +66,7 @@ export class BaseRepository<T> {
   }
 
   // Transaction support (FR-017)
-  async inTransaction<R>(fn: (tx: any) => Promise<R>): Promise<R> {
+  async inTransaction<R>(fn: (tx: Prisma.TransactionClient) => Promise<R>): Promise<R> {
     return prisma.$transaction(fn);
   }
 }

@@ -163,8 +163,9 @@ export function UsersActionDialog({
       }
       onOpenChange(false);
       form.reset();
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || error.message || "操作失败");
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string } }; message?: string }
+      toast.error(err.response?.data?.error || err.message || "操作失败");
     }
   };
 

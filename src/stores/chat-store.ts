@@ -204,11 +204,6 @@ export const useChatStore = create<ChatState>((set) => ({
   isStreaming: false,
   streamingMessageId: null,
   setStreaming: (status, messageId = null) => {
-    console.log('[Store] setStreaming called:', {
-      status,
-      messageId,
-      stack: new Error().stack?.split('\n').slice(1, 4).join('\n'),
-    })
     set({
       isStreaming: status,
       streamingMessageId: messageId,

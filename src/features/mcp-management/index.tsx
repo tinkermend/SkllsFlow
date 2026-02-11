@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { useState } from "react";
 import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
@@ -13,7 +14,7 @@ import { MarketplaceLayout } from "./components/marketplace/marketplace-layout";
 import { CreateMcpDialog } from "./components/dialogs/create-mcp-dialog";
 import { LoadMcpDialog } from "./components/dialogs/load-mcp-dialog";
 import { useDeleteService } from "./hooks/use-mcp-services";
-import { useHealthCheck, useRestartService } from "./hooks/use-mcp-operations";
+import { useRestartService } from "./hooks/use-mcp-operations";
 import type { McpService, McpMarketplaceItem } from "./types";
 
 /**
@@ -30,7 +31,6 @@ export default function McpManagement() {
 
   const deleteMutation = useDeleteService();
   const restartMutation = useRestartService();
-  const healthCheckMutation = useHealthCheck();
 
   // 处理配置 MCP
   const handleConfigure = (service: McpService) => {

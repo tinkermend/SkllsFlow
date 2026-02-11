@@ -28,12 +28,13 @@ export function UsersDeleteDialog({
     if (value.trim() !== currentRow.username) return;
 
     try {
-      await deleteUser.mutateAsync(currentRow.id);
+      await deleteUser.mutateAsync(currentRow.userId);
       toast.success("用户删除成功");
       onOpenChange(false);
       setValue("");
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || error.message || "删除失败");
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string } }; message?: string }
+      toast.error(err.response?.data?.error || err.message || "删除失败");
     }
   };
 

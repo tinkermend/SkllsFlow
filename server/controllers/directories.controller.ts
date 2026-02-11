@@ -15,7 +15,7 @@ export class DirectoriesController {
       const basePath = await directoriesService.getBasePath();
       res.status(200).json({ directory: basePath });
     } catch (error) {
-      // eslint-disable-next-line no-console
+       
       console.error('[DirectoriesController] 获取基础目录失败:', error);
       res.status(503).json({
         error: '无法获取基础目录路径',
@@ -49,7 +49,7 @@ export class DirectoriesController {
         name: result.name,
       });
     } catch (error) {
-      // eslint-disable-next-line no-console
+       
       console.error('[DirectoriesController] 创建目录失败:', error);
       res.status(500).json({
         error: '创建目录失败',
@@ -83,7 +83,7 @@ export class DirectoriesController {
         directoryName: result.name,
       });
     } catch (error) {
-      // eslint-disable-next-line no-console
+       
       console.error('[DirectoriesController] 准备目录失败:', error);
       res.status(503).json({
         error: '准备目录失败',

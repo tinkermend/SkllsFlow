@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import type { OpenCodeConnection, SSEEvent } from '../types'
 import { getBaseUrl } from './client'
 

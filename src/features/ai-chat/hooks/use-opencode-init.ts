@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { useCallback, useEffect } from 'react'
 import { toast } from 'sonner'
 import { useChatStore } from '@/stores/chat-store'

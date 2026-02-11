@@ -1,5 +1,5 @@
 import multer from 'multer';
-import { Request } from 'express';
+import { type Request } from 'express';
 
 /**
  * 文件上传中间件配置

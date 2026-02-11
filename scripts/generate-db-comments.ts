@@ -1,3 +1,4 @@
+ 
 /**
  * 从 Prisma Schema 提取注释并生成 PostgreSQL COMMENT 语句
  * 使用方法：pnpm tsx scripts/generate-db-comments.ts
