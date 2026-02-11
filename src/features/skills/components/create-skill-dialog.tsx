@@ -20,7 +20,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
 import { useCreateSkill } from '../hooks/use-skills'
 import { SkillStatus } from '../types'
@@ -70,9 +69,28 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isDragging, setIsDragging] = useState(false)
 
-  const validateAndSetFile = (file: File) => {
+  const validateSkillId = (skillId: string): string => {
+    if (!skillId.trim()) {
+      return '请先上传技能压缩包以生成技能ID'
+    }
+    if (skillId.includes(' ')) {
+      return '技能ID不能包含空格'
+    }
+    if (!/^[a-zA-Z0-9_\-.]+$/.test(skillId)) {
+      return '技能ID只能包含英文、数字、下划线、连字符和点号'
+    }
+    if (skillId.length > 64) {
+      return '技能ID不能超过 64 个字符'
+    }
+    return ''
+  }
+
+  const deriveSkillIdFromZipName = (fileName: string): string =>
+    fileName.replace(/\.zip$/i, '').trim()
+
+  const validateAndSetFile = useCallback((file: File) => {
     // 验证文件类型
-    if (!file.name.endsWith('.zip')) {
+    if (!/\.zip$/i.test(file.name)) {
       setErrors((prev) => ({ ...prev, file: '只支持 .zip 格式的压缩包' }))
       return
     }
@@ -83,9 +101,20 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
       return
     }
 
-    setFormData((prev) => ({ ...prev, file }))
-    setErrors((prev) => ({ ...prev, file: '' }))
-  }
+    const derivedSkillId = deriveSkillIdFromZipName(file.name)
+    const skillIdError = validateSkillId(derivedSkillId)
+    if (skillIdError) {
+      setErrors((prev) => ({
+        ...prev,
+        file: '技能包文件名不符合技能ID规则，请重命名后重试',
+        skillId: skillIdError,
+      }))
+      return
+    }
+
+    setFormData((prev) => ({ ...prev, file, skillId: derivedSkillId }))
+    setErrors((prev) => ({ ...prev, file: '', skillId: '' }))
+  }, [])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -94,7 +123,8 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
   }
 
   const handleRemoveFile = () => {
-    setFormData((prev) => ({ ...prev, file: null }))
+    setFormData((prev) => ({ ...prev, file: null, skillId: '' }))
+    setErrors((prev) => ({ ...prev, file: '', skillId: '' }))
   }
 
   const handleAddTag = () => {
@@ -126,14 +156,9 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.skillId.trim()) {
-      newErrors.skillId = '请输入技能ID'
-    } else if (formData.skillId.includes(' ')) {
-      newErrors.skillId = '技能ID不能包含空格'
-    } else if (!/^[a-zA-Z0-9_\-.]+$/.test(formData.skillId)) {
-      newErrors.skillId = '技能ID只能包含英文、数字、下划线、连字符和点号'
-    } else if (formData.skillId.length > 64) {
-      newErrors.skillId = '技能ID不能超过 64 个字符'
+    const skillIdError = validateSkillId(formData.skillId)
+    if (skillIdError) {
+      newErrors.skillId = skillIdError
     }
 
     if (!formData.name.trim()) {
@@ -217,7 +242,7 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
     if (file) {
       validateAndSetFile(file)
     }
-  }, [])
+  }, [validateAndSetFile])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -261,15 +286,16 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
                     </Label>
                     <Input
                       id="skillId"
-                      placeholder="英文ID，如：my-skill"
+                      placeholder="上传 .zip 后自动生成"
                       value={formData.skillId}
-                      onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, skillId: e.target.value }))
-                      }
-                      className={`h-10 ${errors.skillId ? 'border-destructive' : ''}`}
+                      disabled
+                      className={`h-10 bg-muted text-muted-foreground cursor-not-allowed ${errors.skillId ? 'border-destructive' : ''}`}
                     />
                     {errors.skillId && (
                       <p className="text-xs text-destructive">{errors.skillId}</p>
+                    )}
+                    {!errors.skillId && (
+                      <p className="text-xs text-muted-foreground">技能ID由技能包文件名（去掉 .zip）自动生成</p>
                     )}
                   </div>
                   <div className="space-y-2">

@@ -124,11 +124,14 @@ function RadioGroupItem({
   }
   isTheme?: boolean
 }) {
+  const labelText = typeof item.label === 'string' ? item.label : ''
+  const ariaLabel = labelText ? `Select ${labelText}` : 'Select option'
+
   return (
     <Item
       value={item.value}
       className={cn('group outline-none', 'transition duration-200 ease-in')}
-      aria-label={`Select ${item.label.toLowerCase()}`}
+      aria-label={ariaLabel}
       aria-describedby={`${item.value}-description`}
     >
       <div
