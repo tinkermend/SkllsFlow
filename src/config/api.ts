@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * API 配置
  *
@@ -31,6 +32,7 @@ export const API_ENDPOINTS = {
     create: "/skills",
     update: (id: string) => `/skills/${id}`,
     delete: (id: string) => `/skills/${id}`,
+    uninstall: (id: string) => `/skills/${id}/uninstall`,
     upload: "/skills/upload",
     loadedServers: (id: string) => `/skills/${id}/loaded-servers`,
     files: (skillId: string) => `/skills/${skillId}/files`,

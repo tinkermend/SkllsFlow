@@ -272,6 +272,68 @@ export class SkillsRepository extends BaseRepository<
   }
 
   /**
+   * 获取指定用户装载该技能的服务列表
+   * @param skillId - 技能 ID（字符串）
+   * @param userId - 用户 ID（BigInt）
+   */
+  async findSkillLoadedServersByUser(
+    skillId: string,
+    userId: bigint
+  ): Promise<Array<{
+    chatServerId: bigint;
+    chatServerName: string;
+    chatDir: string;
+    proxyHost: string;
+    proxyPort: number;
+    openCodePort: number;
+  }>> {
+    const userSkills = await this.prisma.userSkill.findMany({
+      where: { skillId, userId },
+      include: {
+        chatServer: {
+          include: {
+            proxyHost: true,
+          },
+        },
+      },
+      distinct: ['chatId'],
+    });
+
+    return userSkills.map(us => ({
+      chatServerId: us.chatServer.id,
+      chatServerName: us.chatServer.name,
+      chatDir: us.chatServer.chatDir,
+      proxyHost: us.chatServer.proxyHost.host,
+      proxyPort: us.chatServer.proxyHost.port,
+      openCodePort: us.chatServer.port,
+    }));
+  }
+
+  /**
+   * 删除指定用户与技能的关联记录
+   * @param skillId - 技能 ID（字符串）
+   * @param userId - 用户 ID（BigInt）
+   * @returns 删除的记录数
+   */
+  async deleteUserSkillRelations(skillId: string, userId: bigint): Promise<number> {
+    const result = await this.prisma.userSkill.deleteMany({
+      where: { skillId, userId },
+    });
+
+    return result.count;
+  }
+
+  /**
+   * 统计技能在 user_skills 中的剩余关联数量
+   * @param skillId - 技能 ID（字符串）
+   */
+  async countUserSkillRelations(skillId: string): Promise<number> {
+    return this.prisma.userSkill.count({
+      where: { skillId },
+    });
+  }
+
+  /**
    * 删除技能及其关联数据（事务操作）
    * @param skillId - 技能 ID（字符串）
    */

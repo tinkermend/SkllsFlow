@@ -50,6 +50,11 @@ router.post('/:skillId/load', jwtAuthMiddleware, (req: Request, res: Response) =
   req.skillsController.loadSkillToChatServer(req, res);
 });
 
+// DELETE /api/skills/:skillId/uninstall - Uninstall current user's skill (requires auth)
+router.delete('/:skillId/uninstall', jwtAuthMiddleware, (req: Request, res: Response) => {
+  req.skillsController.uninstallMySkill(req, res);
+});
+
 // DELETE /api/skills/:skillId - Delete skill (requires auth)
 router.delete('/:skillId', jwtAuthMiddleware, (req: Request, res: Response) => {
   req.skillsController.deleteSkill(req, res);

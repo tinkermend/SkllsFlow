@@ -386,4 +386,65 @@ export class SkillsService {
       await this.repository.deleteSkillOnly(skillId);
     }
   }
+
+  /**
+   * 卸载当前用户的技能。
+   * 流程：
+   * 1. 卸载当前用户关联服务中的技能（proxy_server）
+   * 2. 删除当前用户在 user_skills 中的关联记录
+   * 3. 返回该技能在全局 user_skills 中的剩余关联数量（仅用于展示）
+   */
+  async uninstallMySkill(
+    skillId: string,
+    userUuid: string,
+    onProgress?: (current: number, total: number, serverName: string) => void
+  ): Promise<{ skillDeleted: boolean; remainingBindings: number }> {
+    // 1. 检查技能是否存在
+    const skill = await this.repository.findBySkillId(skillId);
+    if (!skill) {
+      throw new Error('技能不存在');
+    }
+
+    // 2. 检查用户是否存在
+    const user = await this.userRepository.findByUserId(userUuid);
+    if (!user) {
+      throw new Error('用户不存在');
+    }
+
+    // 3. 查询当前用户装载了该技能的服务
+    const loadedServers = await this.repository.findSkillLoadedServersByUser(skillId, user.id);
+
+    // 4. 逐个卸载
+    for (let i = 0; i < loadedServers.length; i++) {
+      const server = loadedServers[i];
+
+      if (onProgress) {
+        onProgress(i + 1, loadedServers.length, server.chatServerName);
+      }
+
+      try {
+        await this.proxyClient.unloadSkill({
+          proxyHost: server.proxyHost,
+          proxyPort: server.proxyPort,
+          openCodePort: server.openCodePort,
+          chatDir: server.chatDir,
+          skillName: skillId,
+        });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        throw new Error(`从服务 "${server.chatServerName}" 卸载技能失败: ${errorMessage}`);
+      }
+    }
+
+    // 5. 删除当前用户的 user_skills 关联
+    await this.repository.deleteUserSkillRelations(skillId, user.id);
+
+    // 6. 返回该技能全局剩余关联数（不删除公共 skills 记录）
+    const remainingBindings = await this.repository.countUserSkillRelations(skillId);
+
+    return {
+      skillDeleted: false,
+      remainingBindings,
+    };
+  }
 }

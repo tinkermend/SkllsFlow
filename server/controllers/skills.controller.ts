@@ -323,6 +323,67 @@ export class SkillsController {
   }
 
   /**
+   * 卸载当前用户的技能
+   * DELETE /api/skills/:skillId/uninstall
+   */
+  async uninstallMySkill(req: Request, res: Response): Promise<void> {
+    try {
+      const { skillId } = req.params;
+      const userUuid = req.userId;
+
+      if (!skillId) {
+        res.status(400).json({
+          error: 'Bad Request',
+          message: 'skillId is required',
+        });
+        return;
+      }
+
+      if (!userUuid) {
+        res.status(401).json({
+          error: 'Unauthorized',
+          message: 'Authentication token is missing or invalid',
+        });
+        return;
+      }
+
+      const result = await this.service.uninstallMySkill(skillId, userUuid);
+
+      res.status(200).json({
+        message: '技能卸载成功',
+        skillDeleted: result.skillDeleted,
+        remainingBindings: result.remainingBindings,
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === '技能不存在') {
+          res.status(404).json({
+            error: 'Not Found',
+            message: error.message,
+          });
+          return;
+        }
+        if (error.message === '用户不存在') {
+          res.status(401).json({
+            error: 'Unauthorized',
+            message: error.message,
+          });
+          return;
+        }
+        if (error.message.includes('卸载技能失败')) {
+          res.status(502).json({
+            error: 'Bad Gateway',
+            message: error.message,
+          });
+          return;
+        }
+      }
+
+      this.handleError(res, error);
+    }
+  }
+
+  /**
    * 装载技能到 ChatServer
    * POST /api/skills/:skillId/load
    */

@@ -99,6 +99,22 @@ export const skillsApi = {
   },
 
   /**
+   * 卸载当前用户的技能
+   */
+  async uninstallMySkill(id: string): Promise<{
+    message: string
+    skillDeleted: boolean
+    remainingBindings: number
+  }> {
+    const response = await apiClient.delete<{
+      message: string
+      skillDeleted: boolean
+      remainingBindings: number
+    }>(API_ENDPOINTS.skills.uninstall(id))
+    return response.data
+  },
+
+  /**
    * 上传技能压缩包
    */
   async uploadSkillFile(file: File): Promise<{ filePath: string }> {
@@ -131,6 +147,14 @@ export const skillsApi = {
     const response = await apiClient.get(
       API_ENDPOINTS.skills.loadedServers(skillId)
     )
+    return response.data
+  },
+
+  /**
+   * 获取技能关联会话列表
+   */
+  async getSkillRelatedSessions(skillId: string): Promise<SessionSkill[]> {
+    const response = await apiClient.get<SessionSkill[]>(`/skills/${skillId}/sessions`)
     return response.data
   },
 

@@ -198,7 +198,7 @@ export const handlers = [
   // POST /api/skills - 创建技能
   http.post("/api/skills", async ({ request }) => {
     await delay(MOCK_DELAYS.slow);
-    const data = (await request.json()) as any;
+    const data = await request.json() as Record<string, unknown>;
     const newSkill = {
       ...data,
       id: mockSkills.length + 1,
@@ -206,7 +206,7 @@ export const handlers = [
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    mockSkills.push(newSkill);
+    mockSkills.push(newSkill as never);
     return HttpResponse.json(newSkill, { status: 201 });
   }),
 
@@ -214,7 +214,7 @@ export const handlers = [
   http.patch("/api/skills/:id", async ({ params, request }) => {
     await delay(MOCK_DELAYS.normal);
     const { id } = params;
-    const updates = (await request.json()) as any;
+    const updates = await request.json() as Record<string, unknown>;
     const index = mockSkills.findIndex((s) => s.skillId === id);
 
     if (index === -1) {
@@ -241,6 +241,23 @@ export const handlers = [
 
     mockSkills.splice(index, 1);
     return new HttpResponse(null, { status: 204 });
+  }),
+
+  // DELETE /api/skills/:id/uninstall - 卸载当前用户技能
+  http.delete("/api/skills/:id/uninstall", async ({ params }) => {
+    await delay(MOCK_DELAYS.normal);
+    const { id } = params;
+    const index = mockSkills.findIndex((s) => s.skillId === id);
+
+    if (index === -1) {
+      return HttpResponse.json({ error: "Skill not found" }, { status: 404 });
+    }
+
+    return HttpResponse.json({
+      message: "技能卸载成功",
+      skillDeleted: false,
+      remainingBindings: 0,
+    });
   }),
 
   // POST /api/skills/upload - 上传技能压缩包
@@ -293,13 +310,13 @@ export const handlers = [
   // POST /api/users - 创建用户
   http.post("/api/users", async ({ request }) => {
     await delay(MOCK_DELAYS.slow);
-    const data = (await request.json()) as any;
+    const data = await request.json() as Record<string, unknown>;
     const newUser = {
       ...data,
       id: `user_${Date.now()}`,
       createdAt: new Date().toISOString(),
     };
-    mockUsers.push(newUser);
+    mockUsers.push(newUser as never);
     return HttpResponse.json(newUser, { status: 201 });
   }),
 
@@ -307,7 +324,7 @@ export const handlers = [
   http.patch("/api/users/:id", async ({ params, request }) => {
     await delay(MOCK_DELAYS.normal);
     const { id } = params;
-    const updates = (await request.json()) as any;
+    const updates = await request.json() as Record<string, unknown>;
     const index = mockUsers.findIndex((u) => u.id === id);
 
     if (index === -1) {

@@ -104,6 +104,21 @@ export function useDeleteSkill() {
 }
 
 /**
+ * 卸载当前用户技能
+ */
+export function useUninstallMySkill() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => skillsApi.uninstallMySkill(id),
+    onSuccess: () => {
+      // 刷新技能列表
+      queryClient.invalidateQueries({ queryKey: skillsKeys.lists() })
+    },
+  })
+}
+
+/**
  * 上传技能文件
  */
 export function useUploadSkillFile() {

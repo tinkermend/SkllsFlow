@@ -17,9 +17,9 @@ import { InstallSkillDialog } from './components/install-skill-dialog'
 import { UninstallSkillDialog } from './components/uninstall-skill-dialog'
 import { DeleteSkillDialog } from './components/delete-skill-dialog'
 import { CreateSkillDialog } from './components/create-skill-dialog'
-import { useSkills, useMySkills, useDeleteSkill, useUpdateSkill, useActiveChatServers, useLoadSkill } from './hooks/use-skills'
+import { useSkills, useMySkills, useDeleteSkill, useUninstallMySkill, useActiveChatServers, useLoadSkill } from './hooks/use-skills'
 import { skillsApi } from './api/skills.api'
-import { type SkillTab, type Skill, type SessionSkill, type SkillFile, type LoadedServer, SkillStatus } from './types'
+import { type SkillTab, type Skill, type SessionSkill, type SkillFile, type LoadedServer } from './types'
 
 export function Skills() {
   const [activeTab, setActiveTab] = useState<SkillTab>('my-skills')
@@ -53,9 +53,7 @@ export function Skills() {
 
   // 删除技能
   const deleteSkillMutation = useDeleteSkill()
-
-  // 更新技能状态
-  const updateSkillMutation = useUpdateSkill()
+  const uninstallSkillMutation = useUninstallMySkill()
 
   // 获取活跃的 ChatServer 列表
   const { data: chatServers = [], refetch: refetchActiveChatServers } = useActiveChatServers()
@@ -73,8 +71,8 @@ export function Skills() {
         try {
           const sessions = await skillsApi.getSkillRelatedSessions(skillId)
           setRelatedSessions(sessions)
-        } catch (error) {
-          console.error('获取关联会话失败:', error)
+        } catch {
+          toast.error('获取关联会话失败')
           setRelatedSessions([])
         }
       } else {
@@ -86,8 +84,8 @@ export function Skills() {
       try {
         const files = await skillsApi.getSkillFiles(skillId)
         setSkillFiles(files)
-      } catch (error) {
-        console.error('获取技能文件失败:', error)
+      } catch {
+        toast.error('获取技能文件失败')
         setSkillFiles([])
       }
 
@@ -104,8 +102,8 @@ export function Skills() {
       try {
         const sessions = await skillsApi.getSkillRelatedSessions(skillId)
         setUninstallRelatedSessions(sessions)
-      } catch (error) {
-        console.error('获取关联会话失败:', error)
+      } catch {
+        toast.error('获取关联会话失败')
         setUninstallRelatedSessions([])
       }
 
@@ -117,7 +115,7 @@ export function Skills() {
     if (!skillToUninstall) return
 
     try {
-      await deleteSkillMutation.mutateAsync(skillToUninstall.skillId)
+      await uninstallSkillMutation.mutateAsync(skillToUninstall.skillId)
       setIsUninstallDialogOpen(false)
       setSkillToUninstall(null)
       setUninstallRelatedSessions([])
@@ -149,8 +147,8 @@ export function Skills() {
 
       // 打开删除确认对话框
       setIsDeleteDialogOpen(true)
-    } catch (error) {
-      console.error('获取装载服务器失败:', error)
+    } catch {
+      toast.error('获取装载服务器失败')
       setDeleteLoadedServers([])
       setIsDeleteDialogOpen(true)
     }
@@ -374,7 +372,7 @@ export function Skills() {
         onConfirm={handleUninstallConfirm}
         skillName={skillToUninstall?.name || ''}
         relatedSessions={uninstallRelatedSessions}
-        isLoading={deleteSkillMutation.isPending}
+        isLoading={uninstallSkillMutation.isPending}
       />
 
       {/* 删除技能对话框 */}
