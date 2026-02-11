@@ -32,8 +32,9 @@ export interface LoadSkillParams {
   proxyPort: number;
   openCodePort: number;
   chatDir: string;
-  skillFileBuffer: Buffer;
+  skillFileBuffer: Buffer | Uint8Array;
   fileName: string;
+  skillName: string;
 }
 
 export interface UnloadSkillParams {
@@ -41,7 +42,7 @@ export interface UnloadSkillParams {
   proxyPort: number;
   openCodePort: number;
   chatDir: string;
-  skillId: string;
+  skillName: string;
 }
 
 /**
@@ -212,7 +213,7 @@ export class ProxyClientService {
    * ```
    */
   async loadSkill(params: LoadSkillParams): Promise<ProxyServiceResponse> {
-    const { proxyHost, proxyPort, openCodePort, chatDir, skillFileBuffer, fileName } =
+    const { proxyHost, proxyPort, openCodePort, chatDir, skillFileBuffer, fileName, skillName } =
       params;
 
     const url = `http://${proxyHost}:${proxyPort}/api/load_skill`;
@@ -220,9 +221,13 @@ export class ProxyClientService {
     try {
       // 创建 FormData 对象
       const formData = new FormData();
+      const normalizedSkillFileBuffer = Buffer.isBuffer(skillFileBuffer)
+        ? skillFileBuffer
+        : Buffer.from(skillFileBuffer);
       formData.append('port', openCodePort.toString());
       formData.append('chat_dir', chatDir);
-      formData.append('skill_file', skillFileBuffer, {
+      formData.append('skill_name', skillName);
+      formData.append('skill_file', normalizedSkillFileBuffer, {
         filename: fileName,
         contentType: 'application/zip',
       });
@@ -260,14 +265,14 @@ export class ProxyClientService {
    * @throws Error 如果请求失败或返回非 200 状态码
    */
   async unloadSkill(params: UnloadSkillParams): Promise<ProxyServiceResponse> {
-    const { proxyHost, proxyPort, openCodePort, chatDir, skillId } = params;
+    const { proxyHost, proxyPort, openCodePort, chatDir, skillName } = params;
     const url = `http://${proxyHost}:${proxyPort}/api/unload_skill`;
 
     try {
       const response = await this.axiosInstance.post<ProxyServiceResponse>(url, {
         port: openCodePort,
         chat_dir: chatDir,
-        skill_id: skillId,
+        skill_name: skillName,
       });
 
       return response.data;

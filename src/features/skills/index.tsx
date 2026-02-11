@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { AxiosError } from 'axios'
 import { Plus, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Header } from '@/components/layout/header'
@@ -57,7 +58,7 @@ export function Skills() {
   const updateSkillMutation = useUpdateSkill()
 
   // 获取活跃的 ChatServer 列表
-  const { data: chatServers = [] } = useActiveChatServers()
+  const { data: chatServers = [], refetch: refetchActiveChatServers } = useActiveChatServers()
 
   // 装载技能
   const loadSkillMutation = useLoadSkill()
@@ -197,6 +198,7 @@ export function Skills() {
   }
 
   const handleInstall = (skillId: string) => {
+    void refetchActiveChatServers()
     setSkillToInstall(skillId)
     setIsInstallDialogOpen(true)
   }
@@ -213,7 +215,13 @@ export function Skills() {
       setIsInstallDialogOpen(false)
       setSkillToInstall(null)
     } catch (error) {
-      toast.error(`装载失败: ${error instanceof Error ? error.message : '未知错误'}`)
+      const backendMessage =
+        error instanceof AxiosError
+          ? (error.response?.data as { message?: string } | undefined)?.message
+          : undefined
+
+      const errorMessage = backendMessage || (error instanceof Error ? error.message : '未知错误')
+      toast.error(`装载失败: ${errorMessage}`)
     }
   }
 

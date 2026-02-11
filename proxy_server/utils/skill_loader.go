@@ -119,22 +119,51 @@ func HasSkillManifest(rootDir string) (bool, error) {
 }
 
 // PromoteExtractedSkill 将技能从临时目录移动到目标目录
-func PromoteExtractedSkill(tmpDir, skillsRoot string) error {
+// 最终目录结构固定为: {skillsRoot}/{skillName}
+func PromoteExtractedSkill(tmpDir, skillsRoot, skillName string) error {
+	targetRoot := filepath.Join(skillsRoot, skillName)
+
+	if _, err := os.Stat(targetRoot); err == nil {
+		if err := os.RemoveAll(targetRoot); err != nil {
+			return fmt.Errorf("清理旧技能目录失败: %w", err)
+		}
+	}
+
+	if err := os.MkdirAll(targetRoot, 0o755); err != nil {
+		return fmt.Errorf("创建目标技能目录失败: %w", err)
+	}
+
 	entries, err := os.ReadDir(tmpDir)
-	// empty package should still be considered invalid earlier, but guard
 	if err != nil {
 		return fmt.Errorf("读取临时目录失败: %w", err)
 	}
 
-	for _, entry := range entries {
-		srcPath := filepath.Join(tmpDir, entry.Name())
-		dstPath := filepath.Join(skillsRoot, entry.Name())
+	if len(entries) == 0 {
+		return fmt.Errorf("技能包内容为空")
+	}
 
-		if _, err := os.Stat(dstPath); err == nil {
-			if err := os.RemoveAll(dstPath); err != nil {
-				return fmt.Errorf("清理旧技能目录失败: %w", err)
+	if len(entries) == 1 && entries[0].IsDir() {
+		onlyEntryPath := filepath.Join(tmpDir, entries[0].Name())
+		nestedEntries, err := os.ReadDir(onlyEntryPath)
+		if err != nil {
+			return fmt.Errorf("读取技能目录失败: %w", err)
+		}
+
+		for _, entry := range nestedEntries {
+			srcPath := filepath.Join(onlyEntryPath, entry.Name())
+			dstPath := filepath.Join(targetRoot, entry.Name())
+
+			if err := os.Rename(srcPath, dstPath); err != nil {
+				return fmt.Errorf("移动技能目录失败: %w", err)
 			}
 		}
+
+		return nil
+	}
+
+	for _, entry := range entries {
+		srcPath := filepath.Join(tmpDir, entry.Name())
+		dstPath := filepath.Join(targetRoot, entry.Name())
 
 		if err := os.Rename(srcPath, dstPath); err != nil {
 			return fmt.Errorf("移动技能目录失败: %w", err)

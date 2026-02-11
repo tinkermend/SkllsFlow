@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { skillsApi } from '../api/skills.api'
 import type { Skill } from '../types'
+import { useAuthStore } from '@/stores/auth-store'
 
 /**
  * Query Keys
@@ -115,9 +116,24 @@ export function useUploadSkillFile() {
  * 获取活跃的 ChatServer 列表
  */
 export function useActiveChatServers() {
+  const accessToken = useAuthStore((state) => state.auth.accessToken)
+
   return useQuery({
     queryKey: ['chat-servers', 'active'],
     queryFn: () => skillsApi.getActiveChatServers(),
+    enabled: !!accessToken,
+    retry: (failureCount, error) => {
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'response' in error &&
+        (error as { response?: { status?: number } }).response?.status === 401
+      ) {
+        return false
+      }
+
+      return failureCount < 2
+    },
   })
 }
 

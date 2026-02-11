@@ -248,36 +248,69 @@ export class SkillsService {
 
     // 8. 调用 ProxyClientService 装载技能
     try {
-      await this.proxyClient.loadSkill({
+      const loadResponse = await this.proxyClient.loadSkill({
         proxyHost: chatServer.proxyHost.host,
         proxyPort: chatServer.proxyHost.port,
         openCodePort: chatServer.port,
         chatDir: chatServer.chatDir,
         skillFileBuffer: skillFile.fileData,
         fileName: skillFile.fileName,
+        skillName: skill.skillId,
       });
+
+      if (loadResponse.code !== 200) {
+        throw new Error(
+          `技能装载失败: ${loadResponse.message || '代理服务返回异常状态'}`
+        );
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      throw new Error(`技能装载失败: ${errorMessage}`);
+      throw new Error(
+        errorMessage.startsWith('技能装载失败')
+          ? errorMessage
+          : `技能装载失败: ${errorMessage}`
+      );
     }
 
     // 9. 记录 / 更新用户技能关联，确保后续查询和删除流程可见已装载的技能
-    await prisma.userSkill.upsert({
-      where: {
-        uk_user_skills_chat: {
+    try {
+      await prisma.userSkill.upsert({
+        where: {
+          uk_user_skills_chat: {
+            userId: user.id,
+            skillId: skill.skillId,
+            chatId: chatServer.id,
+          },
+        },
+        update: {},
+        create: {
           userId: user.id,
           skillId: skill.skillId,
           chatId: chatServer.id,
+          sortOrder: 0,
         },
-      },
-      update: {},
-      create: {
-        userId: user.id,
-        skillId: skill.skillId,
-        chatId: chatServer.id,
-        sortOrder: 0,
-      },
-    });
+      });
+    } catch (dbError) {
+      const dbErrorMessage = dbError instanceof Error ? dbError.message : 'Unknown error';
+
+      try {
+        await this.proxyClient.unloadSkill({
+          proxyHost: chatServer.proxyHost.host,
+          proxyPort: chatServer.proxyHost.port,
+          openCodePort: chatServer.port,
+          chatDir: chatServer.chatDir,
+          skillName: skill.skillId,
+        });
+      } catch (rollbackError) {
+        const rollbackErrorMessage =
+          rollbackError instanceof Error ? rollbackError.message : 'Unknown error';
+        throw new Error(
+          `技能装载后写入 user_skills 失败: ${dbErrorMessage}；且回滚卸载失败: ${rollbackErrorMessage}`
+        );
+      }
+
+      throw new Error(`技能装载后写入 user_skills 失败: ${dbErrorMessage}，已自动回滚远端装载`);
+    }
   }
 
   /**
@@ -338,7 +371,7 @@ export class SkillsService {
             proxyPort: server.proxyPort,
             openCodePort: server.openCodePort,
             chatDir: server.chatDir,
-            skillId: skillId,
+            skillName: skillId,
           });
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';

@@ -216,7 +216,6 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
       setErrors({})
       onOpenChange(false)
     } catch (error) {
-      console.error('创建技能失败:', error)
       setErrors((prev) => ({
         ...prev,
         submit: error instanceof Error ? error.message : '创建失败',
@@ -282,7 +281,7 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="skillId" className="text-xs font-medium text-muted-foreground">
-                      技能ID <span className="text-destructive">*</span>
+                      技能ID（自动生成）
                     </Label>
                     <Input
                       id="skillId"
@@ -295,7 +294,7 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
                       <p className="text-xs text-destructive">{errors.skillId}</p>
                     )}
                     {!errors.skillId && (
-                      <p className="text-xs text-muted-foreground">技能ID由技能包文件名（去掉 .zip）自动生成</p>
+                      <p className="text-xs text-muted-foreground">技能包文件名自动生成</p>
                     )}
                   </div>
                   <div className="space-y-2">
@@ -304,7 +303,7 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
                     </Label>
                     <Input
                       id="name"
-                      placeholder="给技能起个响亮的名字"
+                      placeholder="技能名字"
                       value={formData.name}
                       onChange={(e) =>
                         setFormData((prev) => ({ ...prev, name: e.target.value }))
@@ -350,7 +349,7 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
                   </Label>
                   <Textarea
                     id="description"
-                    placeholder="简单描述一下这个技能的功能和用途..."
+                    placeholder="描述技能的功能和用途..."
                     value={formData.description}
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, description: e.target.value }))

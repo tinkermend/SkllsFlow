@@ -25,6 +25,7 @@ type DeleteRequest struct {
 type LoadSkillRequest struct {
 	Port      int                   `form:"port" binding:"required,min=1000,max=65535"`
 	ChatDir   string                `form:"chat_dir" binding:"required"`
+	SkillName string                `form:"skill_name"`
 	SkillFile *multipart.FileHeader `form:"skill_file" binding:"required"`
 }
 

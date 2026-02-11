@@ -227,6 +227,14 @@ func LoadSkillHandler(c *gin.Context) {
 		req.SkillFile = fileHeader
 	}
 
+	if req.SkillName == "" {
+		c.JSON(http.StatusBadRequest, models.Response{
+			Code:    400,
+			Message: "skill_name 不能为空",
+		})
+		return
+	}
+
 	info, err := os.Stat(req.ChatDir)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -330,7 +338,7 @@ func LoadSkillHandler(c *gin.Context) {
 		return
 	}
 
-	if err := utils.PromoteExtractedSkill(stagingDir, skillsRoot); err != nil {
+	if err := utils.PromoteExtractedSkill(stagingDir, skillsRoot, req.SkillName); err != nil {
 		c.JSON(http.StatusInternalServerError, models.Response{
 			Code:    500,
 			Message: "安装技能失败: " + err.Error(),

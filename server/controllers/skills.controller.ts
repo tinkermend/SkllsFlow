@@ -1,4 +1,5 @@
 import { type Request, type Response } from 'express';
+import path from 'node:path';
 import { SkillsService } from '../services/skills.service.js';
 
 /**
@@ -64,12 +65,43 @@ export class SkillsController {
         return;
       }
 
-      // 2. 验证必填字段
-      const { skillId, name, description, category } = req.body;
-      if (!skillId || !name || !description || !category) {
+      const deriveSkillIdFromFileName = (fileName: string): string => {
+        const baseFileName = path.basename(fileName);
+        return baseFileName.replace(/\.zip$/i, '').trim();
+      };
+
+      const validateSkillId = (value: string): string | null => {
+        if (!value) {
+          return '技能ID不能为空，请检查上传的技能包文件名';
+        }
+        if (value.includes(' ')) {
+          return '技能ID不能包含空格';
+        }
+        if (!/^[a-zA-Z0-9_\-.]+$/.test(value)) {
+          return '技能ID只能包含英文、数字、下划线、连字符和点号';
+        }
+        if (value.length > 64) {
+          return '技能ID不能超过 64 个字符';
+        }
+        return null;
+      };
+
+      // 2. 验证必填字段（skillId 基于 zip 文件名自动解析）
+      const { name, description, category } = req.body;
+      if (!name || !description || !category) {
         res.status(400).json({
           error: 'Bad Request',
-          message: '缺少必填字段：skillId, name, description, category',
+          message: '缺少必填字段：name, description, category',
+        });
+        return;
+      }
+
+      const parsedSkillId = deriveSkillIdFromFileName(req.file.originalname);
+      const skillIdError = validateSkillId(parsedSkillId);
+      if (skillIdError) {
+        res.status(400).json({
+          error: 'Bad Request',
+          message: skillIdError,
         });
         return;
       }
@@ -89,7 +121,7 @@ export class SkillsController {
       if (req.body.tags) {
         try {
           tags = JSON.parse(req.body.tags);
-        } catch (e) {
+        } catch (_error) {
           res.status(400).json({
             error: 'Bad Request',
             message: 'tags 字段格式错误，应为 JSON 数组',
@@ -100,7 +132,7 @@ export class SkillsController {
 
       // 5. 构建 skillData
       const skillData = {
-        skillId,
+        skillId: parsedSkillId,
         name,
         description,
         icon: req.body.icon || null,
