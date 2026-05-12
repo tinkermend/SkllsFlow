@@ -280,6 +280,75 @@ export class SkillsController {
   }
 
   /**
+   * 获取技能关联会话
+   * GET /api/skills/:skillId/sessions
+   */
+  async getSkillRelatedSessions(req: Request, res: Response): Promise<void> {
+    try {
+      const { skillId } = req.params;
+
+      if (!skillId) {
+        res.status(400).json({
+          error: 'Bad Request',
+          message: 'skillId is required',
+        });
+        return;
+      }
+
+      const sessions = await this.service.getSkillRelatedSessions(skillId);
+      res.status(200).json(sessions);
+    } catch (error) {
+      if (error instanceof Error && error.message === '技能不存在') {
+        res.status(404).json({
+          error: 'Not Found',
+          message: error.message,
+        });
+        return;
+      }
+      this.handleError(res, error);
+    }
+  }
+
+  /**
+   * 更新技能元数据
+   * PATCH /api/skills/:skillId
+   */
+  async updateSkill(req: Request, res: Response): Promise<void> {
+    try {
+      const { skillId } = req.params;
+
+      if (!skillId) {
+        res.status(400).json({
+          error: 'Bad Request',
+          message: 'skillId is required',
+        });
+        return;
+      }
+
+      const skill = await this.service.updateSkill(skillId, {
+        name: req.body.name,
+        description: req.body.description,
+        icon: req.body.icon,
+        category: req.body.category,
+        tags: req.body.tags,
+        status: req.body.status,
+        sortOrder: req.body.sortOrder,
+      });
+
+      res.status(200).json(skill);
+    } catch (error) {
+      if (error instanceof Error && error.message === '技能不存在') {
+        res.status(404).json({
+          error: 'Not Found',
+          message: error.message,
+        });
+        return;
+      }
+      this.handleError(res, error);
+    }
+  }
+
+  /**
    * 删除技能
    * DELETE /api/skills/:skillId
    */

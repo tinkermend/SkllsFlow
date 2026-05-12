@@ -30,19 +30,29 @@ router.get('/my-skills', jwtAuthMiddleware, (req: Request, res: Response) => {
   req.skillsController.getMySkills(req, res);
 });
 
-// GET /api/skills/:skillId/files - Get skill files list
-router.get('/:skillId/files', (req: Request, res: Response) => {
+// GET /api/skills/:skillId/files - Get skill files list (requires auth)
+router.get('/:skillId/files', jwtAuthMiddleware, (req: Request, res: Response) => {
   req.skillsController.getSkillFiles(req, res);
 });
 
-// GET /api/skills/:skillId/files/:fileId/download - Download skill file
-router.get('/:skillId/files/:fileId/download', (req: Request, res: Response) => {
+// GET /api/skills/:skillId/files/:fileId/download - Download skill file (requires auth)
+router.get('/:skillId/files/:fileId/download', jwtAuthMiddleware, (req: Request, res: Response) => {
   req.skillsController.downloadSkillFile(req, res);
 });
 
-// GET /api/skills/:skillId/loaded-servers - Get skill loaded servers
-router.get('/:skillId/loaded-servers', (req: Request, res: Response) => {
+// GET /api/skills/:skillId/loaded-servers - Get skill loaded servers (requires auth)
+router.get('/:skillId/loaded-servers', jwtAuthMiddleware, (req: Request, res: Response) => {
   req.skillsController.getSkillLoadedServers(req, res);
+});
+
+// GET /api/skills/:skillId/sessions - Get skill related sessions (requires auth)
+router.get('/:skillId/sessions', jwtAuthMiddleware, (req: Request, res: Response) => {
+  req.skillsController.getSkillRelatedSessions(req, res);
+});
+
+// PATCH /api/skills/:skillId - Update skill metadata (requires auth)
+router.patch('/:skillId', jwtAuthMiddleware, (req: Request, res: Response) => {
+  req.skillsController.updateSkill(req, res);
 });
 
 // POST /api/skills/:skillId/load - Load skill to chat server (requires auth)

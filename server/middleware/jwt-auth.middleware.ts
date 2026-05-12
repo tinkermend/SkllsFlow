@@ -112,9 +112,9 @@ export async function optionalJwtAuthMiddleware(
       }
     }
 
-    next();
   } catch {
     // Ignore optional auth failures
   }
+
   next();
 }

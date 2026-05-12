@@ -96,9 +96,6 @@ export class AuthService {
     // 5. 密码正确，重置失败计数和锁定状态
     await this.resetLoginFailures(user.id);
 
-    // 5. 密码正确，重置失败计数和锁定状态
-    await this.resetLoginFailures(user.id);
-
     // 6. 生成令牌
     const tokenPayload: Omit<JWTPayload, 'type'> = {
       userId: user.userUUId,  // 使用 userUUId 字段 (UUID，对外 API)

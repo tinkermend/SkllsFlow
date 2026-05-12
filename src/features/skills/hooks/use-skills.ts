@@ -119,15 +119,6 @@ export function useUninstallMySkill() {
 }
 
 /**
- * 上传技能文件
- */
-export function useUploadSkillFile() {
-  return useMutation({
-    mutationFn: (file: File) => skillsApi.uploadSkillFile(file),
-  })
-}
-
-/**
  * 获取活跃的 ChatServer 列表
  */
 export function useActiveChatServers() {

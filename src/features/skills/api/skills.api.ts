@@ -115,25 +115,6 @@ export const skillsApi = {
   },
 
   /**
-   * 上传技能压缩包
-   */
-  async uploadSkillFile(file: File): Promise<{ filePath: string }> {
-    const formData = new FormData()
-    formData.append('file', file)
-
-    const response = await apiClient.post<{ filePath: string }>(
-      API_ENDPOINTS.skills.upload,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }
-    )
-    return response.data
-  },
-
-  /**
    * 获取技能装载的服务器列表
    */
   async getSkillLoadedServers(skillId: string): Promise<Array<{

@@ -337,6 +337,54 @@ export class SkillsService {
   }
 
   /**
+   * 获取技能关联的聊天服务列表。
+   */
+  async getSkillRelatedSessions(skillId: string): Promise<Array<{
+    sessionId: string;
+    sessionTitle: string;
+    createdAt: string;
+  }>> {
+    const skill = await this.repository.findBySkillId(skillId);
+    if (!skill) {
+      throw new Error('技能不存在');
+    }
+
+    const sessions = await this.repository.findSkillRelatedSessions(skillId);
+    return sessions.map((session) => ({
+      ...session,
+      createdAt: session.createdAt.toISOString(),
+    }));
+  }
+
+  /**
+   * 更新技能元数据。
+   */
+  async updateSkill(
+    skillId: string,
+    data: Partial<{
+      name: string;
+      description: string | null;
+      icon: string | null;
+      category: string;
+      tags: string[];
+      status: 'active' | 'disabled';
+      sortOrder: number;
+    }>
+  ): Promise<SerializableSkill> {
+    const skill = await this.repository.findBySkillId(skillId);
+    if (!skill) {
+      throw new Error('技能不存在');
+    }
+
+    const updateData = Object.fromEntries(
+      Object.entries(data).filter(([, value]) => value !== undefined)
+    );
+
+    const updatedSkill = await this.repository.update(skill.id, updateData);
+    return this.convertToSerializable(updatedSkill);
+  }
+
+  /**
    * 删除技能（包含卸载和数据清理）
    * @param skillId - 技能 ID（字符串）
    * @param onProgress - 进度回调函数

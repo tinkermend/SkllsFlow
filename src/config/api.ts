@@ -12,7 +12,7 @@ export const API_CONFIG = {
   /**
    * 后端 API 基础路径
    */
-  baseUrl: import.meta.env.VITE_API_URL || "/api",
+  baseUrl: import.meta.env.VITE_API_BASE_URL || "/api",
 
   /**
    * API 超时时间（毫秒）
@@ -33,7 +33,6 @@ export const API_ENDPOINTS = {
     update: (id: string) => `/skills/${id}`,
     delete: (id: string) => `/skills/${id}`,
     uninstall: (id: string) => `/skills/${id}/uninstall`,
-    upload: "/skills/upload",
     loadedServers: (id: string) => `/skills/${id}/loaded-servers`,
     files: (skillId: string) => `/skills/${skillId}/files`,
     downloadFile: (skillId: string, fileId: string) => `/skills/${skillId}/files/${fileId}/download`,
