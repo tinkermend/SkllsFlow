@@ -48,3 +48,10 @@ server/__tests__/
 .worktrees/
 .security-key
 logs/security/
+
+# Tool directories
+.codex/
+.opencode/
+
+# Generated zip archives
+docs/*.zip

@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { AI_CHAT_PROMPT_DEFAULTS } from '@/config/ai-chat'
 import { useChatStore } from '@/stores/chat-store'
 import { messageApi } from '../api/message.api'
-import type { Message } from '../types'
+import type { Message, SendMessageRequest } from '../types'
 
 export const createLocalUserMessage = (sessionId: string, content: string): Message => ({
   info: {
@@ -12,6 +12,15 @@ export const createLocalUserMessage = (sessionId: string, content: string): Mess
     role: 'user',
     time: { created: Date.now() },
   },
+  parts: [{ type: 'text', text: content }],
+})
+
+export const createPromptRequest = (
+  message: Message,
+  content: string
+): SendMessageRequest => ({
+  ...AI_CHAT_PROMPT_DEFAULTS,
+  messageID: message.info.id,
   parts: [{ type: 'text', text: content }],
 })
 
@@ -56,10 +65,10 @@ export function useChat() {
 
         // 调用 session.prompt API 发送消息
         // 这里只负责触发请求；实际回复通过 SSE 事件流接收
-        await messageApi.prompt(currentSessionId, {
-          ...AI_CHAT_PROMPT_DEFAULTS,
-          parts: [{ type: 'text', text: content }],
-        })
+        await messageApi.prompt(
+          currentSessionId,
+          createPromptRequest(userMessage, content)
+        )
 
         // AI 响应通过 SSE 事件流推送，流状态由 session.idle 控制
       } catch (error) {

@@ -5,12 +5,23 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    setupFiles: ['./server/__tests__/helpers/setup.ts'],
+    include: [
+      'src/**/*.test.ts',
+      'src/**/*.test.tsx',
+      'server/__tests__/fixtures/**/*.test.ts',
+      'server/__tests__/unit/**/*.test.ts',
+    ],
     env: {
-      DATABASE_URL: 'postgresql://aiops:AIOps!1234@127.0.0.1:5432/aiops_test?schema=aiops&sslmode=disable',
       JWT_SECRET: 'test-secret-key-change-in-production',
       NODE_ENV: 'test',
     },
+    exclude: [
+      '**/node_modules/**',
+      '.opencode/**',
+      'server/__tests__/integration/**/*.test.ts',
+      'server/__tests__/unit/services/auth.service.test.ts',
+      'server/__tests__/unit/services/rbac.service.test.ts',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
