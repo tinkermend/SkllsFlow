@@ -34,6 +34,35 @@ export class McpServicesService {
     return new McpServiceTagsRepository(this.prisma);
   }
 
+  private async syncMarketplaceItem(params: {
+    mcpServiceId: bigint;
+    creatorUserId?: bigint | null;
+    categoryId?: bigint | null;
+    createOnly?: boolean;
+  }) {
+    const { mcpServiceId, creatorUserId, categoryId, createOnly = false } = params;
+
+    const payload = {
+      mcpId: mcpServiceId,
+      creatorUserId: creatorUserId ?? null,
+      categoryId: categoryId ?? null,
+    };
+
+    if (createOnly) {
+      return this.prisma.mcpMarketplaceItem.create({
+        data: payload,
+      });
+    }
+
+    return this.prisma.mcpMarketplaceItem.upsert({
+      where: { mcpId: mcpServiceId },
+      create: payload,
+      update: {
+        categoryId: categoryId ?? null,
+      },
+    });
+  }
+
   /**
    * 获取用户的 MCP 服务列表
    */
@@ -91,6 +120,13 @@ export class McpServicesService {
       }));
       await this.serviceTagsRepo.createMany(tagAssociations);
     }
+
+    await this.syncMarketplaceItem({
+      mcpServiceId: service.id,
+      creatorUserId: service.createdByUserId,
+      categoryId: service.categoryId,
+      createOnly: true,
+    });
 
     return serializeBigInt(service);
   }
@@ -156,6 +192,12 @@ export class McpServicesService {
         await this.serviceTagsRepo.createMany(tagAssociations);
       }
     }
+
+    await this.syncMarketplaceItem({
+      mcpServiceId: service.id,
+      creatorUserId: service.createdByUserId,
+      categoryId: updated.categoryId ?? service.categoryId ?? null,
+    });
 
     return updated;
   }

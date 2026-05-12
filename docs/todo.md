@@ -75,7 +75,6 @@
 
 ## proxy_server
 
-`2026-02-06 14:54:33`
 
 - [x] `feat` proxy_server 新增接口`/api/load_skill` 前端`装载技能` 点击后调用后端 nodejs 服务,nodejs服务再调用这个`load_skill`接口传过来的技能zip压缩文件与文件放置目录信息
   - `requests` 入参信息如下:
@@ -153,13 +152,11 @@
 
 ---
 
-2026-02-05 15:46:01
 
 - [x] `change:all` 更改表`user_skill`为`user_skills`, 同时更改表中 `session_id` 字段为 `chat_id` , `chat_id` 为 `chat_servers` 表的`id` 字段, 更改完成后 同步更新 docs/database_design/user_skill.sql 文件 将文件名称也改为 user_skills, 同时更新 prisma schema 文件关联定义, 记住: `user_skills` 表的 chat_id 不与 `chat_servers` 表的id 做主外键关联, 由程序保证一致性
 
 
 
-2026-02-06 15:45:34
 
 - [x]  `技能管理` 当前 平台技能->装载技能 判断是否存在服务存在问题,根据当前登录的用户id 获取 `chat_servers` 表中的 `created_by` 是有对应服务的,但是页面显示 您还没有创建任何服务
 
@@ -174,5 +171,3 @@
                 - 如果装载成功则在`user_skills` 写入相关信息
 
 - [x] `技能管理` 新建技能做如下更改: 1.技能ID由可填项改为默认置灰不可填,当上传技能.zip包后解析zip包的名称去掉.zip 为技能ID名称
-
-2026-02-11

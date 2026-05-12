@@ -27,7 +27,7 @@ export class McpCategoriesRepository extends BaseRepository<
     // 获取每个分类的 MCP 数量
     const categoriesWithCount = await Promise.all(
       categories.map(async (category) => {
-        const mcpCount = await this.prisma.mcpService.count({
+        const mcpCount = await this.prisma.mcpMarketplaceItem.count({
           where: { categoryId: category.id },
         });
         return { ...category, mcpCount };

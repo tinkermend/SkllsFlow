@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { MoreVertical, Settings, RotateCw, Trash2, Link as LinkIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { parseIcon } from '@/lib/icon-parser';
 import { LanguageIcon } from '../shared/language-icon';
 import type { McpService, McpStatus } from '../../types';
 
@@ -66,6 +67,7 @@ export function McpCard({
   onSelect,
 }: McpCardProps) {
   const deploymentInfo = getDeploymentInfo(service.transportType);
+  const ServiceIcon = service.icon ? parseIcon(service.icon) : null;
   const handleSelect = () => {
     onSelect?.(service);
   };
@@ -95,8 +97,8 @@ export function McpCard({
         <div className="flex items-start gap-4">
           {/* 左侧图标区域 */}
           <div className={`w-12 h-12 bg-gradient-to-br ${getLanguageIconClass(service.language)} rounded-xl flex items-center justify-center text-2xl flex-shrink-0`}>
-            {service.icon ? (
-              <span>{service.icon}</span>
+            {ServiceIcon ? (
+              <ServiceIcon className="h-6 w-6 text-slate-700" />
             ) : (
               <LanguageIcon language={service.language} />
             )}

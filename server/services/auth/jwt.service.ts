@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m';
@@ -30,7 +31,11 @@ export class JWTService {
    */
   generateRefreshToken(payload: Omit<JWTPayload, 'type'>): string {
     return jwt.sign(
-      { ...payload, type: 'refresh' },  // 移除 .toString()，userId 已经是 string
+      {
+        ...payload,
+        type: 'refresh',
+        jti: crypto.randomUUID(),
+      },
       JWT_SECRET,
       {
         expiresIn: REFRESH_TOKEN_EXPIRES_IN,

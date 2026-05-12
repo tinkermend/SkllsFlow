@@ -1,348 +1,137 @@
-# CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## 项目概述
 
-基于 Shadcn UI 的管理后台项目，集成了 AI 对话功能（通过 OpenCode API）。项目使用 React 19 + Vite 构建，采用 TanStack Router 进行路由管理。
+SkllsFlow 是基于 shadcn/ui 的管理后台，包含 AI 对话、Skills 管理、MCP 管理、权限与会话相关能力。
+
+前端使用 React 19 + Vite + TanStack Router，后端使用 Node.js + Express，数据库使用 PostgreSQL 16 + Prisma。
 
 ## 技术栈
 
-| 层级         | 技术                   | 说明                         |
-| ------------ | ---------------------- | ---------------------------- |
-| **前端框架** | React 19 + Vite        | 现有项目基础                 |
-| **UI 组件**  | shadcn/ui              | 基于 Radix UI + Tailwind CSS |
-| **状态管理** | Zustand                | 轻量级状态管理               |
-| **数据请求** | TanStack Query + Axios | 异步数据管理                 |
-| **路由**     | TanStack Router        | 文件系统路由                 |
-| **样式**     | Tailwind CSS v4        | 支持 RTL                     |
-| **后端**     | Node.js + Express      | OpenCode API 代理服务        |
-| **数据库**   | PostgreSQL 16 + Prisma | ORM + 会话存储               |
-| **类型检查** | TypeScript 5.9.3       | 严格模式                     |
+| 层级   | 技术                                 | 说明                                      |
+| ------ | ------------------------------------ | ----------------------------------------- |
+| 前端   | React 19, Vite, TypeScript           | 严格类型模式                              |
+| UI     | shadcn/ui, Radix UI, Tailwind CSS v4 | 部分组件已做 RTL/项目定制                 |
+| 路由   | TanStack Router                      | 文件系统路由，生成 `src/routeTree.gen.ts` |
+| 状态   | Zustand                              | 前端状态管理                              |
+| 请求   | TanStack Query, Axios                | 异步数据与 API 调用                       |
+| 后端   | Express                              | OpenCode API 代理与业务 API               |
+| 数据库 | PostgreSQL 16, Prisma                | ORM、迁移、会话与业务数据                 |
+| 测试   | Vitest, MSW, Supertest               | 前端、服务端与 API 测试                   |
 
-## 开发命令
-
-### 前端开发
+## 常用命令
 
 ```bash
-# 启动前端开发服务器 (端口 5173)
+# 前端开发，默认端口 5173
 pnpm dev
 
-# 构建生产版本
-pnpm build
-```
-
-### 后端开发
-
-```bash
-# 启动后端服务器 (端口 3001)
+# 后端开发，默认端口 3001，OpenCode 端口 4096
 pnpm dev:server
 
 # 同时启动前后端
 pnpm dev:all
-```
 
-### 代码质量
+# 生产构建
+pnpm build
 
-```bash
-# 运行 ESLint 检查
+# 代码质量
 pnpm lint
-
-# 格式化代码
 pnpm format
-
-# 检查格式
 pnpm format:check
-
-# 检查未使用的依赖和导出
 pnpm knip
-```
 
-### 数据库管理
+# 测试
+pnpm test
+pnpm test:coverage
 
-```bash
-# 开发环境数据库迁移
+# 数据库
 pnpm db:migrate
-
-# 生产环境数据库迁移
 pnpm db:migrate:deploy
-
-# 生成数据库注释并部署
 pnpm db:comments
-
-# 完整迁移流程（迁移 + 注释 + 部署）
 pnpm db:migrate:full
 ```
 
-## 项目架构
+## 目录与架构
 
-### 目录结构
+### 前端
 
-```
-src/
-├── assets/             # 静态资源
-│   ├── brand-icons/    # 品牌图标
-│   └── custom/         # 自定义资源
-├── components/         # 共享组件
-│   ├── ui/            # shadcn/ui 组件（部分已自定义）
-│   ├── layout/        # 布局组件（侧边栏、头部等）
-│   ├── auth/          # 认证相关组件
-│   └── data-table/    # 数据表格组件
-├── features/          # 功能模块（按业务划分）
-│   ├── ai-chat/       # AI 对话功能
-│   │   ├── api/       # API 调用
-│   │   ├── components/# 功能组件
-│   │   ├── config/    # 配置
-│   │   ├── hooks/     # 自定义 Hooks
-│   │   └── types/     # 类型定义
-│   ├── skills/        # 技能管理
-│   ├── auth/          # 认证相关
-│   ├── dashboard/     # 仪表盘
-│   ├── users/         # 用户管理
-│   ├── roles/         # 角色管理
-│   ├── permissions/   # 权限管理
-│   ├── menus/         # 菜单管理
-│   ├── settings/      # 设置页面
-│   │   ├── profile/   # 个人资料
-│   │   ├── account/   # 账户设置
-│   │   ├── appearance/# 外观设置
-│   │   ├── notifications/ # 通知设置
-│   │   └── display/   # 显示设置
-│   ├── debug/         # 调试工具
-│   └── errors/        # 错误页面
-├── routes/            # TanStack Router 路由
-│   ├── __root.tsx     # 根路由
-│   ├── _authenticated/# 需要认证的路由
-│   │   ├── ai-chat/   # AI 对话路由
-│   │   ├── skills/    # 技能管理路由
-│   │   ├── users/     # 用户管理路由
-│   │   ├── settings/  # 设置路由
-│   │   ├── agent-management/  # Agent 管理
-│   │   ├── mcp-management/    # MCP 管理
-│   │   ├── help-center/       # 帮助中心
-│   │   ├── debug/     # 调试页面
-│   │   └── errors/    # 错误页面
-│   ├── (auth)/        # 认证相关路由
-│   └── (errors)/      # 错误路由
-├── stores/            # Zustand 状态管理
-│   ├── auth-store.ts  # 认证状态
-│   └── chat-store.ts  # 聊天状态
-├── hooks/             # 全局自定义 Hooks
-├── lib/               # 工具函数
-│   └── api/          # API 客户端
-├── mocks/             # 测试 Mock
-│   ├── data/         # Mock 数据（JSON）
-│   └── utils/        # Mock 工具
-├── context/           # React Context
-├── config/            # 配置文件
-└── styles/            # 全局样式
+- `src/routes/`: TanStack Router 文件路由。
+- `src/features/*`: 业务功能模块，通常包含 `index.tsx`、`components/`、`hooks/`、`types/`、`config/`。
+- `src/stores/`: Zustand store，例如 `chat-store.ts`、`auth-store.ts`。
+- `src/components/ui/`: shadcn/ui 基础组件。
+- `src/lib/api-client`: API 客户端统一入口。
 
-server/
-├── index.ts           # Express 服务器入口
-├── __tests__/         # 测试文件
-│   ├── fixtures/      # 测试固定数据
-│   ├── helpers/       # 测试辅助函数
-│   ├── integration/   # 集成测试
-│   └── unit/          # 单元测试
-├── config/            # 配置文件
-│   └── env.ts         # 环境变量验证
-├── routes/            # API 路由
-│   ├── opencode.routes.ts
-│   ├── skills.routes.ts
-│   └── sessions.routes.ts
-├── services/          # 业务逻辑
-│   ├── auth/          # 认证服务
-│   ├── database.service.ts  # 数据库连接管理
-│   ├── opencode.service.ts
-│   └── sessions.service.ts
-├── repositories/      # 数据访问层
-│   ├── base.repository.ts   # 通用仓储基类
-│   └── sessions.repository.ts
-├── controllers/       # 控制器层
-│   └── sessions.controller.ts
-├── middleware/        # 中间件
-│   ├── auth.middleware.ts
-│   ├── error-handler.ts
-│   ├── prisma-metrics.ts
-│   └── retry-middleware.ts
-├── utils/             # 工具函数
-│   ├── metrics.ts     # Prometheus 指标
-│   └── logger.ts      # 结构化日志
-└── types/             # 类型定义
-    ├── session.types.ts
-    └── index.ts
-```
+### 路由约定
 
-### 路由系统
+- `_authenticated/`: 需要认证的页面，使用 AuthenticatedLayout。
+- `(auth)/`: 登录、注册等认证页面。
+- `(errors)/`: 错误页面。
+- 修改路由后确认 `src/routeTree.gen.ts` 已正确更新。
 
-使用 TanStack Router 的文件系统路由：
+### 后端
 
-- `_authenticated/` - 需要认证的路由（使用 AuthenticatedLayout）
-- `(auth)/` - 认证相关路由（登录、注册等）
-- `(errors)/` - 错误页面
-- 路由文件自动生成到 `src/routeTree.gen.ts`
+- `server/index.ts`: Express 服务入口。
+- `server/controllers/`: HTTP 控制器。
+- `server/services/`: 业务逻辑。
+- `server/repositories/`: Prisma 数据访问层。
+- `server/middleware/`: 错误处理、指标、重试等中间件。
+- `server/utils/bigint-serializer.ts`: BigInt JSON 序列化工具。
 
-### 状态管理架构
+### 数据库
 
-#### Chat Store (`src/stores/chat-store.ts`)
+- Prisma schema 位于 `prisma/schema.prisma`。
+- 业务数据访问优先通过 Repository 层，不要在 Controller 中直接操作 Prisma Client。
+- `DatabaseService.getInstance()` 负责统一连接生命周期。
 
-管理 AI 对话的核心状态
+## 开发约定
 
-#### Auth Store (`src/stores/auth-store.ts`)
+### TypeScript 与代码风格
 
-管理用户认证状态
+- 遵循现有 ESLint、Prettier 和文件命名风格。
+- 尽量避免 `any`；必须使用时给出明确边界或替代计划。
+- 组件使用 PascalCase，自定义 Hook 以 `use` 开头。
+- 使用 `@/` 作为 `src/` 路径别名。
 
-### 后端服务架构
+### API 与服务端
 
-Express 服务器 (`server/`) 作为 API 的代理
+- 前端 API 导入统一使用 `@/lib/api-client`，不要新增容易混淆的 `@/lib/api/*` 子路径。
+- 服务端服务类避免在类字段初始化中直接持有 Prisma 实例；优先使用 getter 惰性获取 `DatabaseService.getInstance()`。
+- Prisma 错误应通过统一错误处理中间件转换为合适的 HTTP 响应。
+- 瞬态数据库错误和指标采集优先复用现有 middleware。
 
-#### 数据库层 (Prisma + PostgreSQL)
+### 数据序列化
 
-项目使用 **Prisma ORM** 管理数据库操作：
+PostgreSQL `BIGINT` 在 Prisma 中映射为 JavaScript `BigInt`，不能直接 `JSON.stringify()`。
 
-- **ORM**: Prisma 7.3.0
-- **Schema**: 定义在 `prisma/schema.prisma`
+- Service 层返回 API 数据前使用 `server/utils/bigint-serializer.ts` 统一序列化。
+- Repository 层保持原始数据库类型。
+- 前端类型中将 `id` 等 BigInt 字段按 API 结果定义为 `string`。
 
-**Prisma 核心组件**:
+### UI 与布局
 
-- `server/services/database.service.ts` - 数据库连接管理（单例模式）
-- `server/repositories/base.repository.ts` - 通用仓储基类（CRUD 操作）
-- `server/repositories/sessions.repository.ts` - 会话仓储
-- `server/middleware/prisma-metrics.ts` - 查询指标中间件
-- `server/middleware/retry-middleware.ts` - 事务重试中间件（150ms 延迟）
+- shadcn/ui 组件可能包含项目级定制，更新 CLI 组件前先检查现有差异。
+- 已知有定制或 RTL 调整的组件包括：`scroll-area`、`sonner`、`separator`、`alert-dialog`、`calendar`、`command`、`dialog`、`dropdown-menu`、`select`、`table`、`sheet`、`sidebar`、`switch`。
+- `_authenticated/` 下的新页面应保持与现有后台一致的 Header/Main 布局和导航体验。
 
-**重要原则**:
+### Skills 与 MCP
 
-- 所有数据库操作通过 Repository 模式（不直接使用 Prisma Client）
-- 使用 DatabaseService 单例管理连接生命周期
+- Skills 的 zip 包使用数据库存储。
+- MCP 使用对象存储存储。
+- 涉及上传、下载或存储路径时，先确认当前实现的数据来源和落库字段，不要只改前端展示。
 
-前端通过 Vite 代理 `/api` 请求到后端服务器（见 `vite.config.ts`）
+## 验证要求
 
-- After implementing changes, run these verifications before saying 'done': 1) For database: prisma format && prisma validate, 2) For backend: npm run type-check, 3) For API: test endpoint with curl or show me the test command. Only commit after all pass.
+根据改动范围选择验证命令，不需要为无关范围强行跑全量。
 
-## 重要约定
+- 前端或共享代码：`pnpm lint`，必要时 `pnpm test` 或 `pnpm build`。
+- 后端 API：`pnpm lint`，必要时 `pnpm test`，并用 curl 或 Supertest 验证关键接口。
+- Prisma schema 或迁移：`prisma format && prisma validate`，必要时执行对应迁移命令。
+- 依赖、导出或文件结构调整：`pnpm knip`。
 
-### 1. 路径别名
+提交前不要声称已验证，除非实际运行过对应命令并确认结果。
 
-使用 `@/` 作为 `src/` 的别名：
+## 文档与沟通
 
-```typescript
-import { Button } from "@/components/ui/button";
-import { useChatStore } from "@/stores/chat-store";
-```
-
-### 2. Shadcn UI 组件自定义
-
-部分组件已针对 RTL 支持和其他需求进行自定义，更新时需注意：
-
-**已修改的组件**:
-
-- scroll-area, sonner, separator
-
-**RTL 更新的组件**:
-
-- alert-dialog, calendar, command, dialog, dropdown-menu, select, table, sheet, sidebar, switch
-
-使用 shadcn CLI 更新组件时需谨慎，避免覆盖自定义内容。
-
-### 3. 功能模块组织
-
-每个功能模块 (`src/features/*`) 应包含：
-
-- `index.tsx` - 主页面组件
-- `components/` - 功能专用组件
-- `hooks/` - 功能专用 Hooks
-- `types/` - 类型定义（可选）
-- `config/` - 配置文件（可选）
-
-### 4. OpenCode API 集成
-
-OpenCode API 文档位于 `docs/opencode_api.json`，包含：
-
-opencode 后端服务 (`server/services/opencode.service.ts`) 负责：
-
-### 5. 数据库操作规范 (Prisma)
-
-所有数据库操作遵循以下原则：
-
-- **Repository 模式**: 通过 Repository 类访问数据库，不在 Controller/Service 中直接使用 Prisma Client
-- **单例连接**: 使用 `DatabaseService.getInstance()` 获取 Prisma Client 实例
-- **事务支持**: 使用 `repository.transaction()` 处理多表操作
-- **错误处理**: Prisma 错误通过 `error-handler.ts` 中间件转换为合适的 HTTP 状态码
-- **指标收集**: 所有查询自动记录延迟、错误率和连接池指标
-- **重试机制**: 瞬态错误自动重试 1 次
-
-### 6. BigInt 序列化规范
-
-PostgreSQL 的 `BIGINT` 类型在 Prisma 中映射为 JavaScript 的 `BigInt`，而 `JSON.stringify()` 默认不支持序列化 `BigInt`。项目提供了统一的序列化工具来处理这个问题。
-
-**核心工具**: `server/utils/bigint-serializer.ts`
-
-**重要特性**:
-
-- 自动递归处理嵌套对象和数组
-- 保留 `Date` 对象不做转换（Express 会自动序列化为 ISO 字符串）
-- 支持批量序列化：`serializeBigIntArray(items)`
-
-**最佳实践**:
-
-- ✅ 在 Service 层返回数据前统一序列化
-- ✅ 前端类型定义中将 `id` 等 BigInt 字段定义为 `string`
-- ❌ 不要在 Repository 层序列化（保持数据层的原始类型）
-- ❌ 不要在 Controller 层序列化（应该在 Service 层统一处理）
-
-## 强制规范
-
-- **文档语言**: 所有输出的文档内容使用简体中文
-- **代码风格**: 遵循 ESLint 和 Prettier 配置
-- **类型安全**: 严格使用 TypeScript，避免 `any` 类型
-- **组件命名**: 使用 PascalCase 命名组件文件和组件名
-- **Hooks 命名**: 自定义 Hooks 必须以 `use` 开头
-
-- **服务端 DatabaseService 延迟初始化**：禁止在类属性/构造函数中直接调用 `DatabaseService.getInstance()`，必须使用 getter 惰性初始化 `private get db() { return DatabaseService.getInstance(); }`
-- **API 客户端统一入口**：所有 API 导入必须使用 `@/lib/api-client`，禁止创建 `@/lib/api/*` 子路径或别名混淆
-- **功能模块启动验证**：新增功能必须通过 `pnpm dev` 和 `pnpm dev:server` 启动测试，确认前后端均无编译/运行时错误后方可提交
-- **Hooks 单一职责与集中导出**：相似功能禁止分散在多个 hooks 文件，必须通过统一的 `index.ts` barrel export 管理，导入路径必须与导出文件严格对应
-- **类型检查零容忍**：提交前必须运行 `pnpm lint && pnpm typecheck`，禁止提交包含 "模块未找到" 或 "导出不存在" 错误的代码
-
-- **页面布局规范（宪法级）**：所有 `_authenticated/` 路由下的页面组件**必须**使用标准的 `<Header>` 和 `<Main>` 布局组件，确保顶部导航栏（搜索、主题切换、设置、用户菜单）在所有页面保持一致
-  - **强制要求**：在 `src/features/*/index.tsx` 中必须包含以下结构
-  - **Header 组件**：必须包含 `Search`、`ThemeSwitch`、`ConfigDrawer`、`ProfileDropdown`
-  - **Main 组件**：包裹页面的所有主要内容
-
-## 代码质量标准
-
-这是生产代码库。请遵循：
-
-- 使用 TypeScript 严格模式，禁止 any 类型
-- 每个函数都需要单元测试
-- 遵循现有的文件结构和命名约定
-- 提交前必须通过所有 lint 和类型检查
-  优先级：可维护性 > 性能 > 快速交付
-
-### 6. 测试规范
-
-项目使用 Vitest 进行测试：
-
-- **测试框架**: Vitest + @vitest/ui
-- **API Mock**: MSW (Mock Service Worker)
-- **测试数据**: @faker-js/faker 生成测试数据
-- **测试覆盖率**: 通过 `pnpm test:coverage` 生成报告
-
-**测试文件位置**:
-
-- 单元测试：与源文件同目录，命名为 `*.test.ts` 或 `*.spec.ts`
-- Mock 数据：`src/mocks/data/` (JSON 文件)
-- MSW handlers：`src/mocks/handlers/`
-
-## 参考文档
-
-- [OpenCode API 文档](docs/openapi.json)
-- [Prisma 文档](https://www.prisma.io/docs)
-- [PostgreSQL 文档](https://www.postgresql.org/docs/16/)
-- [Shadcn UI 文档](https://ui.shadcn.com)
-- [TanStack Router 文档](https://tanstack.com/router/latest)
-- [TanStack Query 文档](https://tanstack.com/query/latest)
-- [Prometheus 指标最佳实践](https://prometheus.io/docs/practices/naming/)
-- [Vitest 文档](https://vitest.dev)
-- [MSW 文档](https://mswjs.io)
+- 面向项目的文档、注释性说明和总结默认使用简体中文。
+- 修改现有约定前先从代码确认真实调用链，避免基于文件名或包名推断。
+- 工作区可能已有未提交改动；只修改任务相关文件，不要回滚他人变更。

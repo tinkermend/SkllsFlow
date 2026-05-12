@@ -66,24 +66,24 @@ export function SkillCard({
   return (
     <Card className={cardClassName}>
       {/* Header: Logo + 名称 + 状态 */}
-      <CardHeader className="px-4 pt-3 pb-2 relative">
-        {/* 状态标签 - 绝对定位在右上角 */}
-        <Badge
-          variant={config.variant}
-          className={`${config.className} absolute top-3 right-4`}
-        >
-          {config.label}
-        </Badge>
-        <div className="flex items-start gap-3 pr-16">
+      <CardHeader className="px-4 pt-3 pb-2">
+        <div className="flex items-start gap-3">
           {/* Logo */}
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
             <IconComponent className="h-5 w-5" />
           </div>
-          {/* 名称 */}
-          <div className="space-y-1 pt-0.5 min-w-0 flex-1">
-            <CardTitle className="text-base font-bold leading-tight truncate">
-              {skill.name}
-            </CardTitle>
+          <div className="min-w-0 flex-1 space-y-1 pt-0.5">
+            <div className="flex items-start gap-2">
+              <CardTitle className="min-w-0 flex-1 text-base font-bold leading-tight [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] overflow-hidden">
+                {skill.name}
+              </CardTitle>
+              <Badge
+                variant={config.variant}
+                className={`${config.className} shrink-0`}
+              >
+                {config.label}
+              </Badge>
+            </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span className="truncate max-w-[108px] inline-block rounded-full bg-muted px-1.5 py-0.5">
                 {skill.skillId}

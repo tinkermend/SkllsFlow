@@ -115,13 +115,12 @@ export function CreateMcpDialog({ open, onOpenChange }: CreateMcpDialogProps) {
 
           {/* 图标 */}
           <div className="space-y-2">
-            <Label htmlFor="icon">图标 (Emoji)</Label>
+            <Label htmlFor="icon">图标名称</Label>
             <Input
               id="icon"
               value={formData.icon}
               onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-              placeholder="例如：🐙"
-              maxLength={2}
+              placeholder="例如：ChartColumn、ShieldCheck、Database"
             />
           </div>
 

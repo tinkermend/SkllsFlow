@@ -18,8 +18,17 @@ export function parseIcon(iconString: string | null | undefined): LucideIcon {
     return defaultIcon
   }
 
+  const iconMap = LucideIcons as unknown as Record<string, LucideIcon>
+
+  // 兼容 "lucide:chart-column"、"chart-column"、"ChartColumn" 等格式
+  const normalized = iconString
+    .replace(/^lucide:/i, '')
+    .replace(/(^\w|[-_\s]\w)/g, (match) =>
+      match.replace(/[-_\s]/g, '').toUpperCase()
+    )
+
   // 直接从 lucide-react 中查找对应的图标组件
-  const IconComponent = (LucideIcons as unknown as Record<string, LucideIcon>)[iconString]
+  const IconComponent = iconMap[iconString] || iconMap[normalized]
 
   return IconComponent || defaultIcon
 }
