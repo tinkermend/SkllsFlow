@@ -6,6 +6,7 @@ import type {
   Message,
   ChatServer,
 } from '@/features/ai-chat/types'
+import { normalizeMessages } from '@/features/ai-chat/utils/message-normalization'
 
 type ActiveChatServer = Pick<
   ChatServer,
@@ -170,20 +171,26 @@ export const useChatStore = create<ChatState>((set) => ({
   messagesBySession: {},
   setMessages: (sessionId, messages) =>
     set((state) => ({
-      messagesBySession: { ...state.messagesBySession, [sessionId]: messages },
+      messagesBySession: {
+        ...state.messagesBySession,
+        [sessionId]: normalizeMessages(messages),
+      },
     })),
   appendMessage: (sessionId, message) =>
     set((state) => ({
       messagesBySession: {
         ...state.messagesBySession,
-        [sessionId]: [...(state.messagesBySession[sessionId] || []), message],
+        [sessionId]: [
+          ...(state.messagesBySession[sessionId] || []),
+          ...normalizeMessages([message]),
+        ],
       },
     })),
   updateMessage: (sessionId, messageId, updater) =>
     set((state) => {
       const messages = state.messagesBySession[sessionId] || []
       const updated = messages.map((msg) =>
-        msg.info.id === messageId ? updater(msg) : msg
+        msg.info?.id === messageId ? updater(msg) : msg
       )
       return {
         messagesBySession: { ...state.messagesBySession, [sessionId]: updated },
@@ -193,8 +200,10 @@ export const useChatStore = create<ChatState>((set) => ({
     set((state) => {
       const messages = state.messagesBySession[sessionId] || []
       if (messages.length === 0) return state
+      const lastMessage = messages[messages.length - 1]
+      if (!lastMessage?.info) return state
       const updated = [...messages]
-      updated[updated.length - 1] = updater(updated[updated.length - 1])
+      updated[updated.length - 1] = updater(lastMessage)
       return {
         messagesBySession: { ...state.messagesBySession, [sessionId]: updated },
       }

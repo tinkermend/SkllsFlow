@@ -189,6 +189,7 @@ export type EventType =
   | 'session.updated'
   | 'session.deleted'
   | 'session.status'
+  | 'session.error'
   | 'session.idle'
   | 'error'
 
@@ -202,6 +203,11 @@ export interface SSEEvent {
     delta?: string // 增量文本，用于流式输出
     message?: Message
     status?: { type: string }
+    error?: {
+      name?: string
+      message?: string
+      [key: string]: unknown
+    }
     [key: string]: unknown
   }
 }

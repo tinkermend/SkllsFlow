@@ -1,8 +1,19 @@
 /* eslint-disable no-console */
 import { useCallback } from 'react'
+import { AI_CHAT_PROMPT_DEFAULTS } from '@/config/ai-chat'
 import { useChatStore } from '@/stores/chat-store'
 import { messageApi } from '../api/message.api'
-import { DEFAULT_MODEL_CONFIG } from '../config/feature-flags'
+import type { Message } from '../types'
+
+export const createLocalUserMessage = (sessionId: string, content: string): Message => ({
+  info: {
+    id: `msg_${crypto.randomUUID()}`,
+    sessionID: sessionId,
+    role: 'user',
+    time: { created: Date.now() },
+  },
+  parts: [{ type: 'text', text: content }],
+})
 
 export function useChat() {
   const {
@@ -35,33 +46,20 @@ export function useChat() {
       }
 
       try {
+        const userMessage = createLocalUserMessage(currentSessionId, content)
+        appendMessage(currentSessionId, userMessage)
+
         // 设置流状态
         console.log('[useChat] About to call setStreaming(true)')
         setStreaming(true)
         console.log('[useChat] setStreaming(true) called')
 
         // 调用 session.prompt API 发送消息
-        // API 返回用户消息（包含服务端生成的 ID）
-        const userMessage = await messageApi.prompt(currentSessionId, {
-          agent: DEFAULT_MODEL_CONFIG.agent,
-          model: DEFAULT_MODEL_CONFIG.model,
+        // 这里只负责触发请求；实际回复通过 SSE 事件流接收
+        await messageApi.prompt(currentSessionId, {
+          ...AI_CHAT_PROMPT_DEFAULTS,
           parts: [{ type: 'text', text: content }],
         })
-
-        console.log('[useChat] prompt API returned:', userMessage)
-
-        // 使用服务端返回的消息添加到列表
-        // 检查是否已存在（SSE 可能已经添加）
-        const state = useChatStore.getState()
-        const existingMessages = state.messagesBySession[currentSessionId] || []
-        const exists = existingMessages.some(m => m.info.id === userMessage.info.id)
-        
-        if (!exists) {
-          appendMessage(currentSessionId, userMessage)
-          console.log('[useChat] User message appended:', userMessage.info.id)
-        } else {
-          console.log('[useChat] User message already exists (from SSE):', userMessage.info.id)
-        }
 
         // AI 响应通过 SSE 事件流推送，流状态由 session.idle 控制
       } catch (error) {

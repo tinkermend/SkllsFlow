@@ -16,12 +16,3 @@ export const FEATURE_FLAGS = {
 } as const
 
 export type FeatureFlags = typeof FEATURE_FLAGS
-
-// 默认 AI 模型配置
-export const DEFAULT_MODEL_CONFIG = {
-  agent: 'sisyphus',
-  model: {
-    modelID: 'glm-4.7',
-    providerID: 'zai-coding-plan',
-  },
-} as const

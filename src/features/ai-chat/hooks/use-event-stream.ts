@@ -4,6 +4,7 @@ import { useEffect, useRef, useCallback, useState } from 'react'
 import { useChatStore } from '@/stores/chat-store'
 import { createEventSource, type EventSourceManager } from '../api/event.api'
 import type { SSEEvent, Message } from '../types'
+import { getSessionErrorMessage } from '../utils/session-error'
 
 export function useEventStream() {
   const {
@@ -197,6 +198,17 @@ export function useEventStream() {
           } else if (status === 'busy') {
             setStreaming(true)
           }
+          break
+        }
+
+        case 'session.error': {
+          const errorMessage = getSessionErrorMessage(props.error)
+          console.error('[SSE] Session error:', {
+            sessionID,
+            error: props.error,
+            message: errorMessage,
+          })
+          setStreaming(false)
           break
         }
 

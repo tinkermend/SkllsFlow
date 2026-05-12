@@ -4,6 +4,7 @@ import {
   ChatContainerContent,
 } from '@/components/ui/chat-container'
 import { MessageItem } from './message-item'
+import { normalizeMessages } from '../utils/message-normalization'
 
 export function MessageList() {
   const { currentSessionId, messagesBySession, streamingMessageId } =
@@ -12,6 +13,7 @@ export function MessageList() {
   const messages = currentSessionId
     ? messagesBySession[currentSessionId] || []
     : []
+  const safeMessages = normalizeMessages(messages)
 
   if (!currentSessionId) {
     return (
@@ -21,7 +23,7 @@ export function MessageList() {
     )
   }
 
-  if (messages.length === 0) {
+  if (safeMessages.length === 0) {
     return (
       <div className='flex h-full flex-col items-center justify-center gap-4'>
         <div className='rounded-full bg-primary/10 p-4'>
@@ -53,7 +55,7 @@ export function MessageList() {
     <ChatContainerRoot className='flex-1 overflow-y-auto p-4'>
       {/* 移除 mx-auto max-w-3xl，使对话内容靠左侧显示，与菜单栏贴合 */}
       <ChatContainerContent className='space-y-4'>
-        {messages.map((message) => (
+        {safeMessages.map((message) => (
           <MessageItem
             key={message.info.id}
             message={message}
