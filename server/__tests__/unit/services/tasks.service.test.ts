@@ -11,6 +11,42 @@ beforeAll(async () => {
 });
 
 describe('TasksService', () => {
+  function createTaskRecord() {
+    return {
+      id: 4n,
+      taskUuid: 'task-uuid',
+      name: '每日巡检',
+      description: null,
+      chatServerId: 2n,
+      skillId: 3n,
+      prompt: '执行巡检',
+      scheduleType: 'daily',
+      scheduleConfig: { time: '10:30' },
+      timeoutSeconds: 300,
+      status: 'paused',
+      lastRunAt: null,
+      nextRunAt: null,
+      createdBy: 1n,
+      createdAt: new Date('2026-05-13T00:00:00.000Z'),
+      updatedAt: new Date('2026-05-13T00:00:00.000Z'),
+      chatServer: {
+        id: 2n,
+        chatId: 'chat-server-uuid',
+        name: '默认会话',
+        host: '127.0.0.1',
+        port: 4096,
+        status: 'active',
+      },
+      skill: {
+        id: 3n,
+        skillId: 'skill-business-id',
+        name: '巡检 Skill',
+        status: 'active',
+      },
+      _count: { runs: 0 },
+    };
+  }
+
   function createService(overrides: Record<string, unknown> = {}) {
     const repositories = {
       prisma: {
@@ -143,39 +179,7 @@ describe('TasksService', () => {
   });
 
   it('resumes a task and recalculates nextRunAt for scheduled tasks', async () => {
-    const task = {
-      id: 4n,
-      taskUuid: 'task-uuid',
-      name: '每日巡检',
-      description: null,
-      chatServerId: 2n,
-      skillId: 3n,
-      prompt: '执行巡检',
-      scheduleType: 'daily',
-      scheduleConfig: { time: '10:30' },
-      timeoutSeconds: 300,
-      status: 'paused',
-      lastRunAt: null,
-      nextRunAt: null,
-      createdBy: 1n,
-      createdAt: new Date('2026-05-13T00:00:00.000Z'),
-      updatedAt: new Date('2026-05-13T00:00:00.000Z'),
-      chatServer: {
-        id: 2n,
-        chatId: 'chat-server-uuid',
-        name: '默认会话',
-        host: '127.0.0.1',
-        port: 4096,
-        status: 'active',
-      },
-      skill: {
-        id: 3n,
-        skillId: 'skill-business-id',
-        name: '巡检 Skill',
-        status: 'active',
-      },
-      _count: { runs: 0 },
-    };
+    const task = createTaskRecord();
     const { repositories, service } = createService();
     repositories.tasksRepository.findByTaskUuidForUser.mockResolvedValue(task);
     repositories.tasksRepository.updateTask.mockImplementation(async (_id, data) => ({
@@ -194,5 +198,29 @@ describe('TasksService', () => {
         nextRunAt: expect.any(Date),
       })
     );
+  });
+
+  it('throws required chat server message when updating chatServerId to empty string', async () => {
+    const { repositories, service } = createService();
+    repositories.tasksRepository.findByTaskUuidForUser.mockResolvedValue(createTaskRecord());
+
+    await expect(
+      service.updateTask('user-uuid', 'task-uuid', {
+        chatServerId: '',
+      })
+    ).rejects.toThrow('请选择一个智能服务');
+    expect(repositories.tasksRepository.updateTask).not.toHaveBeenCalled();
+  });
+
+  it('throws required skill message when updating skillId to empty string', async () => {
+    const { repositories, service } = createService();
+    repositories.tasksRepository.findByTaskUuidForUser.mockResolvedValue(createTaskRecord());
+
+    await expect(
+      service.updateTask('user-uuid', 'task-uuid', {
+        skillId: '',
+      })
+    ).rejects.toThrow('请选择一个 Skill');
+    expect(repositories.tasksRepository.updateTask).not.toHaveBeenCalled();
   });
 });

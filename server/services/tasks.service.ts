@@ -145,10 +145,17 @@ export class TasksService {
       dto.scheduleType !== undefined ||
       dto.scheduleConfig !== undefined
     ) {
+      const chatServerId = dto.chatServerId !== undefined
+        ? dto.chatServerId
+        : current.chatServer.chatId;
+      const skillId = dto.skillId !== undefined
+        ? dto.skillId
+        : current.skill.skillId;
+
       const context = await this.validateTaskBinding(userUuid, {
         name: dto.name ?? current.name,
-        chatServerId: dto.chatServerId ?? current.chatServer.chatId,
-        skillId: dto.skillId ?? current.skill.skillId,
+        chatServerId,
+        skillId,
         prompt: dto.prompt ?? current.prompt,
         scheduleType,
         scheduleConfig: scheduleConfig as Prisma.InputJsonValue | null,
@@ -271,6 +278,8 @@ export class TasksService {
       scheduleConfig?: Prisma.InputJsonValue | Prisma.JsonValue | null;
     }
   ): Promise<TaskValidationContext> {
+    this.validateRequiredFields(dto);
+
     const user = await this.usersRepository.findByUserId(userUuid);
     if (!user) {
       throw new Error('用户不存在');
