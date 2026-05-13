@@ -16,7 +16,13 @@ const require = createRequire(import.meta.url);
 
 type TaskRunnerChatServer = TaskWithRelations['chatServer'];
 
+type OpenCodeSessionContext = {
+  sessionId: string;
+  baseUrl: string;
+};
+
 type OpenCodeSendMessageInput = {
+  baseUrl: string;
   sessionId: string;
   prompt: string;
   timeoutSeconds: number;
@@ -28,6 +34,7 @@ type OpenCodeSessionResponse = {
 };
 
 type OpenCodeMessageResponse = {
+  parts?: unknown;
   output?: unknown;
   message?: unknown;
   content?: unknown;
@@ -47,7 +54,7 @@ type TasksRepositoryLike = {
 };
 
 type OpenCodeTaskClientLike = {
-  createSession(chatServer: TaskRunnerChatServer): Promise<string>;
+  createSession(chatServer: TaskRunnerChatServer): Promise<OpenCodeSessionContext>;
   sendMessageAndWait(input: OpenCodeSendMessageInput): Promise<string>;
 };
 
@@ -60,11 +67,9 @@ type TaskRunnerServiceDeps = {
 };
 
 export class OpenCodeTaskClient implements OpenCodeTaskClientLike {
-  private currentBaseUrl: string | null = null;
-
-  async createSession(chatServer: TaskRunnerChatServer): Promise<string> {
-    this.currentBaseUrl = this.buildBaseUrl(chatServer);
-    const response = await fetch(`${this.currentBaseUrl}/session`, {
+  async createSession(chatServer: TaskRunnerChatServer): Promise<OpenCodeSessionContext> {
+    const baseUrl = this.buildBaseUrl(chatServer);
+    const response = await fetch(`${baseUrl}/session`, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
@@ -80,22 +85,20 @@ export class OpenCodeTaskClient implements OpenCodeTaskClientLike {
       throw new Error('OpenCode session response missing session id');
     }
 
-    return sessionId;
+    return {
+      sessionId,
+      baseUrl,
+    };
   }
 
   async sendMessageAndWait(input: OpenCodeSendMessageInput): Promise<string> {
-    if (!this.currentBaseUrl) {
-      throw new Error('OpenCode session has not been created');
-    }
-
-    const response = await fetch(`${this.currentBaseUrl}/session/${encodeURIComponent(input.sessionId)}/message`, {
+    const response = await fetch(`${input.baseUrl}/session/${encodeURIComponent(input.sessionId)}/message`, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        content: input.prompt,
-        message: input.prompt,
+        parts: [{ type: 'text', text: input.prompt }],
       }),
       signal: AbortSignal.timeout(input.timeoutSeconds * 1000),
     });
@@ -117,6 +120,10 @@ export class OpenCodeTaskClient implements OpenCodeTaskClientLike {
   }
 
   private extractOutput(data: OpenCodeMessageResponse): string {
+    const partsOutput = this.extractPartsOutput(data.parts);
+    if (partsOutput) {
+      return partsOutput;
+    }
     if (typeof data.output === 'string') {
       return data.output;
     }
@@ -128,6 +135,31 @@ export class OpenCodeTaskClient implements OpenCodeTaskClientLike {
     }
 
     return '';
+  }
+
+  private extractPartsOutput(parts: unknown): string {
+    if (!Array.isArray(parts)) {
+      return '';
+    }
+
+    return parts
+      .map((part) => {
+        if (!part || typeof part !== 'object') {
+          return null;
+        }
+
+        const candidate = part as { text?: unknown; content?: unknown };
+        if (typeof candidate.text === 'string') {
+          return candidate.text;
+        }
+        if (typeof candidate.content === 'string') {
+          return candidate.content;
+        }
+
+        return null;
+      })
+      .filter((text): text is string => text !== null)
+      .join('\n');
   }
 }
 
@@ -170,9 +202,10 @@ export class TaskRunnerService {
     });
 
     try {
-      const sessionId = await this.opencodeClient.createSession(task.chatServer);
+      const session = await this.opencodeClient.createSession(task.chatServer);
       const output = await this.opencodeClient.sendMessageAndWait({
-        sessionId,
+        baseUrl: session.baseUrl,
+        sessionId: session.sessionId,
         prompt: task.prompt,
         timeoutSeconds: task.timeoutSeconds,
       });
