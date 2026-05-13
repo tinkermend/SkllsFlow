@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { normalizeMessages } from './message-normalization'
+import { mergeMessageList, normalizeMessages } from './message-normalization'
 
 describe('normalizeMessages', () => {
   it('drops invalid messages and keeps valid ones', () => {
@@ -40,5 +40,39 @@ describe('normalizeMessages', () => {
 
     expect(messages).toHaveLength(1)
     expect(messages[0].parts).toEqual([])
+  })
+
+  it('merges duplicate message ids instead of rendering repeated user prompts', () => {
+    const localUserMessage = {
+      info: {
+        id: 'msg_user_1',
+        sessionID: 'ses_1',
+        role: 'user' as const,
+        time: { created: 1 },
+      },
+      parts: [{ type: 'text' as const, text: '你是什么模型' }],
+    }
+    const serverUserMessage = {
+      info: {
+        id: 'msg_user_1',
+        sessionID: 'ses_1',
+        role: 'user' as const,
+        time: { created: 2 },
+      },
+      parts: [{ type: 'text' as const, text: '你是什么模型' }],
+    }
+
+    const messages = mergeMessageList([localUserMessage], [serverUserMessage])
+
+    expect(messages).toHaveLength(1)
+    expect(messages[0]).toMatchObject({
+      info: {
+        id: 'msg_user_1',
+        sessionID: 'ses_1',
+        role: 'user',
+        time: { created: 2 },
+      },
+      parts: [{ type: 'text', text: '你是什么模型' }],
+    })
   })
 })

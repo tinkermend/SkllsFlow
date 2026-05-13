@@ -6,7 +6,10 @@ import type {
   Message,
   ChatServer,
 } from '@/features/ai-chat/types'
-import { normalizeMessages } from '@/features/ai-chat/utils/message-normalization'
+import {
+  mergeMessageList,
+  normalizeMessages,
+} from '@/features/ai-chat/utils/message-normalization'
 
 type ActiveChatServer = Pick<
   ChatServer,
@@ -180,10 +183,10 @@ export const useChatStore = create<ChatState>((set) => ({
     set((state) => ({
       messagesBySession: {
         ...state.messagesBySession,
-        [sessionId]: [
-          ...(state.messagesBySession[sessionId] || []),
-          ...normalizeMessages([message]),
-        ],
+        [sessionId]: mergeMessageList(
+          state.messagesBySession[sessionId] || [],
+          [message]
+        ),
       },
     })),
   updateMessage: (sessionId, messageId, updater) =>
