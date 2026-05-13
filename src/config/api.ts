@@ -46,6 +46,21 @@ export const API_ENDPOINTS = {
     update: (id: string) => `/users/${id}`,
     delete: (id: string) => `/users/${id}`,
   },
+
+  // 任务中心
+  tasks: {
+    list: "/tasks",
+    create: "/tasks",
+    testRun: "/tasks/test-run",
+    detail: (taskUuid: string) => `/tasks/${taskUuid}`,
+    update: (taskUuid: string) => `/tasks/${taskUuid}`,
+    delete: (taskUuid: string) => `/tasks/${taskUuid}`,
+    run: (taskUuid: string) => `/tasks/${taskUuid}/run`,
+    pause: (taskUuid: string) => `/tasks/${taskUuid}/pause`,
+    resume: (taskUuid: string) => `/tasks/${taskUuid}/resume`,
+    runs: (taskUuid: string) => `/tasks/${taskUuid}/runs`,
+    runDetail: (runUuid: string) => `/tasks/runs/${runUuid}`,
+  },
 } as const;
 
 /**

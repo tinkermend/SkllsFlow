@@ -2,6 +2,7 @@ import 'dotenv/config'
 import app from './app.js'
 import { openCodeService } from './services/opencode.service.js'
 import { DatabaseService } from './services/database.service.js'
+import { taskSchedulerService } from './services/task-scheduler.service.js'
 
 const PORT = process.env.BACKEND_PORT || process.env.PORT || 3001
 
@@ -13,11 +14,13 @@ async function startServer() {
 
     const server = app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`)
+      taskSchedulerService.start()
     })
 
     // 优雅关闭
     const shutdown = async () => {
       console.log('Shutting down...')
+      await taskSchedulerService.stop()
       await openCodeService.cleanupAll()
       await DatabaseService.disconnect()
       server.close(() => {

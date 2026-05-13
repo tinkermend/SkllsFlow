@@ -56,6 +56,7 @@ model User {
   chatServers         ChatServer[]         @relation("ChatServerCreator")
   sessions            Session[]            @relation("SessionCreator")
   createdSkills       Skill[]              @relation("SkillCreator")
+  tasks               Task[]               @relation("TaskCreator")
 
   @@index([status])
   @@index([userUUId])
@@ -362,6 +363,7 @@ model ChatServer {
   chatServerMcps   ChatServerMcp[]
   chatServerSkills ChatServerSkill[]
   userSkills       UserSkill[]
+  tasks            Task[]
 
   @@unique([host, port], name: "chat_servers_host_port_unique")
   @@index([proxyId, status], map: "idx_chat_servers_proxy_status")
@@ -656,6 +658,7 @@ model Skill {
   userSkills       UserSkill[]
   chatServerSkills ChatServerSkill[]
   skillFiles       SkillFile[]
+  tasks            Task[]
 
   @@index([name])
   @@index([category])
@@ -822,6 +825,130 @@ model UserSkill {
   @@index([chatId])
   @@index([userId, chatId, sortOrder])
   @@map("user_skills")
+  @@schema("aiops")
+}
+
+// ============================================
+// 任务定义表
+// ============================================
+/// 任务定义表，存储可手动或定时执行的 Skill 自动化任务
+model Task {
+  /// 主键 ID，自增
+  id             BigInt             @id @default(autoincrement())
+  /// 业务 UUID，用于对外暴露任务标识
+  taskUuid       String             @unique @default(uuid()) @map("task_uuid") @db.Uuid
+  /// 任务名称
+  name           String             @db.VarChar(120)
+  /// 任务描述
+  description    String?            @db.Text
+  /// 绑定聊天服务 ID
+  chatServerId   BigInt             @map("chat_server_id")
+  /// 绑定技能内部 ID
+  skillId        BigInt             @map("skill_id")
+  /// 任务执行提示词
+  prompt         String             @db.Text
+  /// 调度类型
+  scheduleType   task_schedule_type @default(manual) @map("schedule_type")
+  /// 调度配置
+  scheduleConfig Json?              @map("schedule_config")
+  /// 执行超时时间，单位秒
+  timeoutSeconds Int                @default(300) @map("timeout_seconds")
+  /// 任务状态
+  status         task_status        @default(active)
+  /// 最近运行时间
+  lastRunAt      DateTime?          @map("last_run_at")
+  /// 下次计划运行时间
+  nextRunAt      DateTime?          @map("next_run_at")
+  /// 创建人 ID
+  createdBy      BigInt             @map("created_by")
+  /// 创建时间
+  createdAt      DateTime           @default(now()) @map("created_at")
+  /// 更新时间
+  updatedAt      DateTime           @updatedAt @map("updated_at")
+
+  chatServer ChatServer @relation(fields: [chatServerId], references: [id], onDelete: Restrict)
+  skill      Skill      @relation(fields: [skillId], references: [id], onDelete: Restrict)
+  creator    User       @relation("TaskCreator", fields: [createdBy], references: [id], onDelete: Restrict)
+  runs       TaskRun[]
+
+  @@index([createdBy])
+  @@index([status])
+  @@index([nextRunAt])
+  @@index([createdBy, status])
+  @@map("tasks")
+  @@schema("aiops")
+}
+
+enum task_schedule_type {
+  manual
+  daily
+  weekly
+  monthly
+
+  @@schema("aiops")
+}
+
+enum task_status {
+  active
+  paused
+  disabled
+
+  @@schema("aiops")
+}
+
+// ============================================
+// 任务运行记录表
+// ============================================
+/// 任务运行记录表，存储每次测试、手动或定时执行结果
+model TaskRun {
+  /// 主键 ID，自增
+  id           BigInt                @id @default(autoincrement())
+  /// 业务 UUID，用于对外暴露运行标识
+  runUuid      String                @unique @default(uuid()) @map("run_uuid") @db.Uuid
+  /// 任务 ID
+  taskId       BigInt?               @map("task_id")
+  /// 运行状态
+  status       task_run_status       @default(pending)
+  /// 触发方式
+  triggerType  task_run_trigger_type @map("trigger_type")
+  /// 执行输入快照
+  input        Json
+  /// 执行输出
+  output       String?               @db.Text
+  /// 错误信息
+  errorMessage String?               @map("error_message") @db.Text
+  /// 开始时间
+  startedAt    DateTime?             @map("started_at")
+  /// 结束时间
+  finishedAt   DateTime?             @map("finished_at")
+  /// 创建时间
+  createdAt    DateTime              @default(now()) @map("created_at")
+
+  task Task? @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@index([taskId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([taskId, createdAt])
+  @@map("task_runs")
+  @@schema("aiops")
+}
+
+enum task_run_status {
+  pending
+  running
+  success
+  failed
+  cancelled
+
+  @@schema("aiops")
+}
+
+enum task_run_trigger_type {
+  manual
+  test
+  schedule
+
   @@schema("aiops")
 }
 

@@ -13,6 +13,7 @@ import menusRoutes from './routes/menus.routes.js'
 import mcpRoutes from './routes/mcp.routes.js'
 import directoriesRoutes from './routes/directories.routes.js'
 import chatServerRoutes from './routes/chat-server.routes.js'
+import tasksRoutes from './routes/tasks.routes.js'
 import { DatabaseService } from './services/database.service.js'
 import { metricsEndpoint } from './utils/metrics.js'
 import { errorHandler } from './middleware/error-handler.js'
@@ -38,6 +39,7 @@ app.use('/api/menus', menusRoutes)
 app.use('/api/mcp', mcpRoutes)
 app.use('/api/directories', directoriesRoutes)
 app.use('/api/chat-servers', chatServerRoutes)
+app.use('/api/tasks', tasksRoutes)
 
 app.get('/health', async (req, res) => {
   try {
