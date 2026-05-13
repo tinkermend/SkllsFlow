@@ -38,6 +38,8 @@ import { Route as AuthenticatedDebugAuthRouteImport } from './routes/_authentica
 import { Route as AuthenticatedSettingsRolesIndexRouteImport } from './routes/_authenticated/settings/roles/index'
 import { Route as AuthenticatedSettingsPermissionsIndexRouteImport } from './routes/_authenticated/settings/permissions/index'
 import { Route as AuthenticatedSettingsMenusIndexRouteImport } from './routes/_authenticated/settings/menus/index'
+import { Route as AuthenticatedLogsOperationIndexRouteImport } from './routes/_authenticated/logs/operation/index'
+import { Route as AuthenticatedLogsChatIndexRouteImport } from './routes/_authenticated/logs/chat/index'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -201,6 +203,18 @@ const AuthenticatedSettingsMenusIndexRoute =
     path: '/menus/',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
+const AuthenticatedLogsOperationIndexRoute =
+  AuthenticatedLogsOperationIndexRouteImport.update({
+    id: '/logs/operation/',
+    path: '/logs/operation/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedLogsChatIndexRoute =
+  AuthenticatedLogsChatIndexRouteImport.update({
+    id: '/logs/chat/',
+    path: '/logs/chat/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRouteRouteWithChildren
@@ -228,6 +242,8 @@ export interface FileRoutesByFullPath {
   '/skills': typeof AuthenticatedSkillsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/logs/chat': typeof AuthenticatedLogsChatIndexRoute
+  '/logs/operation': typeof AuthenticatedLogsOperationIndexRoute
   '/settings/menus': typeof AuthenticatedSettingsMenusIndexRoute
   '/settings/permissions': typeof AuthenticatedSettingsPermissionsIndexRoute
   '/settings/roles': typeof AuthenticatedSettingsRolesIndexRoute
@@ -257,6 +273,8 @@ export interface FileRoutesByTo {
   '/skills': typeof AuthenticatedSkillsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/logs/chat': typeof AuthenticatedLogsChatIndexRoute
+  '/logs/operation': typeof AuthenticatedLogsOperationIndexRoute
   '/settings/menus': typeof AuthenticatedSettingsMenusIndexRoute
   '/settings/permissions': typeof AuthenticatedSettingsPermissionsIndexRoute
   '/settings/roles': typeof AuthenticatedSettingsRolesIndexRoute
@@ -289,6 +307,8 @@ export interface FileRoutesById {
   '/_authenticated/skills/': typeof AuthenticatedSkillsIndexRoute
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/_authenticated/logs/chat/': typeof AuthenticatedLogsChatIndexRoute
+  '/_authenticated/logs/operation/': typeof AuthenticatedLogsOperationIndexRoute
   '/_authenticated/settings/menus/': typeof AuthenticatedSettingsMenusIndexRoute
   '/_authenticated/settings/permissions/': typeof AuthenticatedSettingsPermissionsIndexRoute
   '/_authenticated/settings/roles/': typeof AuthenticatedSettingsRolesIndexRoute
@@ -321,6 +341,8 @@ export interface FileRouteTypes {
     | '/skills'
     | '/tasks'
     | '/users'
+    | '/logs/chat'
+    | '/logs/operation'
     | '/settings/menus'
     | '/settings/permissions'
     | '/settings/roles'
@@ -350,6 +372,8 @@ export interface FileRouteTypes {
     | '/skills'
     | '/tasks'
     | '/users'
+    | '/logs/chat'
+    | '/logs/operation'
     | '/settings/menus'
     | '/settings/permissions'
     | '/settings/roles'
@@ -381,6 +405,8 @@ export interface FileRouteTypes {
     | '/_authenticated/skills/'
     | '/_authenticated/tasks/'
     | '/_authenticated/users/'
+    | '/_authenticated/logs/chat/'
+    | '/_authenticated/logs/operation/'
     | '/_authenticated/settings/menus/'
     | '/_authenticated/settings/permissions/'
     | '/_authenticated/settings/roles/'
@@ -601,6 +627,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsMenusIndexRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
+    '/_authenticated/logs/operation/': {
+      id: '/_authenticated/logs/operation/'
+      path: '/logs/operation'
+      fullPath: '/logs/operation'
+      preLoaderRoute: typeof AuthenticatedLogsOperationIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/logs/chat/': {
+      id: '/_authenticated/logs/chat/'
+      path: '/logs/chat'
+      fullPath: '/logs/chat'
+      preLoaderRoute: typeof AuthenticatedLogsChatIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -646,6 +686,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSkillsIndexRoute: typeof AuthenticatedSkillsIndexRoute
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
+  AuthenticatedLogsChatIndexRoute: typeof AuthenticatedLogsChatIndexRoute
+  AuthenticatedLogsOperationIndexRoute: typeof AuthenticatedLogsOperationIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -668,6 +710,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSkillsIndexRoute: AuthenticatedSkillsIndexRoute,
   AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
+  AuthenticatedLogsChatIndexRoute: AuthenticatedLogsChatIndexRoute,
+  AuthenticatedLogsOperationIndexRoute: AuthenticatedLogsOperationIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
