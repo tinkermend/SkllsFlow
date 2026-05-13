@@ -1,14 +1,5 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
-
-let TasksService: typeof import('@server/services/tasks.service').TasksService;
-
-beforeAll(async () => {
-  process.env.DATABASE_URL = 'postgresql://test:test@127.0.0.1:5432/test';
-  process.env.DIRECT_URL = 'postgresql://test:test@127.0.0.1:5432/test';
-  process.env.OPENCODE_BASE_PATH = '/tmp/opencode-test';
-  process.env.PROXY_API_SECRET = 'test-secret';
-  TasksService = (await import('@server/services/tasks.service')).TasksService;
-});
+import { describe, expect, it, vi } from 'vitest';
+import { TasksService } from '@server/services/tasks.service';
 
 describe('TasksService', () => {
   function createTaskRecord() {
@@ -49,10 +40,8 @@ describe('TasksService', () => {
 
   function createService(overrides: Record<string, unknown> = {}) {
     const repositories = {
-      prisma: {
-        userSkill: {
-          findFirst: vi.fn().mockResolvedValue({ id: 10n }),
-        },
+      userSkills: {
+        findLoadedSkill: vi.fn().mockResolvedValue({ id: 10n }),
       },
       usersRepository: {
         findByUserId: vi.fn().mockResolvedValue({ id: 1n }),
@@ -134,12 +123,10 @@ describe('TasksService', () => {
     expect(repositories.usersRepository.findByUserId).toHaveBeenCalledWith('user-uuid');
     expect(repositories.chatServerRepository.findByChatId).toHaveBeenCalledWith('chat-server-uuid');
     expect(repositories.skillsRepository.findBySkillId).toHaveBeenCalledWith('skill-business-id');
-    expect(repositories.prisma.userSkill.findFirst).toHaveBeenCalledWith({
-      where: {
-        userId: 1n,
-        skillId: 'skill-business-id',
-        chatId: 2n,
-      },
+    expect(repositories.userSkills.findLoadedSkill).toHaveBeenCalledWith({
+      userId: 1n,
+      skillId: 'skill-business-id',
+      chatId: 2n,
     });
     expect(repositories.tasksRepository.createTask).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -157,12 +144,28 @@ describe('TasksService', () => {
     });
   });
 
+  it('does not require prisma when all dependencies are injected', async () => {
+    const { repositories, service } = createService();
+
+    await service.createTask('user-uuid', {
+      name: '每日巡检',
+      chatServerId: 'chat-server-uuid',
+      skillId: 'skill-business-id',
+      prompt: '执行巡检',
+      scheduleType: 'manual',
+    });
+
+    expect(repositories.userSkills.findLoadedSkill).toHaveBeenCalledWith({
+      userId: 1n,
+      skillId: 'skill-business-id',
+      chatId: 2n,
+    });
+  });
+
   it('throws when the selected skill is not loaded on the chat server', async () => {
     const { repositories, service } = createService({
-      prisma: {
-        userSkill: {
-          findFirst: vi.fn().mockResolvedValue(null),
-        },
+      userSkills: {
+        findLoadedSkill: vi.fn().mockResolvedValue(null),
       },
     });
 
@@ -222,5 +225,34 @@ describe('TasksService', () => {
       })
     ).rejects.toThrow('请选择一个 Skill');
     expect(repositories.tasksRepository.updateTask).not.toHaveBeenCalled();
+  });
+
+  it('updates schedule without revalidating unchanged bindings', async () => {
+    const task = createTaskRecord();
+    const { repositories, service } = createService();
+    repositories.tasksRepository.findByTaskUuidForUser.mockResolvedValue(task);
+    repositories.tasksRepository.updateTask.mockResolvedValue({
+      ...task,
+      scheduleType: 'weekly',
+      scheduleConfig: { time: '11:00', dayOfWeek: 2 },
+      nextRunAt: new Date('2026-05-19T03:00:00.000Z'),
+    });
+
+    await service.updateTask('user-uuid', 'task-uuid', {
+      scheduleType: 'weekly',
+      scheduleConfig: { time: '11:00', dayOfWeek: 2 },
+    });
+
+    expect(repositories.chatServerRepository.findByChatId).not.toHaveBeenCalled();
+    expect(repositories.skillsRepository.findBySkillId).not.toHaveBeenCalled();
+    expect(repositories.userSkills.findLoadedSkill).not.toHaveBeenCalled();
+    expect(repositories.tasksRepository.updateTask).toHaveBeenCalledWith(
+      4n,
+      expect.objectContaining({
+        scheduleType: 'weekly',
+        scheduleConfig: { time: '11:00', dayOfWeek: 2 },
+        nextRunAt: expect.any(Date),
+      })
+    );
   });
 });

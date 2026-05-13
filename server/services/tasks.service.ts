@@ -1,7 +1,7 @@
+import { createRequire } from 'node:module';
 import { Prisma, type PrismaClient, type Skill } from '@prisma/client';
 import { ChatServerRepository } from '../repositories/chat-server.repository.js';
 import { TasksRepository } from '../repositories/tasks.repository.js';
-import { UserRepository } from '../repositories/users.repository.js';
 import {
   type CreateTaskDto,
   type FindTasksFilters,
@@ -11,7 +11,8 @@ import {
   type UpdateTaskDto,
   toTaskResponseDto,
 } from '../types/task.types.js';
-import { DatabaseService } from './database.service.js';
+
+const require = createRequire(import.meta.url);
 
 type TaskValidationContext = {
   userId: bigint;
@@ -21,14 +22,16 @@ type TaskValidationContext = {
 
 type TasksServiceDeps = {
   prisma?: PrismaClient;
-  users?: UserRepository;
-  usersRepository?: UserRepository;
-  tasks?: TasksRepository;
-  tasksRepository?: TasksRepository;
-  chatServers?: ChatServerRepository;
-  chatServerRepository?: ChatServerRepository;
+  users?: UsersLookupRepository;
+  usersRepository?: UsersLookupRepository;
+  tasks?: TasksDataRepository;
+  tasksRepository?: TasksDataRepository;
+  chatServers?: ChatServersLookupRepository;
+  chatServerRepository?: ChatServersLookupRepository;
   skills?: SkillsLookupRepository;
   skillsRepository?: SkillsLookupRepository;
+  userSkills?: UserSkillsLookupRepository;
+  userSkillRepository?: UserSkillsLookupRepository;
 };
 
 type ScheduleConfig = {
@@ -41,24 +44,61 @@ type SkillsLookupRepository = {
   findBySkillId(skillId: string): Promise<Skill | null>;
 };
 
+type UserRecord = {
+  id: bigint;
+};
+
+type ChatServerRecord = {
+  id: bigint;
+  chatId: string;
+  status: string;
+  createdBy: bigint;
+};
+
+type UsersLookupRepository = {
+  findByUserId(userUuid: string): Promise<UserRecord | null>;
+};
+
+type ChatServersLookupRepository = {
+  findByChatId(chatId: string): Promise<ChatServerRecord | null>;
+};
+
+type TasksDataRepository = {
+  createTask(data: Prisma.TaskUncheckedCreateInput): Promise<TaskWithRelations>;
+  findByTaskUuidForUser(taskUuid: string, userId: bigint): Promise<TaskWithRelations | null>;
+  findManyForUser(userId: bigint, filters?: FindTasksFilters): Promise<TaskWithRelations[]>;
+  updateTask(id: bigint, data: Prisma.TaskUncheckedUpdateInput): Promise<TaskWithRelations>;
+  deleteTask(id: bigint): Promise<unknown>;
+};
+
+type FindLoadedSkillParams = {
+  userId: bigint;
+  skillId: string;
+  chatId: bigint;
+};
+
+type UserSkillsLookupRepository = {
+  findLoadedSkill(params: FindLoadedSkillParams): Promise<unknown | null>;
+};
+
 export class TasksService {
-  private prisma: PrismaClient;
-  private usersRepository: UserRepository;
-  private tasksRepository: TasksRepository;
-  private chatServerRepository: ChatServerRepository;
+  private usersRepository: UsersLookupRepository;
+  private tasksRepository: TasksDataRepository;
+  private chatServerRepository: ChatServersLookupRepository;
   private skillsRepository: SkillsLookupRepository;
+  private userSkillsRepository: UserSkillsLookupRepository;
 
   constructor(deps: TasksServiceDeps = {}) {
     let prismaInstance: PrismaClient | null = deps.prisma ?? null;
     const ensurePrisma = () => {
       if (!prismaInstance) {
+        const { DatabaseService } = require('./database.service.js') as typeof import('./database.service.js');
         prismaInstance = DatabaseService.getInstance();
       }
       return prismaInstance;
     };
 
-    this.prisma = ensurePrisma();
-    this.usersRepository = deps.users ?? deps.usersRepository ?? new UserRepository(ensurePrisma());
+    this.usersRepository = deps.users ?? deps.usersRepository ?? this.createDefaultUsersRepository(ensurePrisma);
     this.tasksRepository = deps.tasks ?? deps.tasksRepository ?? new TasksRepository(ensurePrisma());
     this.chatServerRepository =
       deps.chatServers ?? deps.chatServerRepository ?? new ChatServerRepository(ensurePrisma());
@@ -66,6 +106,12 @@ export class TasksService {
       findBySkillId: (skillId: string) =>
         ensurePrisma().skill.findUnique({
           where: { skillId },
+        }),
+    };
+    this.userSkillsRepository = deps.userSkills ?? deps.userSkillRepository ?? {
+      findLoadedSkill: (params: FindLoadedSkillParams) =>
+        ensurePrisma().userSkill.findFirst({
+          where: params,
         }),
     };
   }
@@ -138,13 +184,10 @@ export class TasksService {
     const scheduleConfig = dto.scheduleConfig !== undefined
       ? dto.scheduleConfig
       : current.scheduleConfig;
+    const bindingChanged = dto.chatServerId !== undefined || dto.skillId !== undefined;
+    const scheduleChanged = dto.scheduleType !== undefined || dto.scheduleConfig !== undefined;
 
-    if (
-      dto.chatServerId !== undefined ||
-      dto.skillId !== undefined ||
-      dto.scheduleType !== undefined ||
-      dto.scheduleConfig !== undefined
-    ) {
+    if (bindingChanged) {
       const chatServerId = dto.chatServerId !== undefined
         ? dto.chatServerId
         : current.chatServer.chatId;
@@ -163,6 +206,9 @@ export class TasksService {
 
       data.chatServerId = context.chatServerId;
       data.skillId = context.skillId;
+    }
+
+    if (scheduleChanged) {
       data.scheduleType = scheduleType;
       data.scheduleConfig = this.toWritableJson(scheduleConfig);
       data.nextRunAt = this.calculateNextRunAt(scheduleType, scheduleConfig, new Date());
@@ -298,12 +344,10 @@ export class TasksService {
       throw new Error('Skill 不存在或已禁用');
     }
 
-    const userSkill = await this.prisma.userSkill.findFirst({
-      where: {
-        userId: user.id,
-        skillId: skill.skillId,
-        chatId: chatServer.id,
-      },
+    const userSkill = await this.userSkillsRepository.findLoadedSkill({
+      userId: user.id,
+      skillId: skill.skillId,
+      chatId: chatServer.id,
     });
 
     if (!userSkill) {
@@ -366,5 +410,12 @@ export class TasksService {
     }
 
     return value === null ? Prisma.JsonNull : value as Prisma.InputJsonValue;
+  }
+
+  private createDefaultUsersRepository(
+    ensurePrisma: () => PrismaClient
+  ): UsersLookupRepository {
+    const { UserRepository } = require('../repositories/users.repository.js') as typeof import('../repositories/users.repository.js');
+    return new UserRepository(ensurePrisma());
   }
 }
