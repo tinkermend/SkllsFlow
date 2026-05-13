@@ -227,7 +227,7 @@ describe('TasksService', () => {
     expect(repositories.tasksRepository.updateTask).not.toHaveBeenCalled();
   });
 
-  it('updates schedule without revalidating unchanged bindings', async () => {
+  it('validates current binding when only schedule changes', async () => {
     const task = createTaskRecord();
     const { repositories, service } = createService();
     repositories.tasksRepository.findByTaskUuidForUser.mockResolvedValue(task);
@@ -243,9 +243,13 @@ describe('TasksService', () => {
       scheduleConfig: { time: '11:00', dayOfWeek: 2 },
     });
 
-    expect(repositories.chatServerRepository.findByChatId).not.toHaveBeenCalled();
-    expect(repositories.skillsRepository.findBySkillId).not.toHaveBeenCalled();
-    expect(repositories.userSkills.findLoadedSkill).not.toHaveBeenCalled();
+    expect(repositories.chatServerRepository.findByChatId).toHaveBeenCalledWith('chat-server-uuid');
+    expect(repositories.skillsRepository.findBySkillId).toHaveBeenCalledWith('skill-business-id');
+    expect(repositories.userSkills.findLoadedSkill).toHaveBeenCalledWith({
+      userId: 1n,
+      skillId: 'skill-business-id',
+      chatId: 2n,
+    });
     expect(repositories.tasksRepository.updateTask).toHaveBeenCalledWith(
       4n,
       expect.objectContaining({

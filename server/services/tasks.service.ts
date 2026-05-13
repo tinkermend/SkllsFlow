@@ -186,24 +186,23 @@ export class TasksService {
       : current.scheduleConfig;
     const bindingChanged = dto.chatServerId !== undefined || dto.skillId !== undefined;
     const scheduleChanged = dto.scheduleType !== undefined || dto.scheduleConfig !== undefined;
+    const chatServerId = dto.chatServerId !== undefined
+      ? dto.chatServerId
+      : current.chatServer.chatId;
+    const skillId = dto.skillId !== undefined
+      ? dto.skillId
+      : current.skill.skillId;
+
+    const context = await this.validateTaskBinding(userUuid, {
+      name: dto.name ?? current.name,
+      chatServerId,
+      skillId,
+      prompt: dto.prompt ?? current.prompt,
+      scheduleType,
+      scheduleConfig: scheduleConfig as Prisma.InputJsonValue | null,
+    });
 
     if (bindingChanged) {
-      const chatServerId = dto.chatServerId !== undefined
-        ? dto.chatServerId
-        : current.chatServer.chatId;
-      const skillId = dto.skillId !== undefined
-        ? dto.skillId
-        : current.skill.skillId;
-
-      const context = await this.validateTaskBinding(userUuid, {
-        name: dto.name ?? current.name,
-        chatServerId,
-        skillId,
-        prompt: dto.prompt ?? current.prompt,
-        scheduleType,
-        scheduleConfig: scheduleConfig as Prisma.InputJsonValue | null,
-      });
-
       data.chatServerId = context.chatServerId;
       data.skillId = context.skillId;
     }
