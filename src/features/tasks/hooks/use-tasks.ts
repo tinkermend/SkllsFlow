@@ -8,8 +8,7 @@ import {
   runTask,
   updateTask,
 } from "../api/tasks.api";
-import type { TaskFormValues, TaskListFilters } from "../types";
-import type { TaskUuid } from "../types";
+import type { TaskFormValues, TaskListFilters, TaskUuid } from "../types";
 import { taskRunKeys } from "./use-task-runs";
 
 export const taskKeys = {

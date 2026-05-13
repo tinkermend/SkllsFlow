@@ -10,7 +10,7 @@ export const taskRunKeys = {
 
 export function useTaskRuns(taskUuid: TaskUuid | undefined) {
   return useQuery({
-    queryKey: taskUuid ? taskRunKeys.list(taskUuid) : taskRunKeys.lists(),
+    queryKey: taskRunKeys.list(taskUuid ?? ("" as TaskUuid)),
     queryFn: () => getTaskRuns(taskUuid as TaskUuid),
     enabled: !!taskUuid,
   });

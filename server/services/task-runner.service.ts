@@ -1,5 +1,5 @@
 import { createRequire } from 'node:module';
-import { Prisma, type PrismaClient } from '@prisma/client';
+import type { Prisma, PrismaClient } from '@prisma/client';
 import { TaskRunsRepository } from '../repositories/task-runs.repository.js';
 import { TasksRepository } from '../repositories/tasks.repository.js';
 import {
