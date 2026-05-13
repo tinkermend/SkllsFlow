@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
+import { getSkillCategoryLabel } from '@/features/skills/config/skill-categories'
 import { cn } from '@/lib/utils'
 import type {
   ChatServerCapabilityMcp,
@@ -178,7 +179,7 @@ function SkillItem({ skill }: { skill: ChatServerCapabilitySkill }) {
           </div>
         </div>
         <Badge variant='outline' className='shrink-0 text-[10px]'>
-          {skill.category}
+          {getSkillCategoryLabel(skill.category)}
         </Badge>
       </div>
     </div>

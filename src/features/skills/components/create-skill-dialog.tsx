@@ -23,6 +23,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { useCreateSkill } from '../hooks/use-skills'
 import { SkillStatus } from '../types'
+import { SKILL_CATEGORIES } from '../config/skill-categories'
 import { IconPicker } from './icon-picker'
 
 interface CreateSkillDialogProps {
@@ -41,16 +42,6 @@ interface FormData {
   sortOrder: number
   file: File | null
 }
-
-const CATEGORIES = [
-  { value: 'database', label: '数据库' },
-  { value: 'cache', label: '缓存' },
-  { value: 'devops', label: 'DevOps' },
-  { value: 'testing', label: '测试' },
-  { value: 'monitoring', label: '监控' },
-  { value: 'security', label: '安全' },
-  { value: 'other', label: '其他' },
-]
 
 export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps) {
   const createSkillMutation = useCreateSkill()
@@ -330,7 +321,7 @@ export function CreateSkillDialog({ open, onOpenChange }: CreateSkillDialogProps
                         <SelectValue placeholder="选择所属分类" />
                       </SelectTrigger>
                       <SelectContent>
-                        {CATEGORIES.map((cat) => (
+                        {SKILL_CATEGORIES.map((cat) => (
                           <SelectItem key={cat.value} value={cat.value}>
                             {cat.label}
                           </SelectItem>

@@ -110,13 +110,49 @@ describe('skills filtering', () => {
 
     expect(buildSkillFilterOptions(skills)).toEqual({
       categories: [
-        { value: 'code-analysis', label: 'code-analysis', count: 2 },
-        { value: 'data-processing', label: 'data-processing', count: 1 },
+        { value: 'code-analysis', label: '代码分析', count: 2 },
+        { value: 'data-processing', label: '数据处理', count: 1 },
       ],
       creators: [
         { value: 'alice', label: 'alice', count: 1 },
         { value: 'bob', label: 'bob', count: 1 },
       ],
     })
+  })
+
+  it('uses Chinese labels for current ops category values from the API', () => {
+    const skills = [
+      makeSkill({
+        id: 1,
+        category: 'cloud-finops',
+      }),
+      makeSkill({
+        id: 2,
+        category: 'observability',
+      }),
+      makeSkill({
+        id: 3,
+        category: 'database-ops',
+      }),
+    ]
+
+    expect(buildSkillFilterOptions(skills).categories).toEqual([
+      { value: 'cloud-finops', label: '云成本治理', count: 1 },
+      { value: 'observability', label: '可观测性', count: 1 },
+      { value: 'database-ops', label: '数据库运维', count: 1 },
+    ])
+  })
+
+  it('falls back to the raw category value when no Chinese label is configured', () => {
+    const skills = [
+      makeSkill({
+        id: 1,
+        category: 'custom-category',
+      }),
+    ]
+
+    expect(buildSkillFilterOptions(skills).categories).toEqual([
+      { value: 'custom-category', label: 'custom-category', count: 1 },
+    ])
   })
 })

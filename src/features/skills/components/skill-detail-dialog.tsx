@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator'
 import { Download, Package } from 'lucide-react'
 import { ParsedIcon } from '@/components/parsed-icon'
 import { skillsApi } from '../api/skills.api'
+import { getSkillCategoryLabel } from '../config/skill-categories'
 import { SkillStatus, type Skill, type SessionSkill, type SkillFile } from '../types'
 
 interface SkillDetailDialogProps {
@@ -82,7 +83,9 @@ export function SkillDetailDialog({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <h3 className="text-sm font-semibold mb-2">技能分类</h3>
-              <p className="text-sm text-muted-foreground">{skill.category}</p>
+              <p className="text-sm text-muted-foreground">
+                {getSkillCategoryLabel(skill.category)}
+              </p>
             </div>
             <div>
               <h3 className="text-sm font-semibold mb-2">排序值</h3>

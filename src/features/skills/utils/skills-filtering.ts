@@ -1,4 +1,5 @@
 import type { Skill } from '../types'
+import { getSkillCategoryLabel } from '../config/skill-categories'
 
 export interface SkillFilters {
   name: string
@@ -93,7 +94,10 @@ export function filterSkills(
   })
 }
 
-function buildOptions(values: string[]): SkillFilterOption[] {
+function buildOptions(
+  values: string[],
+  getLabel: (value: string) => string = (value) => value
+): SkillFilterOption[] {
   const counts = values.reduce<Record<string, number>>((acc, value) => {
     const trimmedValue = value.trim()
     if (!trimmedValue) return acc
@@ -104,7 +108,7 @@ function buildOptions(values: string[]): SkillFilterOption[] {
   return Object.entries(counts)
     .map(([value, count]) => ({
       value,
-      label: value,
+      label: getLabel(value),
       count,
     }))
     .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label))
@@ -115,7 +119,10 @@ export function buildSkillFilterOptions(skills: Skill[]): {
   creators: SkillFilterOption[]
 } {
   return {
-    categories: buildOptions(skills.map((skill) => skill.category)),
+    categories: buildOptions(
+      skills.map((skill) => skill.category),
+      getSkillCategoryLabel
+    ),
     creators: buildOptions(
       skills
         .map((skill) => skill.creatorName)
