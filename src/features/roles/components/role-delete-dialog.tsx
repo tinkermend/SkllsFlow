@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { apiClient } from '@/lib/api-client'
 import { toast } from 'sonner'
-import { useRoles } from './roles-provider'
+import { useRoles } from './use-roles'
 
 export function RoleDeleteDialog() {
   const { open, setOpen, currentRole, setCurrentRole } = useRoles()

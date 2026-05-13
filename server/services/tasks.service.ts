@@ -1,7 +1,7 @@
-import { createRequire } from 'node:module';
 import { Prisma, type PrismaClient, type Skill } from '@prisma/client';
 import { ChatServerRepository } from '../repositories/chat-server.repository.js';
 import { TasksRepository } from '../repositories/tasks.repository.js';
+import { UserRepository } from '../repositories/users.repository.js';
 import {
   type CreateTaskDto,
   type FindTasksFilters,
@@ -11,8 +11,7 @@ import {
   type UpdateTaskDto,
   toTaskResponseDto,
 } from '../types/task.types.js';
-
-const require = createRequire(import.meta.url);
+import { DatabaseService } from './database.service.js';
 
 type TaskValidationContext = {
   userId: bigint;
@@ -95,7 +94,6 @@ export class TasksService {
     let prismaInstance: PrismaClient | null = deps.prisma ?? null;
     const ensurePrisma = () => {
       if (!prismaInstance) {
-        const { DatabaseService } = require('./database.service.js') as typeof import('./database.service.js');
         prismaInstance = DatabaseService.getInstance();
       }
       return prismaInstance;
@@ -432,7 +430,6 @@ export class TasksService {
   private createDefaultUsersRepository(
     ensurePrisma: () => PrismaClient
   ): UsersLookupRepository {
-    const { UserRepository } = require('../repositories/users.repository.js') as typeof import('../repositories/users.repository.js');
     return new UserRepository(ensurePrisma());
   }
 }

@@ -41,7 +41,7 @@ export function normalizeMessage(value: unknown): Message | null {
   const info = normalizeInfo(value.info)
   if (!info) return null
 
-  const parts = Array.isArray(value.parts) ? value.parts : []
+  const parts = normalizeParts(Array.isArray(value.parts) ? value.parts : [])
 
   return {
     info,
@@ -50,12 +50,26 @@ export function normalizeMessage(value: unknown): Message | null {
 }
 
 const getPartKey = (part: Message['parts'][number]): string => {
+  if (part.type === 'text') {
+    return `text:${part.text.trim()}`
+  }
+
   const partId = (part as { id?: unknown }).id
   if (typeof partId === 'string' && partId.trim()) {
     return `${part.type}:${partId}`
   }
 
   return `${part.type}:${JSON.stringify(part)}`
+}
+
+const normalizeParts = (parts: Message['parts']): Message['parts'] => {
+  const partsByKey = new Map<string, Message['parts'][number]>()
+
+  for (const part of parts) {
+    partsByKey.set(getPartKey(part), part)
+  }
+
+  return Array.from(partsByKey.values())
 }
 
 export function mergeMessages(previous: Message, next: Message): Message {

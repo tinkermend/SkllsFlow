@@ -1,11 +1,9 @@
-import { createRequire } from 'node:module';
 import type { Prisma, PrismaClient } from '@prisma/client';
 import { TasksRepository } from '../repositories/tasks.repository.js';
 import { type TaskScheduleType, type TaskWithRelations } from '../types/task.types.js';
+import { DatabaseService } from './database.service.js';
 import { TaskRunnerService } from './task-runner.service.js';
 import { TasksService } from './tasks.service.js';
-
-const require = createRequire(import.meta.url);
 
 type TasksRepositoryLike = {
   findDueTasks(now: Date, limit?: number): Promise<TaskWithRelations[]>;
@@ -153,7 +151,6 @@ export class TaskSchedulerService {
 
   private ensurePrisma(): PrismaClient {
     if (!this.prismaInstance) {
-      const { DatabaseService } = require('./database.service.js') as typeof import('./database.service.js');
       this.prismaInstance = DatabaseService.getInstance();
     }
 

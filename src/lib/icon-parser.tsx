@@ -2,8 +2,38 @@
  * 图标解析工具
  * 将数据库中存储的图标字符串（如 "Code2"）转换为 React 图标组件
  */
-import * as LucideIcons from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
+import {
+  BarChart3,
+  Blocks,
+  Bot,
+  ChartColumn,
+  Code,
+  Code2,
+  Database,
+  Github,
+  Package,
+  Server,
+  Shield,
+  ShieldCheck,
+  type LucideIcon,
+} from 'lucide-react'
+
+const ICON_MAP = {
+  BarChart3,
+  Blocks,
+  Bot,
+  ChartColumn,
+  Code,
+  Code2,
+  Database,
+  Github,
+  Package,
+  Server,
+  Shield,
+  ShieldCheck,
+} satisfies Record<string, LucideIcon>
+
+const DEFAULT_ICON = Package
 
 /**
  * 解析图标字符串，返回对应的 Lucide 图标组件
@@ -11,14 +41,9 @@ import type { LucideIcon } from 'lucide-react'
  * @returns Lucide 图标组件，如果未找到则返回默认图标
  */
 export function parseIcon(iconString: string | null | undefined): LucideIcon {
-  // 默认图标
-  const defaultIcon = LucideIcons.Package
-
   if (!iconString) {
-    return defaultIcon
+    return DEFAULT_ICON
   }
-
-  const iconMap = LucideIcons as unknown as Record<string, LucideIcon>
 
   // 兼容 "lucide:chart-column"、"chart-column"、"ChartColumn" 等格式
   const normalized = iconString
@@ -27,8 +52,12 @@ export function parseIcon(iconString: string | null | undefined): LucideIcon {
       match.replace(/[-_\s]/g, '').toUpperCase()
     )
 
-  // 直接从 lucide-react 中查找对应的图标组件
+  const iconMap = ICON_MAP as Record<string, LucideIcon>
   const IconComponent = iconMap[iconString] || iconMap[normalized]
 
-  return IconComponent || defaultIcon
+  return IconComponent || DEFAULT_ICON
+}
+
+export function getSupportedIconNames(): string[] {
+  return Object.keys(ICON_MAP)
 }

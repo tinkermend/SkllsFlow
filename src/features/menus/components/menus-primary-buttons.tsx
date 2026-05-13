@@ -1,6 +1,6 @@
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useMenusContext } from './menus-provider';
+import { useMenusContext } from './use-menus-context';
 
 export function MenusPrimaryButtons() {
   const { setSelectedMenu, setIsFormOpen } = useMenusContext();

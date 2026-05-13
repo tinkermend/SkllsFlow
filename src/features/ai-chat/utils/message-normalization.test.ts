@@ -75,4 +75,28 @@ describe('normalizeMessages', () => {
       parts: [{ type: 'text', text: '你是什么模型' }],
     })
   })
+
+  it('deduplicates repeated text parts inside one user message', () => {
+    const messages = normalizeMessages([
+      {
+        info: {
+          id: 'msg_user_2',
+          sessionID: 'ses_1',
+          role: 'user' as const,
+          time: { created: 1 },
+        },
+        parts: [
+          { type: 'text' as const, text: '你能做什么?' },
+          { id: 'part_1', type: 'text' as const, text: '你能做什么?' },
+        ],
+      },
+    ])
+
+    expect(messages).toHaveLength(1)
+    expect(messages[0].parts).toHaveLength(1)
+    expect(messages[0].parts[0]).toMatchObject({
+      type: 'text',
+      text: '你能做什么?',
+    })
+  })
 })

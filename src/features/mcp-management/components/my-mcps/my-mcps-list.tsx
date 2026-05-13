@@ -1,6 +1,4 @@
-/* eslint-disable react-hooks/rules-of-hooks */
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMyServices } from '../../hooks/use-mcp-services';
 import { McpSearchBar } from './mcp-search-bar';
 import { McpCard } from './mcp-card';
@@ -35,13 +33,16 @@ export function MyMcpsList({
     sortOrder: 'desc',
   });
 
-  const services = data?.data || [];
+  const services = useMemo(() => data?.data ?? [], [data?.data]);
 
   useEffect(() => {
     if (!activeServiceId) return;
 
     const hasActiveService = services.some((service) => service.id === activeServiceId);
     if (!hasActiveService) {
+      // Active selection mirrors the fetched service list and must be cleared
+      // when the backing service disappears.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveServiceId(null);
       onActiveServiceChange?.(null);
     }

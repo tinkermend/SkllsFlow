@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { usePermission } from "@/hooks/use-permission";
-import { parseIcon } from "@/lib/icon-parser";
+import { ParsedIcon } from "@/components/parsed-icon";
 import { SkillStatus, type Skill } from "../types";
 
 interface SkillCardProps {
@@ -37,9 +37,6 @@ export function SkillCard({
   onInstall,
 }: SkillCardProps) {
   const { can } = usePermission();
-
-  // 解析图标字符串为 React 组件（使用默认图标作为后备）
-  const IconComponent = skill.icon ? parseIcon(skill.icon) : Package;
 
   const statusConfig = {
     [SkillStatus.ACTIVE]: {
@@ -70,7 +67,11 @@ export function SkillCard({
         <div className="flex items-start gap-3">
           {/* Logo */}
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-            <IconComponent className="h-5 w-5" />
+            <ParsedIcon
+              name={skill.icon}
+              fallback={Package}
+              className="h-5 w-5"
+            />
           </div>
           <div className="min-w-0 flex-1 space-y-1 pt-0.5">
             <div className="flex items-start gap-2">
@@ -105,7 +106,6 @@ export function SkillCard({
           </CardDescription>
         </CardContent>
 
-        {/* 信息区域: 移除了原来的 Grid 布局，整合到了 Header 或 Tag 区域，或者作为补充信息 */}
         {/* 如果有 Session ID 显示在这里 */}
         {mode === "my-skills" && skill.sessionId && (
           <CardContent className="px-4 py-2 pt-3">
@@ -116,25 +116,7 @@ export function SkillCard({
           </CardContent>
         )}
 
-        {/* Footer: 标签 + 操作按钮 */}
-        <CardFooter className="flex items-center justify-between p-4 pt-3 mt-auto">
-          {/* 标签 */}
-          <div className="flex flex-wrap gap-1.5 mr-auto">
-            {skill.tags.slice(0, 3).map((tag) => (
-              <span
-                key={tag}
-                className="inline-flex items-center rounded-md bg-muted/60 px-2 py-0.5 text-[10px] text-muted-foreground hover:bg-muted transition-colors"
-              >
-                {tag}
-              </span>
-            ))}
-            {skill.tags.length > 3 && (
-              <span className="inline-flex items-center text-[10px] text-muted-foreground px-1">
-                +{skill.tags.length - 3}
-              </span>
-            )}
-          </div>
-
+        <CardFooter className="flex items-center justify-end p-4 pt-3 mt-auto">
           {/* 操作菜单 */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

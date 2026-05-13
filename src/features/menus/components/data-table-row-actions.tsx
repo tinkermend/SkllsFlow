@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useMenusContext } from './menus-provider';
+import { useMenusContext } from './use-menus-context';
 import type { Menu } from '../data/schema';
 
 interface DataTableRowActionsProps {

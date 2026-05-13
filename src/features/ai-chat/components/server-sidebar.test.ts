@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { ChatServer } from '../types'
-import { buildHealthTooltip, formatDateTime } from './server-sidebar'
+import { buildHealthTooltip, formatDateTime } from './server-sidebar-utils'
 
 const createServer = (overrides: Partial<ChatServer> = {}): ChatServer => ({
   id: '1',

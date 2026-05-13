@@ -2,7 +2,7 @@
 
 ## 项目概述
 
-SkllsFlow 是基于 shadcn/ui 的管理后台，包含 AI 对话、Skills 管理、MCP 管理、权限与会话相关能力。
+SkllsFlow 是基于 shadcn/ui 的AI智能中枢后台，包含 AI 对话、Skills 管理、MCP 管理、权限与会话等相关能力。
 
 前端使用 React 19 + Vite + TanStack Router，后端使用 Node.js + Express，数据库使用 PostgreSQL 16 + Prisma。
 
@@ -135,4 +135,4 @@ PostgreSQL `BIGINT` 在 Prisma 中映射为 JavaScript `BigInt`，不能直接 `
 
 - 面向项目的文档、注释性说明和总结默认使用简体中文。
 - 修改现有约定前先从代码确认真实调用链，避免基于文件名或包名推断。
-- 工作区可能已有未提交改动；只修改任务相关文件，不要回滚他人变更。
+- 每次功能开发完成写入CHANGELOG.md 记录更改日志

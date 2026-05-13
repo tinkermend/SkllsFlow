@@ -33,7 +33,7 @@ import {
 } from '@/components/ui/select'
 import { apiClient } from '@/lib/api-client'
 import { toast } from 'sonner'
-import { useRoles } from './roles-provider'
+import { useRoles } from './use-roles'
 import { PermissionPicker } from './permission-picker'
 
 const roleFormSchema = z.object({

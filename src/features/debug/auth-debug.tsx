@@ -1,18 +1,18 @@
-/* eslint-disable react-hooks/rules-of-hooks */
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useAuthStore } from '@/stores/auth-store'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useNavigate } from '@tanstack/react-router'
+import { useState } from 'react'
 
 export function AuthDebugPage() {
   const { auth } = useAuthStore()
   const navigate = useNavigate()
+  const [now] = useState(() => Date.now())
 
-  const isTokenExpired = auth.accessTokenExpiresAt && auth.accessTokenExpiresAt < Date.now()
+  const isTokenExpired = auth.accessTokenExpiresAt && auth.accessTokenExpiresAt < now
   const tokenExpiresIn = auth.accessTokenExpiresAt
-    ? Math.floor((auth.accessTokenExpiresAt - Date.now()) / 1000)
+    ? Math.floor((auth.accessTokenExpiresAt - now) / 1000)
     : 0
 
   return (

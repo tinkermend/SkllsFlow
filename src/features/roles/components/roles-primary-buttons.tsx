@@ -1,7 +1,7 @@
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { PermissionGuard } from '@/components/auth/permission-guard'
-import { useRoles } from './roles-provider'
+import { useRoles } from './use-roles'
 
 export function RolesPrimaryButtons() {
   const { setOpen } = useRoles()

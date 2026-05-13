@@ -52,7 +52,7 @@ export function MessageList() {
   }
 
   return (
-    <ChatContainerRoot className='flex-1 overflow-y-auto p-4'>
+    <ChatContainerRoot className='flex-1 overflow-y-auto p-4 [scrollbar-gutter:stable]'>
       {/* 移除 mx-auto max-w-3xl，使对话内容靠左侧显示，与菜单栏贴合 */}
       <ChatContainerContent className='space-y-4'>
         {safeMessages.map((message) => (

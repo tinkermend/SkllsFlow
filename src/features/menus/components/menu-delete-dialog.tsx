@@ -12,7 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useMenusContext } from './menus-provider';
+import { useMenusContext } from './use-menus-context';
 
 export function MenuDeleteDialog() {
   const { selectedMenu, isDeleteOpen, setIsDeleteOpen } = useMenusContext();

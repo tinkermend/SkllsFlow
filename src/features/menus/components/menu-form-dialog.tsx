@@ -33,7 +33,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { useMenusContext } from './menus-provider';
+import { useMenusContext } from './use-menus-context';
 import { menuListSchema } from '../data/schema';
 
 const formSchema = z.object({

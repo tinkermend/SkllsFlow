@@ -17,9 +17,18 @@ import { InstallSkillDialog } from './components/install-skill-dialog'
 import { UninstallSkillDialog } from './components/uninstall-skill-dialog'
 import { DeleteSkillDialog } from './components/delete-skill-dialog'
 import { CreateSkillDialog } from './components/create-skill-dialog'
+import { SkillCategorySidebar } from './components/skill-category-sidebar'
+import { SkillFilterBar } from './components/skill-filter-bar'
 import { useSkills, useMySkills, useDeleteSkill, useUninstallMySkill, useActiveChatServers, useLoadSkill } from './hooks/use-skills'
 import { skillsApi } from './api/skills.api'
 import { type SkillTab, type Skill, type SessionSkill, type SkillFile, type LoadedServer } from './types'
+import {
+  buildSkillFilterOptions,
+  emptySkillFilters,
+  filterSkills,
+  hasActiveSkillFilters,
+  type SkillFilters,
+} from './utils/skills-filtering'
 
 export function Skills() {
   const [activeTab, setActiveTab] = useState<SkillTab>('my-skills')
@@ -35,6 +44,7 @@ export function Skills() {
   const [skillToUninstall, setSkillToUninstall] = useState<Skill | null>(null)
   const [uninstallRelatedSessions, setUninstallRelatedSessions] = useState<SessionSkill[]>([])
   const [skillToDelete, setSkillToDelete] = useState<Skill | null>(null)
+  const [filters, setFilters] = useState<SkillFilters>(emptySkillFilters)
   const [deleteLoadedServers, setDeleteLoadedServers] = useState<LoadedServer[]>([])
   const [deleteUnloadProgress, setDeleteUnloadProgress] = useState<{
     current: number
@@ -50,6 +60,9 @@ export function Skills() {
   const skills = activeTab === 'my-skills' ? mySkills : platformSkills
   const isLoading = activeTab === 'my-skills' ? isMySkillsLoading : isPlatformLoading
   const error = activeTab === 'my-skills' ? mySkillsError : platformError
+  const filterOptions = buildSkillFilterOptions(skills)
+  const filteredSkills = filterSkills(skills, filters)
+  const hasFilters = hasActiveSkillFilters(filters)
 
   // 删除技能
   const deleteSkillMutation = useDeleteSkill()
@@ -227,6 +240,18 @@ export function Skills() {
     setIsCreateDialogOpen(true)
   }
 
+  const handleTabChange = (value: string) => {
+    setActiveTab(value as SkillTab)
+    setFilters(emptySkillFilters)
+  }
+
+  const handleCategorySelect = (category: string) => {
+    setFilters((currentFilters) => ({
+      ...currentFilters,
+      category,
+    }))
+  }
+
   return (
     <>
       {/* Header - 顶部导航栏 */}
@@ -262,7 +287,7 @@ export function Skills() {
             {/* Tabs 切换 */}
             <Tabs
               value={activeTab}
-              onValueChange={(value) => setActiveTab(value as SkillTab)}
+              onValueChange={handleTabChange}
               className="mt-6"
             >
               <TabsList>
@@ -296,7 +321,7 @@ export function Skills() {
             {!isLoading && !error && (
               <Tabs value={activeTab}>
                 <TabsContent value="my-skills" className="mt-0">
-                  {skills.length === 0 ? (
+                  {skills.length === 0 && !hasFilters ? (
                     <div className="flex h-64 flex-col items-center justify-center gap-2">
                       <p className="text-muted-foreground">暂无技能</p>
                       <PermissionGuard permission="skill:create">
@@ -307,36 +332,116 @@ export function Skills() {
                       </PermissionGuard>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4">
-                      {skills.map((skill) => (
-                        <SkillCard
-                          key={skill.id}
-                          skill={skill}
-                          onViewDetails={handleViewDetails}
-                          onUninstall={handleUninstall}
+                    <div className="flex flex-col gap-6 lg:flex-row">
+                      <aside className="lg:w-64 lg:flex-shrink-0">
+                        <div className="sticky top-6">
+                          <h3 className="mb-3 font-semibold">技能分类</h3>
+                          <SkillCategorySidebar
+                            categories={filterOptions.categories}
+                            selectedCategory={filters.category}
+                            totalCount={skills.length}
+                            onCategorySelect={handleCategorySelect}
+                          />
+                        </div>
+                      </aside>
+                      <div className="min-w-0 flex-1 space-y-4">
+                        <SkillFilterBar
+                          filters={filters}
+                          categories={filterOptions.categories}
+                          creators={filterOptions.creators}
+                          hasActiveFilters={hasFilters}
+                          onFiltersChange={setFilters}
+                          onReset={() => setFilters(emptySkillFilters)}
                         />
-                      ))}
+                        <div className="flex items-center justify-between text-sm text-muted-foreground">
+                          <span>
+                            共 {skills.length} 个技能，当前显示 {filteredSkills.length} 个
+                          </span>
+                        </div>
+                        {filteredSkills.length === 0 ? (
+                          <div className="flex h-64 flex-col items-center justify-center gap-2 rounded-xl border border-dashed">
+                            <p className="text-muted-foreground">没有找到匹配的技能</p>
+                            <Button
+                              onClick={() => setFilters(emptySkillFilters)}
+                              variant="outline"
+                            >
+                              清空筛选
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                            {filteredSkills.map((skill) => (
+                              <SkillCard
+                                key={skill.id}
+                                skill={skill}
+                                onViewDetails={handleViewDetails}
+                                onUninstall={handleUninstall}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </TabsContent>
 
                 <TabsContent value="platform-skills" className="mt-0">
-                  {skills.length === 0 ? (
+                  {skills.length === 0 && !hasFilters ? (
                     <div className="flex h-64 flex-col items-center justify-center gap-2">
                       <p className="text-muted-foreground">暂无平台技能</p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4">
-                      {skills.map((skill) => (
-                        <SkillCard
-                          key={skill.id}
-                          skill={skill}
-                          mode="platform-skills"
-                          onViewDetails={handleViewDetails}
-                          onDelete={handleDelete}
-                          onInstall={handleInstall}
+                    <div className="flex flex-col gap-6 lg:flex-row">
+                      <aside className="lg:w-64 lg:flex-shrink-0">
+                        <div className="sticky top-6">
+                          <h3 className="mb-3 font-semibold">技能分类</h3>
+                          <SkillCategorySidebar
+                            categories={filterOptions.categories}
+                            selectedCategory={filters.category}
+                            totalCount={skills.length}
+                            onCategorySelect={handleCategorySelect}
+                          />
+                        </div>
+                      </aside>
+                      <div className="min-w-0 flex-1 space-y-4">
+                        <SkillFilterBar
+                          filters={filters}
+                          categories={filterOptions.categories}
+                          creators={filterOptions.creators}
+                          hasActiveFilters={hasFilters}
+                          onFiltersChange={setFilters}
+                          onReset={() => setFilters(emptySkillFilters)}
                         />
-                      ))}
+                        <div className="flex items-center justify-between text-sm text-muted-foreground">
+                          <span>
+                            共 {skills.length} 个技能，当前显示 {filteredSkills.length} 个
+                          </span>
+                        </div>
+                        {filteredSkills.length === 0 ? (
+                          <div className="flex h-64 flex-col items-center justify-center gap-2 rounded-xl border border-dashed">
+                            <p className="text-muted-foreground">没有找到匹配的平台技能</p>
+                            <Button
+                              onClick={() => setFilters(emptySkillFilters)}
+                              variant="outline"
+                            >
+                              清空筛选
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                            {filteredSkills.map((skill) => (
+                              <SkillCard
+                                key={skill.id}
+                                skill={skill}
+                                mode="platform-skills"
+                                onViewDetails={handleViewDetails}
+                                onDelete={handleDelete}
+                                onInstall={handleInstall}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </TabsContent>

@@ -1,4 +1,3 @@
-import { createRequire } from 'node:module';
 import type { Prisma, PrismaClient } from '@prisma/client';
 import { TaskRunsRepository } from '../repositories/task-runs.repository.js';
 import { TasksRepository } from '../repositories/tasks.repository.js';
@@ -10,9 +9,8 @@ import {
   type TaskWithRelations,
   toTaskRunResponseDto,
 } from '../types/task.types.js';
+import { DatabaseService } from './database.service.js';
 import { TasksService } from './tasks.service.js';
-
-const require = createRequire(import.meta.url);
 
 type TaskRunnerChatServer = TaskWithRelations['chatServer'];
 
@@ -291,7 +289,6 @@ export class TaskRunnerService {
 
   private ensurePrisma(): PrismaClient {
     if (!this.prismaInstance) {
-      const { DatabaseService } = require('./database.service.js') as typeof import('./database.service.js');
       this.prismaInstance = DatabaseService.getInstance();
     }
 

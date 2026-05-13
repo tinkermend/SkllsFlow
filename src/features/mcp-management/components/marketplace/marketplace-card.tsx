@@ -2,7 +2,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Download, CheckCircle } from 'lucide-react';
-import { parseIcon } from '@/lib/icon-parser';
+import { ParsedIcon } from '@/components/parsed-icon';
 import { LanguageIcon } from '../shared/language-icon';
 import type { McpMarketplaceItem } from '../../types';
 
@@ -15,7 +15,6 @@ interface MarketplaceCardProps {
 export function MarketplaceCard({ item, onLoad, onViewDetail }: MarketplaceCardProps) {
   const visibleTags = item.tags.slice(0, 3);
   const hiddenTagCount = Math.max(item.tags.length - 3, 0);
-  const MarketplaceIcon = item.icon ? parseIcon(item.icon) : null;
 
   // 获取语言图标类名（用于渐变背景）
   const getLanguageIconClass = (language?: string) => {
@@ -36,8 +35,8 @@ export function MarketplaceCard({ item, onLoad, onViewDetail }: MarketplaceCardP
           <div
             className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-xl ${getLanguageIconClass(item.language)}`}
           >
-            {MarketplaceIcon ? (
-              <MarketplaceIcon className="h-6 w-6 text-slate-700" />
+            {item.icon ? (
+              <ParsedIcon name={item.icon} className="h-6 w-6 text-slate-700" />
             ) : (
               <LanguageIcon language={item.language} />
             )}

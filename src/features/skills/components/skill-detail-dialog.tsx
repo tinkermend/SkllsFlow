@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
 import { Download, Package } from 'lucide-react'
-import { parseIcon } from '@/lib/icon-parser'
+import { ParsedIcon } from '@/components/parsed-icon'
 import { skillsApi } from '../api/skills.api'
 import { SkillStatus, type Skill, type SessionSkill, type SkillFile } from '../types'
 
@@ -30,10 +30,6 @@ export function SkillDetailDialog({
 }: SkillDetailDialogProps) {
   if (!skill) return null
 
-  // 解析图标字符串为 React 组件（使用默认图标作为后备）
-  const DefaultIcon = Package
-  const IconComponent = skill.icon ? parseIcon(skill.icon) : DefaultIcon
-
   const statusConfig = {
     [SkillStatus.ACTIVE]: {
       label: '启用',
@@ -52,7 +48,11 @@ export function SkillDetailDialog({
             <div className="flex items-center gap-3 flex-1 min-w-0">
               {/* Logo */}
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-muted">
-                <IconComponent className="h-6 w-6" />
+                <ParsedIcon
+                  name={skill.icon}
+                  fallback={Package}
+                  className="h-6 w-6"
+                />
               </div>
               <div className="flex-1 min-w-0">
                 <DialogTitle className="text-xl">{skill.name}</DialogTitle>
@@ -87,22 +87,6 @@ export function SkillDetailDialog({
             <div>
               <h3 className="text-sm font-semibold mb-2">排序值</h3>
               <p className="text-sm text-muted-foreground">{skill.sortOrder}</p>
-            </div>
-          </div>
-
-          <Separator />
-
-          <div>
-            <h3 className="text-sm font-semibold mb-2">技能标签</h3>
-            <div className="flex flex-wrap gap-2">
-              {skill.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="inline-flex items-center rounded-md bg-muted px-2.5 py-1 text-sm text-muted-foreground"
-                >
-                  {tag}
-                </span>
-              ))}
             </div>
           </div>
 

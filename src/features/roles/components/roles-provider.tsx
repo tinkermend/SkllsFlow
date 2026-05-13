@@ -1,23 +1,6 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  type ReactNode,
-  type Dispatch,
-  type SetStateAction,
-} from 'react'
+import { useState, type ReactNode } from 'react'
 import { type Role } from '../data/schema'
-
-type OpenState = 'add' | 'edit' | 'delete' | null
-
-type RolesContextType = {
-  open: OpenState
-  setOpen: Dispatch<SetStateAction<OpenState>>
-  currentRole: Role | null
-  setCurrentRole: Dispatch<SetStateAction<Role | null>>
-}
-
-const RolesContext = createContext<RolesContextType | undefined>(undefined)
+import { type OpenState, RolesContext } from './roles-context'
 
 export function RolesProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState<OpenState>(null)
@@ -30,12 +13,4 @@ export function RolesProvider({ children }: { children: ReactNode }) {
       {children}
     </RolesContext.Provider>
   )
-}
-
-export function useRoles() {
-  const context = useContext(RolesContext)
-  if (!context) {
-    throw new Error('useRoles must be used within RolesProvider')
-  }
-  return context
 }

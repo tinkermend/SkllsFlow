@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useAuthStore } from '@/stores/auth-store'
 import { type Role } from '../data/schema'
-import { useRoles } from './roles-provider'
+import { useRoles } from './use-roles'
 
 type DataTableRowActionsProps = {
   row: Row<Role>

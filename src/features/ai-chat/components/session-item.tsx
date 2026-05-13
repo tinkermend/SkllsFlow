@@ -1,5 +1,3 @@
-/* eslint-disable react-hooks/rules-of-hooks */
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { Trash2, Pencil, Check, X } from 'lucide-react'
@@ -59,6 +57,8 @@ export function SessionItem({
   useEffect(() => {
     if (!disabled) return
     if (isEditing) {
+      // Closing the inline editor is a direct response to external disabled state.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEditTitle(session.title || '新对话')
       setIsEditing(false)
     }
