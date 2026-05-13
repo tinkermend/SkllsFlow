@@ -12,9 +12,9 @@ export function MarketplaceLayout({ onLoad, onViewDetail }: MarketplaceLayoutPro
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>();
 
   return (
-    <div className="flex gap-6">
+    <div className="flex flex-col gap-6 lg:flex-row">
       {/* 左侧分类侧边栏 */}
-      <div className="w-64 flex-shrink-0">
+      <div className="lg:w-64 lg:flex-shrink-0">
         <div className="sticky top-6">
           <h3 className="font-semibold mb-3">分类</h3>
           <CategorySidebar
@@ -25,7 +25,7 @@ export function MarketplaceLayout({ onLoad, onViewDetail }: MarketplaceLayoutPro
       </div>
 
       {/* 右侧市场列表 */}
-      <div className="flex-1">
+      <div className="min-w-0 flex-1">
         <MarketplaceList
           categoryId={selectedCategoryId}
           onLoad={onLoad}

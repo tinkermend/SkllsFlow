@@ -57,7 +57,7 @@ export function MyMcpsList({
           sortBy={sortBy}
           onSortChange={setSortBy}
         />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {[1, 2, 3].map((i) => (
             <Skeleton key={i} className="h-64" />
           ))}
@@ -89,7 +89,7 @@ export function MyMcpsList({
           没有找到匹配的 MCP 服务
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {services.map((service) => (
             <McpCard
               key={service.id}

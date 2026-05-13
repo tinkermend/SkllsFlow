@@ -26,7 +26,7 @@ export function MarketplaceList({ categoryId, onLoad, onViewDetail }: Marketplac
     return (
       <div className="space-y-4">
         <Skeleton className="h-10 w-full" />
-        <div className="grid auto-rows-fr grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid auto-rows-fr grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {[1, 2, 3].map((i) => (
             <Skeleton key={i} className="h-[252px] rounded-xl" />
           ))}
@@ -54,7 +54,7 @@ export function MarketplaceList({ categoryId, onLoad, onViewDetail }: Marketplac
           没有找到匹配的 MCP 服务
         </div>
       ) : (
-        <div className="grid auto-rows-fr grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid auto-rows-fr grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {items.map((item) => (
             <MarketplaceCard
               key={item.id}

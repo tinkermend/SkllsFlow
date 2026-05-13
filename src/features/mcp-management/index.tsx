@@ -75,7 +75,7 @@ export default function McpManagement() {
       </Header>
 
       {/* Main - 主内容区域 */}
-      <Main>
+      <Main fluid>
         <div className="space-y-6">
           {/* 页面标题和操作栏 */}
           <div className="flex items-center justify-between">

@@ -265,7 +265,7 @@ export function Skills() {
       </Header>
 
       {/* Main - 主内容区域 */}
-      <Main>
+      <Main fluid>
         <div className="flex h-full flex-col">
           {/* 顶部栏 */}
           <div className="border-b bg-background px-6 py-4">
