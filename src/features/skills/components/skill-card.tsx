@@ -19,6 +19,8 @@ import { usePermission } from "@/hooks/use-permission";
 import { ParsedIcon } from "@/components/parsed-icon";
 import { SkillStatus, type Skill } from "../types";
 
+const MAX_VISIBLE_TAGS = 5;
+
 interface SkillCardProps {
   skill: Skill;
   mode?: "my-skills" | "platform-skills"; // 新增：区分我的技能和平台技能
@@ -37,7 +39,7 @@ export function SkillCard({
   onInstall,
 }: SkillCardProps) {
   const { can } = usePermission();
-  const visibleTags = skill.tags.slice(0, 3);
+  const visibleTags = skill.tags.slice(0, MAX_VISIBLE_TAGS);
   const hiddenTagCount = Math.max(skill.tags.length - visibleTags.length, 0);
 
   const statusConfig = {
