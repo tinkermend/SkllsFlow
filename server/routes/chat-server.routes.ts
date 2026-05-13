@@ -48,6 +48,14 @@ router.get('/:chatId/delete-stats', (req, res) =>
 );
 
 /**
+ * PATCH /api/chat-servers/:chatId/status
+ * 激活或离线 ChatServer
+ */
+router.patch('/:chatId/status', (req, res) =>
+  req.controller.setStatus(req, res)
+);
+
+/**
  * DELETE /api/chat-servers/:chatId
  * 删除指定的 ChatServer
  */

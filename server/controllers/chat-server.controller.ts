@@ -142,6 +142,44 @@ export class ChatServerController {
   }
 
   /**
+   * 切换 ChatServer 激活状态
+   * PATCH /api/chat-servers/:chatId/status
+   * body: { action: 'activate' | 'deactivate' }
+   */
+  async setStatus(req: Request, res: Response): Promise<void> {
+    try {
+      const { chatId } = req.params;
+      const userId = req.userId;
+
+      if (!userId) {
+        res.status(401).json({
+          error: 'Unauthorized',
+          message: 'Authentication token is missing or invalid',
+        });
+        return;
+      }
+
+      const { action } = req.body as { action?: string };
+      if (action !== 'activate' && action !== 'deactivate') {
+        res.status(400).json({
+          error: 'Bad Request',
+          message: 'action 仅支持 activate 或 deactivate',
+        });
+        return;
+      }
+
+      const chatServer = await this.service.setChatServerStatus(
+        chatId,
+        userId,
+        action
+      );
+      res.status(200).json(chatServer);
+    } catch (error) {
+      this.handleError(res, error);
+    }
+  }
+
+  /**
    * 获取 ChatServer 删除统计信息
    * GET /api/chat-servers/:chatId/delete-stats
    */

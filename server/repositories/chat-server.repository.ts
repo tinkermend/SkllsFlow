@@ -68,7 +68,6 @@ export class ChatServerRepository extends BaseRepository<
     return this.findAll({
       where: {
         createdBy: userId,
-        status: 'active',
       },
       orderBy: {
         createdAt: 'desc',
@@ -158,6 +157,20 @@ export class ChatServerRepository extends BaseRepository<
           in: normalizedIds,
         },
       },
+    });
+  }
+
+  /**
+   * 通过 chatId 更新 ChatServer 状态与 errorMessage
+   */
+  async updateStatusByChatId(
+    chatId: string,
+    status: 'active' | 'disabled' | 'error',
+    errorMessage: string | null
+  ): Promise<ChatServer> {
+    return this.prisma.chatServer.update({
+      where: { chatId },
+      data: { status, errorMessage },
     });
   }
 

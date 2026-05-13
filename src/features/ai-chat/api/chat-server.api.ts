@@ -35,6 +35,20 @@ export async function deleteChatServer(chatId: string): Promise<void> {
 }
 
 /**
+ * 切换 ChatServer 激活状态
+ * PATCH /api/chat-servers/:chatId/status
+ */
+export async function setChatServerStatus(
+  chatId: string,
+  action: 'activate' | 'deactivate'
+): Promise<ChatServer> {
+  const response = await apiClient.patch(`/chat-servers/${chatId}/status`, {
+    action,
+  });
+  return response.data;
+}
+
+/**
  * 获取 ChatServer 删除统计信息
  * GET /api/chat-servers/:chatId/delete-stats
  */

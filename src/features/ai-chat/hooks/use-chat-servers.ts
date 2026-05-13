@@ -49,13 +49,38 @@ export function useChatServers() {
     },
   });
 
+  // 切换激活/离线 mutation
+  const setStatusMutation = useMutation({
+    mutationFn: ({
+      chatId,
+      action,
+    }: {
+      chatId: string
+      action: 'activate' | 'deactivate'
+    }) => chatServerApi.setChatServerStatus(chatId, action),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['chat-servers'] });
+      toast.success(variables.action === 'activate' ? '服务已激活' : '服务已离线');
+    },
+    onError: (error: unknown, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['chat-servers'] });
+      const err = error as { response?: { data?: { message?: string } } };
+      const fallback = variables.action === 'activate' ? '激活失败' : '离线失败';
+      toast.error(err.response?.data?.message || fallback);
+    },
+  });
+
   return {
     chatServers: chatServers || [],
     isLoading,
     error,
     createChatServer: (request: CreateChatServerRequest) => createMutation.mutate(request),
     deleteChatServer: (chatId: string) => deleteMutation.mutate(chatId),
+    setChatServerStatus: (chatId: string, action: 'activate' | 'deactivate') =>
+      setStatusMutation.mutate({ chatId, action }),
     isCreating: createMutation.isPending,
     isDeleting: deleteMutation.isPending,
+    togglingChatId:
+      setStatusMutation.isPending ? setStatusMutation.variables?.chatId : undefined,
   };
 }

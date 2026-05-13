@@ -243,6 +243,81 @@ export class ChatServerService {
   }
 
   /**
+   * 切换 ChatServer 激活状态
+   * activate: 调用代理服务拉起 opencode 实例 → status=active
+   * deactivate: 调用代理服务停止 opencode 实例 → status=disabled
+   * 失败时 status=error 并记录 errorMessage，再向上抛错
+   */
+  async setChatServerStatus(
+    chatId: string,
+    userUuid: string,
+    action: 'activate' | 'deactivate'
+  ): Promise<ChatServerResponseDto> {
+    const chatServer = await this.chatServerRepository.findByChatId(chatId);
+    if (!chatServer) {
+      throw new Error('ChatServer 不存在');
+    }
+
+    const user = await this.userRepository.findByUserId(userUuid);
+    if (!user) {
+      throw new Error('用户不存在');
+    }
+
+    if (chatServer.createdBy !== user.id) {
+      throw new Error('无权操作此 ChatServer');
+    }
+
+    const proxyHost = await this.proxyHostRepository.findById(chatServer.proxyId);
+    if (!proxyHost) {
+      throw new Error('代理服务不存在');
+    }
+
+    try {
+      if (action === 'activate') {
+        const response = await this.proxyClient.startOpenCodeInstance({
+          proxyHost: proxyHost.host,
+          proxyPort: proxyHost.port,
+          openCodePort: chatServer.port,
+          auth: chatServer.auth,
+          authPassword: chatServer.authPassword,
+          chatDir: chatServer.chatDir,
+        });
+        if (response.code !== 200) {
+          throw new Error(response.message || '代理服务启动失败');
+        }
+        const updated = await this.chatServerRepository.updateStatusByChatId(
+          chatId,
+          'active',
+          null
+        );
+        return toChatServerResponseDto(updated);
+      }
+
+      const response = await this.proxyClient.stopOpenCodeInstance({
+        proxyHost: proxyHost.host,
+        proxyPort: proxyHost.port,
+        openCodePort: chatServer.port,
+      });
+      if (response.code !== 200) {
+        throw new Error(response.message || '代理服务停止失败');
+      }
+      const updated = await this.chatServerRepository.updateStatusByChatId(
+        chatId,
+        'disabled',
+        null
+      );
+      return toChatServerResponseDto(updated);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : '代理服务调用失败';
+      await this.chatServerRepository
+        .updateStatusByChatId(chatId, 'error', message)
+        .catch(() => undefined);
+      throw error;
+    }
+  }
+
+  /**
    * 删除 ChatServer
    *
    * @param chatId - ChatServer UUID
@@ -388,6 +463,9 @@ export class ChatServerService {
   private async checkServerHealth(
     server: ChatServer
   ): Promise<{ status: ChatServerHealthStatus; version?: string; checkedAt?: string }> {
+    if (server.status === 'error') {
+      return { status: 'unhealthy' };
+    }
     if (server.status !== 'active') {
       return { status: 'unknown' };
     }

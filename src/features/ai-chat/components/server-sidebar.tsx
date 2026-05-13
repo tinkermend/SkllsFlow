@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { format } from 'date-fns'
-import { Plus, Bot, Trash2 } from 'lucide-react'
+import { Plus, Bot, Trash2, Power, PowerOff, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { PermissionGuard } from '@/components/auth/permission-guard'
@@ -59,7 +60,15 @@ interface ServerSidebarProps {
 }
 
 export function ServerSidebar({ activeServerId, onServerSelect }: ServerSidebarProps) {
-  const { chatServers, isLoading, createChatServer, deleteChatServer, isCreating } = useChatServers()
+  const {
+    chatServers,
+    isLoading,
+    createChatServer,
+    deleteChatServer,
+    setChatServerStatus,
+    isCreating,
+    togglingChatId,
+  } = useChatServers()
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -165,6 +174,14 @@ export function ServerSidebar({ activeServerId, onServerSelect }: ServerSidebarP
                 const indicator = HEALTH_INDICATORS[status]
                 const tooltipText = buildHealthTooltip(server)
                 const isActive = server.chatId === activeServerId
+                const isOnline = server.status === 'active'
+                const isToggling = togglingChatId === server.chatId
+                const toggleAction: 'activate' | 'deactivate' = isOnline
+                  ? 'deactivate'
+                  : 'activate'
+                const toggleLabel = isOnline ? '离线服务' : '激活服务'
+                const ToggleIcon = isOnline ? Power : PowerOff
+                const selectable = isOnline && !isToggling
 
                 return (
                   <div
@@ -173,21 +190,31 @@ export function ServerSidebar({ activeServerId, onServerSelect }: ServerSidebarP
                       'flex items-center justify-between rounded-lg border p-3 transition-all',
                       isActive
                         ? 'bg-primary/10 text-primary ring-1 ring-primary/30 shadow-sm'
-                        : 'opacity-60 hover:opacity-100 hover:bg-accent'
+                        : selectable
+                          ? 'opacity-60 hover:opacity-100 hover:bg-accent'
+                          : 'opacity-50',
+                      server.status === 'error' && 'border-destructive/40'
                     )}
                     role='button'
                     tabIndex={0}
                     aria-pressed={isActive}
                     onClick={() => {
                       if (isActive) return
+                      if (!selectable) {
+                        toast.error('服务未激活，请先点击右侧按钮激活')
+                        return
+                      }
                       onServerSelect(server)
                     }}
                     onKeyDown={(event) => {
                       if (event.key === 'Enter' || event.key === ' ') {
                         event.preventDefault()
-                        if (!isActive) {
-                          onServerSelect(server)
+                        if (isActive) return
+                        if (!selectable) {
+                          toast.error('服务未激活，请先点击右侧按钮激活')
+                          return
                         }
+                        onServerSelect(server)
                       }
                     }}
                   >
@@ -199,10 +226,25 @@ export function ServerSidebar({ activeServerId, onServerSelect }: ServerSidebarP
                             当前激活
                           </Badge>
                         )}
+                        {server.status === 'disabled' && (
+                          <Badge variant='outline' className='text-[11px]'>
+                            已离线
+                          </Badge>
+                        )}
+                        {server.status === 'error' && (
+                          <Badge variant='destructive' className='text-[11px]'>
+                            异常
+                          </Badge>
+                        )}
                       </div>
                       <div className='text-xs text-muted-foreground'>
                         创建于 {formatDateTime(server.createdAt)}
                       </div>
+                      {server.status === 'error' && server.errorMessage && (
+                        <div className='mt-1 line-clamp-2 text-xs text-destructive'>
+                          {server.errorMessage}
+                        </div>
+                      )}
                     </div>
                     <div className='flex items-center gap-1'>
                       <Tooltip>
@@ -220,6 +262,36 @@ export function ServerSidebar({ activeServerId, onServerSelect }: ServerSidebarP
                           <p className='text-xs leading-tight'>{tooltipText}</p>
                         </TooltipContent>
                       </Tooltip>
+                      <PermissionGuard permission='chatServer:update'>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              size='icon'
+                              variant='ghost'
+                              disabled={isToggling}
+                              aria-label={toggleLabel}
+                              onClick={(event) => {
+                                event.stopPropagation()
+                                setChatServerStatus(server.chatId, toggleAction)
+                              }}
+                            >
+                              {isToggling ? (
+                                <Loader2 className='size-4 animate-spin' />
+                              ) : (
+                                <ToggleIcon
+                                  className={cn(
+                                    'size-4',
+                                    isOnline ? 'text-foreground' : 'text-primary'
+                                  )}
+                                />
+                              )}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className='text-xs leading-tight'>{toggleLabel}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </PermissionGuard>
                       <PermissionGuard permission='chatServer:delete'>
                         <Button
                           size='icon'
