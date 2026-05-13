@@ -28,6 +28,17 @@ export interface CreateTaskDto {
   timeoutSeconds?: number;
 }
 
+export interface UpdateTaskDto {
+  name?: string;
+  description?: string | null;
+  chatServerId?: string;
+  skillId?: string;
+  prompt?: string;
+  scheduleType?: TaskScheduleType;
+  scheduleConfig?: Prisma.InputJsonValue | null;
+  timeoutSeconds?: number;
+}
+
 export interface TaskResponseDto {
   id: string;
   taskUuid: string;
