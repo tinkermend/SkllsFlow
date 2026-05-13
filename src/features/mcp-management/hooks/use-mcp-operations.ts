@@ -41,13 +41,16 @@ export function useRestartService() {
 }
 
 /**
- * 装载到会话
+ * 装载到 ChatServer
  */
-export function useLoadToSessions() {
+export function useLoadToChatServers() {
+  const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: ({ mcpId, sessionIds }: { mcpId: string; sessionIds: string[] }) =>
-      mcpServicesApi.loadToSessions(mcpId, sessionIds),
+    mutationFn: ({ mcpId, chatIds }: { mcpId: string; chatIds: string[] }) =>
+      mcpServicesApi.loadToChatServers(mcpId, chatIds),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chat-server-capabilities'] });
       toast.success('MCP 装载成功');
     },
     onError: (error: any) => {
@@ -57,13 +60,16 @@ export function useLoadToSessions() {
 }
 
 /**
- * 从会话卸载
+ * 从 ChatServer 卸载
  */
-export function useUnloadFromSessions() {
+export function useUnloadFromChatServers() {
+  const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: ({ mcpId, sessionIds }: { mcpId: string; sessionIds: string[] }) =>
-      mcpServicesApi.unloadFromSessions(mcpId, sessionIds),
+    mutationFn: ({ mcpId, chatIds }: { mcpId: string; chatIds: string[] }) =>
+      mcpServicesApi.unloadFromChatServers(mcpId, chatIds),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chat-server-capabilities'] });
       toast.success('MCP 卸载成功');
     },
     onError: (error: any) => {

@@ -7,6 +7,7 @@ import { env } from '../config/env.js';
 import type { ProxyHost, ChatServer } from '@prisma/client';
 import {
   toChatServerResponseDto,
+  type ChatServerCapabilitiesDto,
   type ChatServerResponseDto,
   type ChatServerHealthStatus,
 } from '../types/chat-server.types.js';
@@ -185,6 +186,60 @@ export class ChatServerService {
     return chatServers
       .filter((server) => server.status === 'active')
       .map((server) => toChatServerResponseDto(server));
+  }
+
+  async getCapabilities(
+    chatId: string,
+    userUuid: string
+  ): Promise<ChatServerCapabilitiesDto> {
+    const user = await this.userRepository.findByUserId(userUuid);
+    if (!user) {
+      throw new Error('用户不存在');
+    }
+
+    const chatServer = await this.chatServerRepository.findByChatId(chatId);
+    if (!chatServer) {
+      throw new Error('ChatServer 不存在');
+    }
+
+    if (chatServer.createdBy !== user.id) {
+      throw new Error('无权访问此 ChatServer');
+    }
+
+    const capabilities =
+      await this.chatServerRepository.findCapabilitiesByChatId(chatId);
+    if (!capabilities) {
+      throw new Error('ChatServer 不存在');
+    }
+
+    return {
+      chatServer: {
+        id: chatServer.id.toString(),
+        chatId: chatServer.chatId,
+        name: chatServer.name,
+      },
+      skills: capabilities.skills.map((skill) => ({
+        id: skill.id.toString(),
+        skillId: skill.skillId,
+        name: skill.name,
+        description: skill.description,
+        icon: skill.icon,
+        category: skill.category,
+        status: skill.status,
+        createdAt: skill.createdAt.toISOString(),
+      })),
+      mcps: capabilities.mcps.map((mcp) => ({
+        id: mcp.id.toString(),
+        mcpId: mcp.mcpId,
+        name: mcp.name,
+        description: mcp.description,
+        icon: mcp.icon,
+        status: mcp.status,
+        transportType: mcp.transportType,
+        language: mcp.language,
+        createdAt: mcp.createdAt.toISOString(),
+      })),
+    };
   }
 
   /**

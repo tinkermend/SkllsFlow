@@ -33,6 +33,39 @@ export interface ChatServerResponseDto {
   healthCheckedAt?: string;
 }
 
+export interface ChatServerCapabilitySkillDto {
+  id: string;
+  skillId: string;
+  name: string;
+  description: string | null;
+  icon: string | null;
+  category: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface ChatServerCapabilityMcpDto {
+  id: string;
+  mcpId: string;
+  name: string;
+  description: string | null;
+  icon: string | null;
+  status: string;
+  transportType: string;
+  language: string | null;
+  createdAt: string;
+}
+
+export interface ChatServerCapabilitiesDto {
+  chatServer: {
+    id: string;
+    chatId: string;
+    name: string;
+  };
+  skills: ChatServerCapabilitySkillDto[];
+  mcps: ChatServerCapabilityMcpDto[];
+}
+
 /**
  * 将 ChatServer 实体转换为响应 DTO
  *

@@ -32,10 +32,20 @@ router.get('/', (req, res) => req.controller.getAll(req, res));
 router.get('/active', (req, res) => req.controller.getActive(req, res));
 
 /**
+ * GET /api/chat-servers/:chatId/capabilities
+ * 获取 ChatServer 已加载的 Skills 与 MCP 服务
+ */
+router.get('/:chatId/capabilities', (req, res) =>
+  req.controller.getCapabilities(req, res)
+);
+
+/**
  * GET /api/chat-servers/:chatId/delete-stats
  * 获取删除统计信息
  */
-router.get('/:chatId/delete-stats', (req, res) => req.controller.getDeleteStats(req, res));
+router.get('/:chatId/delete-stats', (req, res) =>
+  req.controller.getDeleteStats(req, res)
+);
 
 /**
  * DELETE /api/chat-servers/:chatId

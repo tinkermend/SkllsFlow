@@ -1,5 +1,10 @@
 import { apiClient } from '@/lib/api-client';
-import type { ChatServer, CreateChatServerRequest, ChatServerDeleteStats } from '../types';
+import type {
+  ChatServer,
+  ChatServerCapabilities,
+  CreateChatServerRequest,
+  ChatServerDeleteStats,
+} from '../types';
 
 /**
  * 获取所有 ChatServer
@@ -37,5 +42,16 @@ export async function getChatServerDeleteStats(
   chatId: string
 ): Promise<ChatServerDeleteStats> {
   const response = await apiClient.get(`/chat-servers/${chatId}/delete-stats`);
+  return response.data;
+}
+
+/**
+ * 获取 ChatServer 已加载的 Skills 与 MCP 服务
+ * GET /api/chat-servers/:chatId/capabilities
+ */
+export async function getChatServerCapabilities(
+  chatId: string
+): Promise<ChatServerCapabilities> {
+  const response = await apiClient.get(`/chat-servers/${chatId}/capabilities`);
   return response.data;
 }
