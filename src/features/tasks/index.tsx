@@ -70,7 +70,13 @@ export function Tasks() {
     ...(deferredSearch ? { search: deferredSearch } : {}),
     ...(status !== allStatuses ? { status } : {}),
   };
-  const { data: tasks = [], isLoading } = useTasks(filters);
+  const {
+    data: tasks = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useTasks(filters);
   const createTask = useCreateTask();
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
@@ -263,16 +269,32 @@ export function Tasks() {
           </Select>
         </div>
 
-        <TaskTable
-          tasks={tasks}
-          isLoading={isLoading}
-          onEdit={openEdit}
-          onRun={handleRun}
-          onPause={handlePause}
-          onResume={handleResume}
-          onDelete={handleDelete}
-          onViewRuns={openRuns}
-        />
+        {isError ? (
+          <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-6">
+            <div className="font-medium text-destructive">任务列表加载失败</div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {getErrorMessage(error)}
+            </p>
+            <Button
+              className="mt-4"
+              variant="outline"
+              onClick={() => void refetch()}
+            >
+              重新加载
+            </Button>
+          </div>
+        ) : (
+          <TaskTable
+            tasks={tasks}
+            isLoading={isLoading}
+            onEdit={openEdit}
+            onRun={handleRun}
+            onPause={handlePause}
+            onResume={handleResume}
+            onDelete={handleDelete}
+            onViewRuns={openRuns}
+          />
+        )}
       </Main>
 
       <TaskFormSheet

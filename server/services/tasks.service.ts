@@ -40,6 +40,9 @@ type ScheduleConfig = {
   dayOfMonth?: number;
 };
 
+const MIN_TASK_TIMEOUT_SECONDS = 30;
+const MAX_TASK_TIMEOUT_SECONDS = 3600;
+
 type SkillsLookupRepository = {
   findBySkillId(skillId: string): Promise<Skill | null>;
 };
@@ -131,6 +134,7 @@ export class TasksService {
     const context = await this.validateTaskBinding(userUuid, dto);
     const scheduleType = dto.scheduleType;
     const scheduleConfig = dto.scheduleConfig ?? null;
+    const timeoutSeconds = this.validateTimeoutSeconds(dto.timeoutSeconds ?? 300);
 
     const task = await this.tasksRepository.createTask({
       name: dto.name.trim(),
@@ -140,7 +144,7 @@ export class TasksService {
       prompt: dto.prompt.trim(),
       scheduleType,
       scheduleConfig: this.toWritableJson(scheduleConfig),
-      timeoutSeconds: dto.timeoutSeconds ?? 300,
+      timeoutSeconds,
       status: 'active',
       nextRunAt: this.calculateNextRunAt(scheduleType, scheduleConfig, new Date()),
       createdBy: context.userId,
@@ -214,7 +218,7 @@ export class TasksService {
     }
 
     if (dto.timeoutSeconds !== undefined) {
-      data.timeoutSeconds = dto.timeoutSeconds;
+      data.timeoutSeconds = this.validateTimeoutSeconds(dto.timeoutSeconds);
     }
 
     const task = await this.tasksRepository.updateTask(current.id, data);
@@ -315,6 +319,20 @@ export class TasksService {
     if (!dto.prompt?.trim()) {
       throw new Error('请填写任务执行提示词');
     }
+  }
+
+  private validateTimeoutSeconds(timeoutSeconds: number): number {
+    if (
+      !Number.isInteger(timeoutSeconds) ||
+      timeoutSeconds < MIN_TASK_TIMEOUT_SECONDS ||
+      timeoutSeconds > MAX_TASK_TIMEOUT_SECONDS
+    ) {
+      throw new Error(
+        `任务超时时间必须在 ${MIN_TASK_TIMEOUT_SECONDS} 到 ${MAX_TASK_TIMEOUT_SECONDS} 秒之间`
+      );
+    }
+
+    return timeoutSeconds;
   }
 
   private async validateTaskBinding(

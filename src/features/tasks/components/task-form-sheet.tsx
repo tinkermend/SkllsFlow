@@ -30,6 +30,9 @@ import type {
   TaskScheduleType,
 } from "../types";
 
+const MIN_TASK_TIMEOUT_SECONDS = 30;
+const MAX_TASK_TIMEOUT_SECONDS = 3600;
+
 type TaskFormSheetProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -137,6 +140,7 @@ function TaskFormSheetContent({
   const { chatServers, isLoading: isChatServersLoading } = useChatServers();
   const { data: skills = [], isLoading: isSkillsLoading } = useMySkills();
   const [form, setForm] = useState<FormState>(() => getInitialState(task));
+  const [formError, setFormError] = useState<string | null>(null);
 
   const updateForm = (patch: Partial<FormState>) => {
     setForm((current) => ({ ...current, ...patch }));
@@ -144,6 +148,19 @@ function TaskFormSheetContent({
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const timeoutSeconds = Number(form.timeoutSeconds || 300);
+    if (
+      !Number.isInteger(timeoutSeconds) ||
+      timeoutSeconds < MIN_TASK_TIMEOUT_SECONDS ||
+      timeoutSeconds > MAX_TASK_TIMEOUT_SECONDS
+    ) {
+      setFormError(
+        `任务超时时间必须在 ${MIN_TASK_TIMEOUT_SECONDS} 到 ${MAX_TASK_TIMEOUT_SECONDS} 秒之间`,
+      );
+      return;
+    }
+
+    setFormError(null);
 
     void onSubmit({
       name: form.name.trim(),
@@ -153,7 +170,7 @@ function TaskFormSheetContent({
       prompt: form.prompt.trim(),
       scheduleType: form.scheduleType,
       scheduleConfig: buildScheduleConfig(form),
-      timeoutSeconds: Number(form.timeoutSeconds || 300),
+      timeoutSeconds,
     });
   };
 
@@ -342,6 +359,12 @@ function TaskFormSheetContent({
                   />
                 </div>
               )}
+            </div>
+          )}
+
+          {formError && (
+            <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {formError}
             </div>
           )}
 

@@ -181,6 +181,23 @@ describe('TasksService', () => {
     expect(repositories.tasksRepository.createTask).not.toHaveBeenCalled();
   });
 
+  it('rejects timeout values outside the supported range', async () => {
+    const { repositories, service } = createService();
+
+    await expect(
+      service.createTask('user-uuid', {
+        name: '每日巡检',
+        chatServerId: 'chat-server-uuid',
+        skillId: 'skill-business-id',
+        prompt: '执行巡检',
+        scheduleType: 'manual',
+        timeoutSeconds: 0,
+      })
+    ).rejects.toThrow('任务超时时间必须在 30 到 3600 秒之间');
+
+    expect(repositories.tasksRepository.createTask).not.toHaveBeenCalled();
+  });
+
   it('resumes a task and recalculates nextRunAt for scheduled tasks', async () => {
     const task = createTaskRecord();
     const { repositories, service } = createService();

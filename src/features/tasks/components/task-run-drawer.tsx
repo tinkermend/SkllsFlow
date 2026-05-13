@@ -114,7 +114,7 @@ export function TaskRunDrawer({
   open,
   onOpenChange,
 }: TaskRunDrawerProps) {
-  const { data: runs = [], isLoading } = useTaskRuns(
+  const { data: runs = [], isLoading, isError, error, refetch } = useTaskRuns(
     open ? task?.taskUuid : undefined,
   );
 
@@ -133,6 +133,22 @@ export function TaskRunDrawer({
             <div className="flex h-48 items-center justify-center text-sm text-muted-foreground">
               <Loader2 className="mr-2 size-4 animate-spin" />
               正在加载运行记录
+            </div>
+          ) : isError ? (
+            <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-6 text-sm">
+              <div className="font-medium text-destructive">
+                运行记录加载失败
+              </div>
+              <p className="mt-2 text-muted-foreground">
+                {error instanceof Error ? error.message : "请稍后重试"}
+              </p>
+              <button
+                type="button"
+                className="mt-4 text-primary hover:underline"
+                onClick={() => void refetch()}
+              >
+                重新加载
+              </button>
             </div>
           ) : runs.length === 0 ? (
             <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
