@@ -148,15 +148,27 @@ export class TasksController {
 
       const run = await this.taskRunsRepository.findByRunUuid(this.getParam(req, 'runUuid'));
       if (!run) {
-        res.status(404).json({
-          error: 'Not Found',
-          message: '任务运行记录不存在',
-        });
+        this.respondRunNotFound(res);
         return;
       }
 
-      if (run.task) {
+      if (!run.task) {
+        this.respondRunNotFound(res);
+        return;
+      }
+
+      try {
         await this.tasksService.requireTaskForUser(userUuid, run.task.taskUuid);
+      } catch (error) {
+        if (error instanceof Error && error.message.includes('任务不存在')) {
+          res.status(403).json({
+            error: 'Forbidden',
+            message: '无权查看该任务运行记录',
+          });
+          return;
+        }
+
+        throw error;
       }
 
       res.status(200).json(toTaskRunResponseDto(run));
@@ -218,6 +230,13 @@ export class TasksController {
     return value === 'active' || value === 'paused' || value === 'disabled';
   }
 
+  private respondRunNotFound(res: Response): void {
+    res.status(404).json({
+      error: 'Not Found',
+      message: '任务运行记录不存在',
+    });
+  }
+
   private handleError(res: Response, error: unknown): void {
     const message = error instanceof Error ? error.message : String(error);
 
@@ -245,9 +264,10 @@ export class TasksController {
       return;
     }
 
+    console.error('Tasks controller error:', error);
     res.status(500).json({
       error: 'Internal Server Error',
-      message,
+      message: '服务器内部错误',
     });
   }
 
