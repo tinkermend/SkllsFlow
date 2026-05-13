@@ -12,6 +12,7 @@ export default defineConfig({
     ],
     setupFiles: ['./server/__tests__/helpers/setup.ts'],
     env: {
+      BCRYPT_SALT_ROUNDS: '4',
       DATABASE_URL: 'postgresql://aiops:AIOps!1234@127.0.0.1:5432/aiops_test?schema=aiops&sslmode=disable',
       JWT_SECRET: 'test-secret-key-change-in-production',
       NODE_ENV: 'test',

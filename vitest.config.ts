@@ -12,6 +12,7 @@ export default defineConfig({
       'server/__tests__/unit/**/*.test.ts',
     ],
     env: {
+      BCRYPT_SALT_ROUNDS: '4',
       JWT_SECRET: 'test-secret-key-change-in-production',
       NODE_ENV: 'test',
     },

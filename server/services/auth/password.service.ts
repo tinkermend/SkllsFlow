@@ -1,7 +1,12 @@
 import bcrypt from 'bcrypt';
 
 export class PasswordService {
-  private readonly SALT_ROUNDS = 10;
+  private readonly SALT_ROUNDS = this.resolveSaltRounds();
+
+  private resolveSaltRounds(): number {
+    const parsed = Number.parseInt(process.env.BCRYPT_SALT_ROUNDS ?? '', 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 10;
+  }
 
   /**
    * 哈希密码

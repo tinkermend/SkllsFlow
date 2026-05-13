@@ -82,6 +82,7 @@ pnpm db:migrate:full
 - Prisma schema 位于 `prisma/schema.prisma`。
 - 业务数据访问优先通过 Repository 层，不要在 Controller 中直接操作 Prisma Client。
 - `DatabaseService.getInstance()` 负责统一连接生命周期。
+- 所有开发设计的数据库表写一份表sql到 `docs/database_design/` 目录,以表名命名的.sql文件
 
 ## 开发约定
 
