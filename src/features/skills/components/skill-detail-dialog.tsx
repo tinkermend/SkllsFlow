@@ -92,6 +92,23 @@ export function SkillDetailDialog({
 
           <Separator />
 
+          {skill.tags.length > 0 && (
+            <>
+              <div>
+                <h3 className="text-sm font-semibold mb-2">技能标签</h3>
+                <div className="flex flex-wrap gap-2">
+                  {skill.tags.map((tag) => (
+                    <Badge key={tag} variant="secondary">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              <Separator />
+            </>
+          )}
+
           {/* 创建者信息 */}
           <div>
             <h3 className="text-sm font-semibold mb-2">创建者</h3>

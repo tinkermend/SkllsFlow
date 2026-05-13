@@ -37,6 +37,8 @@ export function SkillCard({
   onInstall,
 }: SkillCardProps) {
   const { can } = usePermission();
+  const visibleTags = skill.tags.slice(0, 3);
+  const hiddenTagCount = Math.max(skill.tags.length - visibleTags.length, 0);
 
   const statusConfig = {
     [SkillStatus.ACTIVE]: {
@@ -105,6 +107,30 @@ export function SkillCard({
             {skill.description}
           </CardDescription>
         </CardContent>
+
+        {skill.tags.length > 0 && (
+          <CardContent className="px-4 py-2 pb-0">
+            <div className="flex flex-wrap gap-1.5">
+              {visibleTags.map((tag) => (
+                <Badge
+                  key={tag}
+                  variant="secondary"
+                  className="max-w-[120px] truncate px-2 py-0 text-[11px] font-normal"
+                >
+                  {tag}
+                </Badge>
+              ))}
+              {hiddenTagCount > 0 && (
+                <Badge
+                  variant="outline"
+                  className="px-2 py-0 text-[11px] font-normal text-muted-foreground"
+                >
+                  +{hiddenTagCount}
+                </Badge>
+              )}
+            </div>
+          </CardContent>
+        )}
 
         {/* 如果有 Session ID 显示在这里 */}
         {mode === "my-skills" && skill.sessionId && (
