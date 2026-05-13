@@ -9,6 +9,7 @@ import {
   updateTask,
 } from "../api/tasks.api";
 import type { TaskFormValues, TaskListFilters } from "../types";
+import type { TaskUuid } from "../types";
 import { taskRunKeys } from "./use-task-runs";
 
 export const taskKeys = {
@@ -43,11 +44,14 @@ export function useUpdateTask() {
       taskUuid,
       data,
     }: {
-      taskUuid: string;
+      taskUuid: TaskUuid;
       data: Partial<TaskFormValues>;
     }) => updateTask(taskUuid, data),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      queryClient.invalidateQueries({
+        queryKey: taskRunKeys.list(variables.taskUuid),
+      });
     },
   });
 }
@@ -56,9 +60,10 @@ export function useDeleteTask() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (taskUuid: string) => deleteTask(taskUuid),
-    onSuccess: () => {
+    mutationFn: (taskUuid: TaskUuid) => deleteTask(taskUuid),
+    onSuccess: (_, taskUuid) => {
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      queryClient.removeQueries({ queryKey: taskRunKeys.list(taskUuid) });
     },
   });
 }
@@ -67,7 +72,7 @@ export function useRunTask() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (taskUuid: string) => runTask(taskUuid),
+    mutationFn: (taskUuid: TaskUuid) => runTask(taskUuid),
     onSuccess: (_, taskUuid) => {
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
       queryClient.invalidateQueries({ queryKey: taskRunKeys.list(taskUuid) });
@@ -79,7 +84,7 @@ export function usePauseTask() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (taskUuid: string) => pauseTask(taskUuid),
+    mutationFn: (taskUuid: TaskUuid) => pauseTask(taskUuid),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
     },
@@ -90,7 +95,7 @@ export function useResumeTask() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (taskUuid: string) => resumeTask(taskUuid),
+    mutationFn: (taskUuid: TaskUuid) => resumeTask(taskUuid),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
     },
