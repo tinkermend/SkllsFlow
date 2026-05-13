@@ -30,7 +30,7 @@ export function AppSidebar() {
               <div className="grid flex-1 text-start leading-tight">
                 <span className="truncate text-lg font-bold">新炬网络</span>
                 <span className="truncate text-sm text-muted-foreground">
-                  OS-Native 智能平台
+                  AI原生智能平台
                 </span>
               </div>
             </SidebarMenuButton>
