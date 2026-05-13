@@ -272,7 +272,7 @@ export class SkillsService {
       );
     }
 
-    // 9. 记录 / 更新用户技能关联，确保后续查询和删除流程可见已装载的技能
+    // 9. 记录 / 更新技能关联，确保用户列表和服务能力面板都可见已装载的技能
     try {
       await prisma.userSkill.upsert({
         where: {
@@ -290,10 +290,37 @@ export class SkillsService {
           sortOrder: 0,
         },
       });
+
+      await prisma.chatServerSkill.upsert({
+        where: {
+          chatServerId_skillId: {
+            chatServerId: chatServer.id,
+            skillId: skill.id,
+          },
+        },
+        update: {},
+        create: {
+          chatServerId: chatServer.id,
+          skillId: skill.id,
+        },
+      });
     } catch (dbError) {
       const dbErrorMessage = dbError instanceof Error ? dbError.message : 'Unknown error';
 
       try {
+        await prisma.chatServerSkill.deleteMany({
+          where: {
+            chatServerId: chatServer.id,
+            skillId: skill.id,
+          },
+        });
+        await prisma.userSkill.deleteMany({
+          where: {
+            userId: user.id,
+            skillId: skill.skillId,
+            chatId: chatServer.id,
+          },
+        });
         await this.proxyClient.unloadSkill({
           proxyHost: chatServer.proxyHost.host,
           proxyPort: chatServer.proxyHost.port,
@@ -305,11 +332,11 @@ export class SkillsService {
         const rollbackErrorMessage =
           rollbackError instanceof Error ? rollbackError.message : 'Unknown error';
         throw new Error(
-          `技能装载后写入 user_skills 失败: ${dbErrorMessage}；且回滚卸载失败: ${rollbackErrorMessage}`
+          `技能装载后写入服务关联失败: ${dbErrorMessage}；且回滚卸载失败: ${rollbackErrorMessage}`
         );
       }
 
-      throw new Error(`技能装载后写入 user_skills 失败: ${dbErrorMessage}，已自动回滚远端装载`);
+      throw new Error(`技能装载后写入服务关联失败: ${dbErrorMessage}，已自动回滚远端装载`);
     }
   }
 

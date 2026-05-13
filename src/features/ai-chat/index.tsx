@@ -7,13 +7,14 @@ import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { ChatPanel } from './components/chat-panel'
 import { ConnectionGuard } from './components/connection-guard'
+import { ServiceCapabilityPanel } from './components/service-capability-panel'
 import { SessionSidebar } from './components/session-sidebar'
 import { useEventStream } from './hooks/use-event-stream'
 import { useMessages } from './hooks/use-messages'
 import { useActiveServerConnection } from './hooks/use-opencode-init'
 
 export function AiChat() {
-  const { currentSessionId } = useChatStore()
+  const { activeServer, currentSessionId } = useChatStore()
 
   // 初始化连接
   useActiveServerConnection()
@@ -39,16 +40,22 @@ export function AiChat() {
       {/* Main Content */}
       {/* 添加 fluid 属性，移除居中和最大宽度限制，使内容与菜单栏贴合 */}
       <Main fixed fluid className='flex flex-col p-0'>
-        <div className='flex h-full'>
+        <div className='flex h-full min-w-0'>
           {/* Left Sidebar - Sessions */}
           <SessionSidebar />
 
-          {/* Right Panel - Chat */}
-          <div className='flex flex-1'>
+          {/* Center Panel - Chat */}
+          <div className='flex min-w-0 flex-1'>
             <ConnectionGuard>
               <ChatPanel />
             </ConnectionGuard>
           </div>
+
+          {/* Right Panel - Service Capabilities */}
+          <ServiceCapabilityPanel
+            chatId={activeServer?.chatId}
+            serviceName={activeServer?.name}
+          />
         </div>
       </Main>
     </>

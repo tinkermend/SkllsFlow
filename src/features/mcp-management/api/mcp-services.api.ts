@@ -101,22 +101,22 @@ export async function getResources(
 }
 
 /**
- * 装载 MCP 到会话
+ * 装载 MCP 到 ChatServer
  */
-export async function loadToSessions(mcpId: string, sessionIds: string[]) {
+export async function loadToChatServers(mcpId: string, chatIds: string[]) {
   const response = await apiClient.post(`${BASE_URL}/services/${mcpId}/load`, {
-    sessionIds,
+    chatIds,
   });
   return response.data;
 }
 
 /**
- * 从会话卸载 MCP
+ * 从 ChatServer 卸载 MCP
  */
-export async function unloadFromSessions(mcpId: string, sessionIds: string[]) {
+export async function unloadFromChatServers(mcpId: string, chatIds: string[]) {
   const response = await apiClient.post(
     `${BASE_URL}/services/${mcpId}/unload`,
-    { sessionIds },
+    { chatIds },
   );
   return response.data;
 }

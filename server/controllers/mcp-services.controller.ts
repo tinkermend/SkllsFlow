@@ -229,9 +229,9 @@ export class McpServicesController {
   }
 
   /**
-   * 装载 MCP 到会话
+   * 装载 MCP 到 ChatServer
    */
-  static async loadToSessions(req: Request, res: Response) {
+  static async loadToChatServers(req: Request, res: Response) {
     try {
       const userId = req.user?.id;
       if (!userId) {
@@ -239,18 +239,15 @@ export class McpServicesController {
       }
 
       const { mcpId } = req.params;
-      const { sessionIds } = req.body;
+      const { chatIds } = req.body;
 
-      if (!sessionIds || !Array.isArray(sessionIds)) {
-        return res.status(400).json({ error: '缺少 sessionIds 参数' });
+      if (!chatIds || !Array.isArray(chatIds)) {
+        return res.status(400).json({ error: '缺少 chatIds 参数' });
       }
 
-      const { McpMarketplaceService } = await import('../services/mcp-marketplace.service.js');
-      const marketplaceService = new McpMarketplaceService();
-
-      const result = await marketplaceService.loadToSessions(
+      const result = await mcpServicesService.loadToChatServers(
         mcpId,
-        sessionIds,
+        chatIds,
         BigInt(userId)
       );
 
@@ -264,9 +261,9 @@ export class McpServicesController {
   }
 
   /**
-   * 从会话卸载 MCP
+   * 从 ChatServer 卸载 MCP
    */
-  static async unloadFromSessions(req: Request, res: Response) {
+  static async unloadFromChatServers(req: Request, res: Response) {
     try {
       const userId = req.user?.id;
       if (!userId) {
@@ -274,18 +271,19 @@ export class McpServicesController {
       }
 
       const { mcpId } = req.params;
-      const { sessionIds } = req.body;
+      const { chatIds } = req.body;
 
-      if (!sessionIds || !Array.isArray(sessionIds)) {
-        return res.status(400).json({ error: '缺少 sessionIds 参数' });
+      if (!chatIds || !Array.isArray(chatIds)) {
+        return res.status(400).json({ error: '缺少 chatIds 参数' });
       }
 
-      const { McpMarketplaceService } = await import('../services/mcp-marketplace.service.js');
-      const marketplaceService = new McpMarketplaceService();
+      const result = await mcpServicesService.unloadFromChatServers(
+        mcpId,
+        chatIds,
+        BigInt(userId)
+      );
 
-      await marketplaceService.unloadFromSessions(mcpId, sessionIds, BigInt(userId));
-
-      res.json({ message: 'MCP 卸载成功' });
+      res.json({ message: 'MCP 卸载成功', data: result });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

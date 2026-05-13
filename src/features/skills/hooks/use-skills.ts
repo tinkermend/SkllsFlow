@@ -147,6 +147,8 @@ export function useActiveChatServers() {
  * 装载技能到 ChatServer
  */
 export function useLoadSkill() {
+  const queryClient = useQueryClient()
+
   return useMutation({
     mutationFn: ({
       skillId,
@@ -155,5 +157,8 @@ export function useLoadSkill() {
       skillId: string
       chatServerId: string
     }) => skillsApi.loadSkillToChatServer(skillId, chatServerId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chat-server-capabilities'] })
+    },
   })
 }

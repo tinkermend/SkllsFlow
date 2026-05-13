@@ -48,6 +48,39 @@ export interface ChatServerDeleteStats {
   sessionsCount: number
 }
 
+export interface ChatServerCapabilitySkill {
+  id: string
+  skillId: string
+  name: string
+  description: string | null
+  icon: string | null
+  category: string
+  status: string
+  createdAt: string
+}
+
+export interface ChatServerCapabilityMcp {
+  id: string
+  mcpId: string
+  name: string
+  description: string | null
+  icon: string | null
+  status: string
+  transportType: string
+  language: string | null
+  createdAt: string
+}
+
+export interface ChatServerCapabilities {
+  chatServer: {
+    id: string
+    chatId: string
+    name: string
+  }
+  skills: ChatServerCapabilitySkill[]
+  mcps: ChatServerCapabilityMcp[]
+}
+
 // ============ 会话 ============
 export interface Session {
   id: string

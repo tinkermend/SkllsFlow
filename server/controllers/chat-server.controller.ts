@@ -94,6 +94,30 @@ export class ChatServerController {
   }
 
   /**
+   * 获取 ChatServer 已加载的 Skills 与 MCP 服务
+   * GET /api/chat-servers/:chatId/capabilities
+   */
+  async getCapabilities(req: Request, res: Response): Promise<void> {
+    try {
+      const { chatId } = req.params;
+      const userId = req.userId;
+
+      if (!userId) {
+        res.status(401).json({
+          error: 'Unauthorized',
+          message: 'Authentication token is missing or invalid',
+        });
+        return;
+      }
+
+      const capabilities = await this.service.getCapabilities(chatId, userId);
+      res.status(200).json(capabilities);
+    } catch (error) {
+      this.handleError(res, error);
+    }
+  }
+
+  /**
    * 删除 ChatServer
    * DELETE /api/chat-servers/:chatId
    */

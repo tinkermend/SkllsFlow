@@ -349,12 +349,17 @@ export class SkillsRepository extends BaseRepository<
         where: { skillId },
       });
 
-      // 2. 删除 skill_files 表中的文件记录
+      // 2. 删除 chat_server_skills 表中的服务级关联记录（如果有）
+      await tx.chatServerSkill.deleteMany({
+        where: { skillId: skill.id },
+      });
+
+      // 3. 删除 skill_files 表中的文件记录
       await tx.skillFile.deleteMany({
         where: { skillId: skill.id },
       });
 
-      // 3. 删除 skills 表中的技能记录
+      // 4. 删除 skills 表中的技能记录
       await tx.skill.delete({
         where: { id: skill.id },
       });
@@ -372,12 +377,17 @@ export class SkillsRepository extends BaseRepository<
     }
 
     await this.prisma.$transaction(async (tx) => {
-      // 1. 删除 skill_files 表中的文件记录
+      // 1. 删除 chat_server_skills 表中的服务级关联记录（如果有）
+      await tx.chatServerSkill.deleteMany({
+        where: { skillId: skill.id },
+      });
+
+      // 2. 删除 skill_files 表中的文件记录
       await tx.skillFile.deleteMany({
         where: { skillId: skill.id },
       });
 
-      // 2. 删除 skills 表中的技能记录
+      // 3. 删除 skills 表中的技能记录
       await tx.skill.delete({
         where: { id: skill.id },
       });

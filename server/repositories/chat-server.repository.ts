@@ -1,4 +1,10 @@
-import { type PrismaClient, type ChatServer, type Prisma } from '@prisma/client';
+import {
+  type PrismaClient,
+  type ChatServer,
+  type McpService,
+  type Prisma,
+  type Skill,
+} from '@prisma/client';
 import { BaseRepository } from './base.repository.js';
 
 /**
@@ -104,6 +110,36 @@ export class ChatServerRepository extends BaseRepository<
     return this.prisma.chatServer.findUnique({
       where: { chatId },
     });
+  }
+
+  async findCapabilitiesByChatId(chatId: string): Promise<{
+    chatServer: ChatServer;
+    skills: Skill[];
+    mcps: McpService[];
+  } | null> {
+    const chatServer = await this.prisma.chatServer.findUnique({
+      where: { chatId },
+      include: {
+        chatServerSkills: {
+          include: { skill: true },
+          orderBy: { createdAt: 'desc' },
+        },
+        chatServerMcps: {
+          include: { mcpService: true },
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+
+    if (!chatServer) {
+      return null;
+    }
+
+    return {
+      chatServer,
+      skills: chatServer.chatServerSkills.map((item) => item.skill),
+      mcps: chatServer.chatServerMcps.map((item) => item.mcpService),
+    };
   }
 
   /**

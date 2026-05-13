@@ -233,9 +233,9 @@ export class McpServicesService {
         where: { mcpServiceId: service.id },
       });
 
-      // 删除会话关联
-      await tx.sessionMcp.deleteMany({
-        where: { mcpServiceId: service.id },
+      // 删除 ChatServer 关联
+      await tx.chatServerMcp.deleteMany({
+        where: { mcpId: service.id },
       });
 
       // 删除市场项
@@ -301,6 +301,98 @@ export class McpServicesService {
     });
 
     return { success: true, status: "active" };
+  }
+
+  async loadToChatServers(
+    mcpId: string,
+    chatIds: string[],
+    userId: bigint,
+  ): Promise<{
+    loaded: Array<{ chatId: string; chatServerId: string }>;
+    skipped: Array<{ chatId: string; reason: string }>;
+  }> {
+    const service = await this.servicesRepo.findByMcpId(mcpId);
+    if (!service) {
+      throw new NotFoundError("MCP 服务不存在");
+    }
+
+    const loaded: Array<{ chatId: string; chatServerId: string }> = [];
+    const skipped: Array<{ chatId: string; reason: string }> = [];
+
+    for (const chatId of chatIds) {
+      const chatServer = await this.prisma.chatServer.findFirst({
+        where: {
+          chatId,
+          createdBy: userId,
+          status: "active",
+        },
+      });
+
+      if (!chatServer) {
+        skipped.push({ chatId, reason: "服务不存在、未激活或无权限" });
+        continue;
+      }
+
+      await this.prisma.chatServerMcp.upsert({
+        where: {
+          chatServerId_mcpId: {
+            chatServerId: chatServer.id,
+            mcpId: service.id,
+          },
+        },
+        update: {},
+        create: {
+          chatServerId: chatServer.id,
+          mcpId: service.id,
+        },
+      });
+
+      loaded.push({
+        chatId,
+        chatServerId: chatServer.id.toString(),
+      });
+    }
+
+    return { loaded, skipped };
+  }
+
+  async unloadFromChatServers(
+    mcpId: string,
+    chatIds: string[],
+    userId: bigint,
+  ): Promise<{ unloaded: Array<{ chatId: string; count: number }> }> {
+    const service = await this.servicesRepo.findByMcpId(mcpId);
+    if (!service) {
+      throw new NotFoundError("MCP 服务不存在");
+    }
+
+    const unloaded: Array<{ chatId: string; count: number }> = [];
+
+    for (const chatId of chatIds) {
+      const chatServer = await this.prisma.chatServer.findFirst({
+        where: {
+          chatId,
+          createdBy: userId,
+          status: "active",
+        },
+      });
+
+      if (!chatServer) {
+        unloaded.push({ chatId, count: 0 });
+        continue;
+      }
+
+      const result = await this.prisma.chatServerMcp.deleteMany({
+        where: {
+          chatServerId: chatServer.id,
+          mcpId: service.id,
+        },
+      });
+
+      unloaded.push({ chatId, count: result.count });
+    }
+
+    return { unloaded };
   }
 
   /**

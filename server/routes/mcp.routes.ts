@@ -33,10 +33,10 @@ router.put("/services/:mcpId", McpServicesController.updateService);
 router.delete("/services/:mcpId", McpServicesController.deleteService);
 router.post("/services/:mcpId/health-check", McpServicesController.healthCheck);
 router.post("/services/:mcpId/restart", McpServicesController.restartService);
-router.post("/services/:mcpId/load", McpServicesController.loadToSessions);
+router.post("/services/:mcpId/load", McpServicesController.loadToChatServers);
 router.post(
   "/services/:mcpId/unload",
-  McpServicesController.unloadFromSessions,
+  McpServicesController.unloadFromChatServers,
 );
 
 // MCP 工具和资源路由
