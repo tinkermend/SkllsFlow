@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { TaskSchedulerService } from '@server/services/task-scheduler.service';
 
 function createTaskRecord(overrides: Record<string, unknown> = {}) {
@@ -73,6 +73,10 @@ function createService(overrides: Record<string, unknown> = {}) {
 }
 
 describe('TaskSchedulerService', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('runs due tasks and updates nextRunAt before execution', async () => {
     const now = new Date('2026-05-13T02:00:00.000Z');
     const { deps, service, task, nextRunAt } = createService();
@@ -158,5 +162,32 @@ describe('TaskSchedulerService', () => {
 
     expect(stopResolved).toBe(true);
     expect(deps.runner.runTaskRecord).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not start a second interval tick while the first tick is still running', async () => {
+    vi.useFakeTimers();
+    const task = createTaskRecord();
+    let releaseRun: (() => void) | undefined;
+    const running = new Promise<void>((resolve) => {
+      releaseRun = resolve;
+    });
+    const { deps, service } = createService({
+      tasks: {
+        findDueTasks: vi.fn().mockResolvedValue([task]),
+        updateTask: vi.fn().mockResolvedValue(task),
+      },
+      runner: {
+        runTaskRecord: vi.fn().mockReturnValue(running),
+      },
+      intervalMs: 1_000,
+    });
+
+    service.start();
+    await Promise.resolve();
+    await vi.advanceTimersByTimeAsync(1_000);
+
+    expect(deps.tasks.findDueTasks).toHaveBeenCalledTimes(1);
+    releaseRun?.();
+    await service.stop();
   });
 });

@@ -54,9 +54,9 @@ export class TaskSchedulerService {
       return;
     }
 
-    this.runTrackedTick(new Date());
+    void this.runTrackedTick(new Date());
     this.timer = setInterval(() => {
-      this.runTrackedTick(new Date());
+      void this.runTrackedTick(new Date());
     }, this.intervalMs);
   }
 
@@ -81,7 +81,11 @@ export class TaskSchedulerService {
     await Promise.all(dueTasks.map((task) => this.runDueTask(task, now)));
   }
 
-  private runTrackedTick(now: Date): void {
+  private runTrackedTick(now: Date): Promise<void> {
+    if (this.currentTickPromise) {
+      return this.currentTickPromise;
+    }
+
     const tickPromise = this.tick(now)
       .catch((error) => {
         console.error('Task scheduler tick failed:', error);
@@ -93,6 +97,7 @@ export class TaskSchedulerService {
       });
 
     this.currentTickPromise = tickPromise;
+    return tickPromise;
   }
 
   private async runDueTask(task: TaskWithRelations, now: Date): Promise<void> {
