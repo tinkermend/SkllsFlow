@@ -40,6 +40,7 @@ export class TaskSchedulerService {
   private runnerInstance: TaskRunnerServiceLike | null = null;
   private tasksServiceInstance: TasksServiceLike | null = null;
   private timer: ReturnType<typeof setInterval> | null = null;
+  private currentTickPromise: Promise<void> | null = null;
   private readonly runningTaskIds = new Set<string>();
 
   constructor(deps: TaskSchedulerServiceDeps = {}) {
@@ -53,19 +54,19 @@ export class TaskSchedulerService {
       return;
     }
 
-    void this.tick(new Date());
+    this.runTrackedTick(new Date());
     this.timer = setInterval(() => {
-      void this.tick(new Date());
+      this.runTrackedTick(new Date());
     }, this.intervalMs);
   }
 
-  stop(): void {
-    if (!this.timer) {
-      return;
+  async stop(): Promise<void> {
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
     }
 
-    clearInterval(this.timer);
-    this.timer = null;
+    await this.currentTickPromise;
   }
 
   async tick(now: Date): Promise<void> {
@@ -78,6 +79,20 @@ export class TaskSchedulerService {
     }
 
     await Promise.all(dueTasks.map((task) => this.runDueTask(task, now)));
+  }
+
+  private runTrackedTick(now: Date): void {
+    const tickPromise = this.tick(now)
+      .catch((error) => {
+        console.error('Task scheduler tick failed:', error);
+      })
+      .finally(() => {
+        if (this.currentTickPromise === tickPromise) {
+          this.currentTickPromise = null;
+        }
+      });
+
+    this.currentTickPromise = tickPromise;
   }
 
   private async runDueTask(task: TaskWithRelations, now: Date): Promise<void> {

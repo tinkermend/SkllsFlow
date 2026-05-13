@@ -20,7 +20,7 @@ async function startServer() {
     // 优雅关闭
     const shutdown = async () => {
       console.log('Shutting down...')
-      taskSchedulerService.stop()
+      await taskSchedulerService.stop()
       await openCodeService.cleanupAll()
       await DatabaseService.disconnect()
       server.close(() => {

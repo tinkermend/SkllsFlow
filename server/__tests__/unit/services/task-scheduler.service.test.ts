@@ -126,4 +126,37 @@ describe('TaskSchedulerService', () => {
     expect(deps.runner.runTaskRecord).toHaveBeenCalledTimes(1);
     expect(deps.tasks.updateTask).toHaveBeenCalledTimes(1);
   });
+
+  it('waits for the current startup tick before stop resolves', async () => {
+    const task = createTaskRecord();
+    let releaseRun: (() => void) | undefined;
+    const running = new Promise<void>((resolve) => {
+      releaseRun = resolve;
+    });
+    const { deps, service } = createService({
+      tasks: {
+        findDueTasks: vi.fn().mockResolvedValue([task]),
+        updateTask: vi.fn().mockResolvedValue(task),
+      },
+      runner: {
+        runTaskRecord: vi.fn().mockReturnValue(running),
+      },
+      intervalMs: 60_000,
+    });
+    let stopResolved = false;
+
+    service.start();
+    await Promise.resolve();
+    const stopPromise = service.stop().then(() => {
+      stopResolved = true;
+    });
+    await Promise.resolve();
+
+    expect(stopResolved).toBe(false);
+    releaseRun?.();
+    await stopPromise;
+
+    expect(stopResolved).toBe(true);
+    expect(deps.runner.runTaskRecord).toHaveBeenCalledTimes(1);
+  });
 });
